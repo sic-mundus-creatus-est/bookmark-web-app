@@ -16,6 +16,22 @@ ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+//CORS-----------------------------
+var specificOrgins = "AppOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: specificOrgins,
+                        policy =>
+                        {
+                            policy.WithOrigins("http://localhost:5173")
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .AllowCredentials();
+                        });
+});
+//CORS-----------------------------
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddTransient<IWeatherService, WeatherService>();
@@ -89,6 +105,8 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuer = true,
         ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
         ValidAudience = configuration["JWT:ValidAudience"],
         ValidIssuer = configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
@@ -97,6 +115,10 @@ builder.Services.AddAuthentication(options =>
 // ---------------------------------------------------------------------------------------
 
 var app = builder.Build();
+
+//CORS-----------------------------
+app.UseCors(specificOrgins);
+//CORS-----------------------------
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
