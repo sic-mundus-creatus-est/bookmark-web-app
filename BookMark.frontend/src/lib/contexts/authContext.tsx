@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 
-import { loginUser, registerUser } from "@/services/api-calls/authService";
+import { loginUser, registerUser } from "@/lib/services/api-calls/authService";
 
 interface User {
   username: string;
@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isTokenValid(storedToken!)) {
       try {
         const decodedToken: User = jwtDecode(storedToken!);
+        console.log("Decoded Token: ", decodedToken);
         setUser(decodedToken);
       } catch (error) {
         logout();
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   // -----------------------------
   const logout = () => {
+    console.log("Logging out...");
     localStorage.removeItem("token");
     setUser(null);
   };

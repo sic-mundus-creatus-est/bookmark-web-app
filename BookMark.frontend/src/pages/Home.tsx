@@ -1,7 +1,9 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "@/contexts/authContext";
-import { getWeatherForecast } from "@/services/api-calls/testService";
+import { getWeatherForecast } from "@/lib/services/api-calls/testService";
+
+import { AuthContext } from "@/lib/contexts/authContext";
 import { Button } from "@/components/ui/button";
+import { roles } from "@/config/roles";
 
 export default function Home() {
   const auth = useContext(AuthContext);
@@ -10,7 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const fetchWeather = async () => {
-    if (auth?.user?.role.includes("ADMIN")) {
+    if (auth?.user?.role.includes(roles.admin)) {
       setLoading(true);
       setError(null);
       try {
