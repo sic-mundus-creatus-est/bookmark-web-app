@@ -1,14 +1,15 @@
-using BookMark.backend.Data;
-using BookMark.backend.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+
+using BookMark.backend.DTOs;
+using BookMark.backend.Models;
+using BookMark.backend.Services.Repositories;
 
 namespace BookMark.backend.Controllers;
 
 [ApiController]
 [Route("api/books")]
-public class BookController : BaseController<Book>
+public class BookController : BaseController<Book, BookDTO>
 {
-    public BookController(DataContext context) : base(context) { }
+    public BookController(BookRepository repository) : base(repository) { }
 
 }

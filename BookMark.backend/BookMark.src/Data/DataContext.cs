@@ -1,6 +1,7 @@
-using BookMark.backend.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+
+using BookMark.backend.Models;
 
 namespace BookMark.backend.Data;
 public class DataContext : IdentityDbContext<User>
@@ -16,11 +17,6 @@ public class DataContext : IdentityDbContext<User>
             {
                 entry.Entity.UpdatedAt = DateTime.Now;
             }
-            else if (entry.State == EntityState.Added)
-            {
-                entry.Entity.CreatedAt = DateTime.Now;
-                entry.Entity.UpdatedAt = DateTime.Now;
-            }
         }
 
         return base.SaveChanges();
@@ -32,11 +28,6 @@ public class DataContext : IdentityDbContext<User>
         {
             if (entry.State == EntityState.Modified)
             {
-                entry.Entity.UpdatedAt = DateTime.UtcNow;
-            }
-            else if (entry.State == EntityState.Added)
-            {
-                entry.Entity.CreatedAt = DateTime.UtcNow;
                 entry.Entity.UpdatedAt = DateTime.UtcNow;
             }
         }

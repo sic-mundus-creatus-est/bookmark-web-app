@@ -1,32 +1,30 @@
-using BookMark.backend.Data;
+using BookMark.backend.DTOs;
 using BookMark.backend.Models;
+using BookMark.backend.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookMark.backend.Controllers;
 
 [ApiController]
-public class BaseController<TModel> : ControllerBase where TModel : BaseModel
+public class BaseController<TModel, TDTO> : ControllerBase where TModel : BaseModel where TDTO : BaseDTO
 {
-    protected readonly DataContext _context;
-    protected DbSet<TModel> _dbSet { get; set; }
-    public BaseController(DataContext context) 
+    protected readonly IBaseRepository<TModel, TDTO> _repository;
+    public BaseController(IBaseRepository<TModel, TDTO> repository) 
     { 
-        _context = context;
-        _dbSet = _context.Set<TModel>();
+        _repository = repository;
     }
 
     [HttpGet("get-all", Name = "GetAll")]
-    public virtual async Task<ActionResult<IEnumerable<TModel>>> GetAllAsync()
+    public virtual async Task<ActionResult<IEnumerable<TModel>>> GetAll()
     {
-        var entities = await _dbSet.ToListAsync();
+        var entities = await _repository.GetAllAsync();
         return Ok(entities); // 200 OK
     }
 
     [HttpGet("get-by-id/{id}", Name = "GetById")]
-    public virtual async Task<ActionResult<TModel>> GetByIdAsync([FromRoute] string id)
+    public virtual async Task<ActionResult<TModel>> GetById([FromRoute] string id)
     {           
-        var entity = await _dbSet.Where(e => e.Id == id).FirstOrDefaultAsync();
+        var entity = await _repository.GetByIdAsync(id);
         if (entity == null)
         {
             return NotFound(); // 404 Not Found
@@ -36,48 +34,45 @@ public class BaseController<TModel> : ControllerBase where TModel : BaseModel
     }
 
     [HttpPost("create", Name = "Create")]
-    public virtual async Task<ActionResult<TModel>> CreateAsync(TModel entity)
+    public virtual async Task<ActionResult<TModel>> Create([FromBody] TModel entity)
     {           
         if (entity == null)
         {
             return BadRequest(); // 400 Bad Request
         }
 
-        await _dbSet.AddAsync(entity);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction("GetById", new { id = entity.Id }, entity); // 201 Created
+        var createdEntity = await _repository.CreateAsync(entity);
+        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, createdEntity); // 201 Created
     }
 
     [HttpPost("update", Name = "Update")]
-    public virtual async Task<ActionResult<TModel>> UpdateAsync(TModel entity)
+    public virtual async Task<ActionResult<TModel>> Update([FromBody] TDTO entity)
     {           
         if (entity == null)
         {
             return BadRequest(); // 400 Bad Request
         }
 
-        var existingEntity = await _dbSet.Where(e => e.Id == entity.Id).FirstOrDefaultAsync();
+        var existingEntity = await _repository.GetByIdAsync(entity.Id);
         if (existingEntity == null)
         {
             return NotFound(); // 404 Not Found
         }
 
-        _dbSet.Update(entity);
-        await _context.SaveChangesAsync();
-        return Ok(entity); // 200 OK
+        var updatedEntity = await _repository.UpdateAsync(existingEntity, entity);
+        return Ok(updatedEntity); // 200 OK
     }
 
     [HttpDelete("delete-by-id/{id}", Name = "DeleteById")]
-    public virtual async Task<ActionResult> DeleteByIdAsync(string id)
+    public virtual async Task<ActionResult> DeleteById([FromRoute] string id)
     {           
-        var entity = await _dbSet.Where(e => e.Id == id).FirstOrDefaultAsync();
+        var entity = await _repository.GetByIdAsync(id);
         if (entity == null)
         {
             return NotFound(); // 404 Not Found
         }
 
-        _dbSet.Remove(entity);
-        await _context.SaveChangesAsync();
+        await _repository.DeleteAsync(entity);
         return NoContent(); // 204 No Content
     }
 }
