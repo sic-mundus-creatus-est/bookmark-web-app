@@ -39,6 +39,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddTransient<IWeatherService, WeatherService>();
 builder.Services.AddScoped<BookRepository>();
+builder.Services.AddScoped<AuthorRepository>();
 
 builder.Services.AddControllers();
 

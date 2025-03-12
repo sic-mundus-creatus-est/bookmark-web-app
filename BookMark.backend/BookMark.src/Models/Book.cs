@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using BookMark.backend.DTOs;
+using BookMark.backend.Models.Relationships;
 
 namespace BookMark.backend.Models;
 
@@ -7,10 +10,6 @@ public class Book : BaseModel
     [Required]
     [MaxLength(255)]
     public string Title { get; set; } = "";
-
-    [Required]
-    [MinLength(1)]
-    public List<string> Authors { get; set; } = new List<string>();
 
     [Required]
     [MaxLength(255)]
@@ -30,4 +29,20 @@ public class Book : BaseModel
     public string? Description { get; set; }
 
     public string? CoverImage { get; set; }
+
+    [JsonIgnore]
+    public IList<BookAuthor>? BookAuthors { get; set; }
+
+    public override void MapFrom(object source)
+    {
+        if (source is BookCreateDTO bookCreateDTO)
+        {
+            Title = bookCreateDTO.Title;
+            OriginalLanguage = bookCreateDTO.OriginalLanguage;
+            PublicationYear = bookCreateDTO.PublicationYear;
+            PageCount = bookCreateDTO.PageCount;
+            Genre = bookCreateDTO.Genre;
+            Description = bookCreateDTO.Description;
+        }
+    }
 }

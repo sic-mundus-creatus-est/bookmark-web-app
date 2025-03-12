@@ -1,21 +1,19 @@
 using BookMark.backend.Data;
-using BookMark.backend.DTOs;
 using BookMark.backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookMark.backend.Services.Repositories;
 
-public interface IBaseRepository<TModel, TDTO>
+public interface IBaseRepository<TModel>
 {
-    // TODO: make TDTO's exclusive to functions that need them, not the entire interface
     Task<IEnumerable<TModel>> GetAllAsync();
     Task<TModel?> GetByIdAsync(string id);
     Task<TModel> CreateAsync(TModel entityData);
-    Task<TModel?> UpdateAsync(TModel existingEntity, TDTO entityData);
+    Task<TModel?> UpdateAsync(TModel existingEntity, object entityData);
     Task DeleteAsync(TModel entity);
 }
 
-public class BaseRepository<TModel, TDTO> : IBaseRepository<TModel, TDTO> where TModel : BaseModel where TDTO : BaseDTO
+public class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : BaseModel
 {
     protected readonly DataContext _context;
     protected DbSet<TModel> _dbSet { get; set; }
@@ -37,24 +35,24 @@ public class BaseRepository<TModel, TDTO> : IBaseRepository<TModel, TDTO> where 
         return entity;
     }
 
-    public virtual async Task<TModel> CreateAsync(TModel entityData)
+    public virtual async Task<TModel> CreateAsync(TModel newEntity)
     {
-        await _dbSet.AddAsync(entityData);
+        await _dbSet.AddAsync(newEntity);
         await SaveChangesAsync();
 
-        return entityData;
+        return newEntity;
     }
 
-    public virtual async Task<TModel?> UpdateAsync(TModel existingEntity, TDTO entityData)
+    public virtual async Task<TModel?> UpdateAsync(TModel dbEntity, object newEntityData)
     {
-        var entry = _context.Entry(existingEntity);
+        var entry = _context.Entry(dbEntity);
         var keyProperty = _context.Model.FindEntityType(typeof(TModel))?.FindPrimaryKey()?.Properties.FirstOrDefault()?.Name;
 
-        foreach (var property in typeof(TDTO).GetProperties())
+        foreach (var property in newEntityData.GetType().GetProperties())
         {
             if (property.Name == keyProperty) continue; // Skips the primary key (Id)
 
-            var newValue = property.GetValue(entityData);
+            var newValue = property.GetValue(newEntityData);
             if (newValue != null)
             {
                 entry.Property(property.Name).CurrentValue = newValue;
@@ -63,7 +61,7 @@ public class BaseRepository<TModel, TDTO> : IBaseRepository<TModel, TDTO> where 
         }
 
         await SaveChangesAsync();
-        return existingEntity;
+        return dbEntity;
     }
 
     public virtual async Task DeleteAsync(TModel entity)
