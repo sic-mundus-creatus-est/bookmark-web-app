@@ -1,9 +1,9 @@
 import { Outlet } from "react-router-dom";
 
-import Footer from "@/components/layouts/footer";
-import Navbar from "@/components/layouts/navbar";
+import { Footer } from "@/components/layouts/footer";
+import { Navbar } from "@/components/layouts/navbar";
 
-export default function AppLayout() {
+export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />

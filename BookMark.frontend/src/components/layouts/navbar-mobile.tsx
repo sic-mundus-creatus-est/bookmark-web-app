@@ -24,7 +24,7 @@ const DrawerButton: React.FC<IDrawerButtonProps> = ({ text, onClick }) => {
   );
 };
 
-export default function MobileNavbar() {
+export function MobileNavbar() {
   const [open, setOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 

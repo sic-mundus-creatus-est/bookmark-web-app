@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 import { appConfig } from "@/config/appConfig";
 
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="bg-accent py-6 text-sm text-gray-500">
       <div className="container mx-auto px-4 md:px-8">

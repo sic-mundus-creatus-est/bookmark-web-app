@@ -4,7 +4,7 @@ import { navConfig } from "@/config/navConfig";
 import { Input } from "@/components/ui/input";
 import Logo from "@/components/logo";
 
-export default function DesktopNavbar() {
+export function DesktopNavbar() {
   return (
     <div className="hidden lg:flex flex-1 items-center justify-between pb-5">
       <Logo />

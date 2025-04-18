@@ -1,8 +1,9 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
-import PrivateRoute from "./PrivateRoute";
-import Home from "../pages/Home";
-import Login from "../pages/Login";
-import AppLayout from "@/components/layouts/app-layout";
+import { PrivateRoute } from "./PrivateRoute";
+import { HomePage } from "../pages/HomePage";
+import { LoginPage } from "../pages/LoginPage";
+import { AppLayout } from "@/components/layouts/app-layout";
+import { TestPage } from "@/pages/TestPage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -11,20 +12,24 @@ export const AppRouter = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <PrivateRoute component={Home} />,
+        element: <PrivateRoute component={HomePage} />,
       },
       {
         path: "info",
         element: <div></div>,
       },
+      {
+        path: "/test",
+        element: <TestPage />,
+      },
     ],
   },
   {
     path: "/login",
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: "*",
-    element: <Navigate to="/" />,
+    element: <Navigate to="/test" />,
   },
 ]);

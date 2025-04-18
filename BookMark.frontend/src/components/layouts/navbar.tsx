@@ -1,13 +1,13 @@
 import { LogIn, UserPlus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-import DesktopNavbar from "@/components/layouts/navbar-desktop";
-import MobileNavbar from "@/components/layouts/navbar-mobile";
+import { DesktopNavbar } from "@/components/layouts/navbar-desktop";
+import { MobileNavbar } from "@/components/layouts/navbar-mobile";
 import { navConfig } from "@/config/navConfig";
 
-export default function Navbar() {
+export function Navbar() {
   return (
-    <nav className="sticky top-0 bottom-0 w-full bg-border">
+    <nav className="sticky top-0 bottom-0 w-full bg-border z-50">
       <AuthRow />
 
       <div className="container mx-auto flex items-center justify-between px-4">

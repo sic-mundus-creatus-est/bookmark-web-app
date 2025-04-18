@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/lib/contexts/authContext";
 import { Button } from "@/components/ui/button";
 
-export default function Login() {
+export function LoginPage() {
   const [credentials, setCredentials] = useState({
     usernameOrEmail: "",
     password: "",

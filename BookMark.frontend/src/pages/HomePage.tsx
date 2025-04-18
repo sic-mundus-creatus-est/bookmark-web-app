@@ -5,7 +5,7 @@ import { AuthContext } from "@/lib/contexts/authContext";
 import { Button } from "@/components/ui/button";
 import { roles } from "@/config/roles";
 
-export default function Home() {
+export function HomePage() {
   const auth = useContext(AuthContext);
   const [weatherData, setWeatherData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
