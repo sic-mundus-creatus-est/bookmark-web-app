@@ -4,6 +4,7 @@ import { HomePage } from "../pages/HomePage";
 import { LoginPage } from "../pages/LoginPage";
 import { AppLayout } from "@/components/layouts/app-layout";
 import { TestPage } from "@/pages/TestPage";
+import { BookPage } from "@/pages/BookPage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -11,16 +12,20 @@ export const AppRouter = createBrowserRouter([
     element: <AppLayout />,
     children: [
       {
-        path: "",
+        path: "/",
         element: <PrivateRoute component={HomePage} />,
       },
       {
-        path: "info",
+        path: "/info",
         element: <div></div>,
       },
       {
         path: "/test",
         element: <TestPage />,
+      },
+      {
+        path: "/book/:id",
+        element: <BookPage />,
       },
     ],
   },

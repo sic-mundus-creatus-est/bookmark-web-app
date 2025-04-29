@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { RatingToStars } from "@/lib/utils/bookUtils";
 
 export interface Book {
   // TODO: all types should be moved to 'lib/types' folder
@@ -70,8 +71,8 @@ export function BookCard({ book }: BookCardProps) {
 
         {/* Rating */}
         <div className="mt-auto">
-          <div className="flex items-center mt-1 space-x-1">
-            <RatingStars rating={book.rating} />
+          <div className="flex items-center -mt-1 space-x-1">
+            <RatingToStars rating={book.rating} />
             <span className="text-sm text-gray-600">
               {book.rating.toFixed(1)}
             </span>
@@ -81,36 +82,6 @@ export function BookCard({ book }: BookCardProps) {
     </Card>
   );
 }
-
-const RatingStars = ({ rating }: { rating: number }) => {
-  // TODO: probs move this to utils or smt
-  const fullStars = Math.floor(rating);
-  const fraction = rating - fullStars;
-  const emptyStars = 5 - fullStars - (fraction > 0 ? 1 : 0);
-
-  return (
-    <div className="flex">
-      {/* full stars */}
-      {[...Array(fullStars)].map((_, i) => (
-        <span key={`full-${i}`} className="text-md text-yellow-500">
-          ★
-        </span>
-      ))}
-
-      {/* plus sign for fractions */}
-      {fraction > 0 && (
-        <span className="text-2xl font-bold text-yellow-500">⁺</span>
-      )}
-
-      {/* empty stars */}
-      {[...Array(emptyStars)].map((_, i) => (
-        <span key={`empty-${i}`} className="text-md text-gray-300">
-          ★
-        </span>
-      ))}
-    </div>
-  );
-};
 
 export function BookCardPlaceholder() {
   return (

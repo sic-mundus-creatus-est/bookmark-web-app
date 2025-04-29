@@ -73,8 +73,8 @@ const mockFetchBooks = async (page: number, limit: number) => {
 
 export function TestPage() {
   return (
-    <div className="container mx-auto py-8 px-6">
-      <h1 className="text-2xl mb-6 font-serif">TEST BOOK CATALOG:</h1>
+    <div className="container mx-auto px-6">
+      <h1 className="text-2xl mb-6 font-semibold pl-2">TEST BOOK CATALOG:</h1>
       <BookCatalog fetchBooks={mockFetchBooks} />
     </div>
   );
