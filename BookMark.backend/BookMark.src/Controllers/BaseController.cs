@@ -18,7 +18,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
     public virtual async Task<ActionResult<IEnumerable<TModel>>> GetAll()
     {
         var entities = await _repository.GetAllAsync();
-        return Ok(entities); // 200 OK
+        return Ok(entities); // 200
     }
 
 
@@ -27,11 +27,9 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
     {           
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null)
-        {
-            return NotFound(); // 404 Not Found
-        }
+            return NotFound(); // 404
 
-        return Ok(entity); // 200 OK
+        return Ok(entity); // 200
     }
 
 
@@ -39,33 +37,28 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
     public virtual async Task<ActionResult<TModel>> Create([FromBody] TCreateDTO dto)
     {           
         if (dto == null)
-        {
-            return BadRequest(); // 400 Bad Request
-        }
+            return BadRequest(); // 400
+
         TModel entity = Activator.CreateInstance<TModel>();
         entity.MapFrom(dto);
         
         var createdEntity = await _repository.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, new { message = "Book created successfully.", data = createdEntity }); // 201 Created
+        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, new { message = "Book created successfully.", data = createdEntity }); // 201
     }
 
 
-    [HttpPost("update-by-id/{id}")]
-    public virtual async Task<ActionResult<TModel>> Update([FromRoute] string id, [FromBody] TUpdateDTO newEntityData)
+    [HttpPatch("update-by-id/{id}")]
+    public virtual async Task<ActionResult<TModel>> Update([FromRoute] string id, [FromBody] TUpdateDTO updatedData)
     {           
-        if (newEntityData == null)
-        {
-            return BadRequest(); // 400 Bad Request
-        }
+        if (updatedData == null)
+            return BadRequest(); // 400
 
-        TModel? existingEntityData = await _repository.GetByIdAsync(id);
-        if (existingEntityData == null)
-        {
-            return NotFound(); // 404 Not Found
-        }
+        TModel? entityToUpdate = await _repository.GetByIdAsync(id);
+        if (entityToUpdate == null)
+            return NotFound(); // 404
 
-        var updatedEntity = await _repository.UpdateAsync(existingEntityData, newEntityData);
-        return Ok(updatedEntity); // 200 OK
+        var updatedEntity = await _repository.UpdateAsync(entityToUpdate, updatedData);
+        return Ok(updatedEntity); // 200
     }
 
 
@@ -74,12 +67,10 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
     {           
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null)
-        {
-            return NotFound(); // 404 Not Found
-        }
+            return NotFound(); // 404
 
         await _repository.DeleteAsync(entity);
-        return NoContent(); // 204 No Content
+        return NoContent(); // 204
     }
 
 }

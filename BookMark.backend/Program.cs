@@ -11,6 +11,7 @@ using BookMark.backend.Services;
 using BookMark.backend.Data;
 using BookMark.backend.Models;
 using BookMark.backend.Services.Repositories;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -38,6 +39,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddTransient<IWeatherService, WeatherService>();
+builder.Services.AddTransient<IFileService, FileService>();
 builder.Services.AddScoped<BookRepository>();
 builder.Services.AddScoped<AuthorRepository>();
 
@@ -47,7 +49,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Identity API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookMark API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -71,6 +73,7 @@ builder.Services.AddSwaggerGen(c =>
             new string[] { }
         }
     });
+    c.EnableAnnotations();
 });
 
 // ---------------------------------------------------------------------------------------
@@ -120,6 +123,21 @@ builder.Services.AddAuthentication(options =>
 // ---------------------------------------------------------------------------------------
 
 var app = builder.Build();
+
+//FILE UPLOADING-------------------------------------------------------------------
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+// mapping Uploads folder to Resources folder
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/Resources"
+});
+//FILE UPLOADING-------------------------------------------------------------------
+
 
 //CORS-----------------------------
 app.UseCors(specificOrgins);
