@@ -14,14 +14,6 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
     }
 
 
-    [HttpGet("get-all")]
-    public virtual async Task<ActionResult<IEnumerable<TModel>>> GetAll()
-    {
-        var entities = await _repository.GetAllAsync();
-        return Ok(entities); // 200
-    }
-
-
     [HttpGet("get-by-id/{id}")]
     public virtual async Task<ActionResult<TModel>> GetById([FromRoute] string id)
     {           
@@ -30,6 +22,34 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
             return NotFound(); // 404
 
         return Ok(entity); // 200
+    }
+
+
+    [HttpGet("get-all")]
+    public virtual async Task<ActionResult<IEnumerable<TModel>>> GetAll()
+    {
+        var entities = await _repository.GetAllAsync();
+        return Ok(entities); // 200
+    }
+
+
+    [HttpGet("get-constrained")]
+    public async Task<IActionResult> GetConstrained(
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] string? sortBy = null,
+        [FromQuery(Name="filters")] Dictionary<string, string>? filters = null)
+    {
+        var result = await _repository.GetConstrainedAsync(
+            pageIndex, pageSize, sortDescending, sortBy, filters);
+        
+        if(result.TotalPages == -1)
+            return BadRequest();
+        else if(result.TotalPages == -5)
+            return StatusCode(StatusCodes.Status500InternalServerError);
+
+        return Ok(result);
     }
 
 

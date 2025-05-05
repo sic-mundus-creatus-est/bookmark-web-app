@@ -9,6 +9,16 @@ namespace BookMark.backend.Services.Repositories;
 public class BookRepository : BaseRepository<Book>
 {
     protected DbSet<BookAuthor> _bookAuthorDbSet { get; set; }
+
+    protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
+                                                                        {
+                                                                            nameof(Book.Title), 
+                                                                            nameof(Book.OriginalLanguage), 
+                                                                            nameof(Book.PublicationYear),
+                                                                            nameof(Book.PageCount),
+                                                                            nameof(Book.Genre),
+                                                                            nameof(Book.Description)
+                                                                        };
     
     public BookRepository(DataContext context) : base(context)
     {
@@ -21,9 +31,7 @@ public class BookRepository : BaseRepository<Book>
         await _dbSet.AddAsync(newBook);
 
         if (newBook.BookAuthors?.Any() == true)
-        {
             await _bookAuthorDbSet.AddRangeAsync(newBook.BookAuthors);
-        }
 
         await SaveChangesAsync();
 
