@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace BookMark.backend.Models;
+namespace BookMark.Models;
 
 public abstract class BaseModel
 {

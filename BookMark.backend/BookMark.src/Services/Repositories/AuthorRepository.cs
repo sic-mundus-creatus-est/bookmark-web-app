@@ -1,11 +1,11 @@
-using BookMark.backend.Data;
-using BookMark.backend.Models;
+using BookMark.Data;
+using BookMark.Models;
 
-namespace BookMark.backend.Services.Repositories;
+namespace BookMark.Services.Repositories;
 
 public class AuthorRepository : BaseRepository<Author>
 {
-    public AuthorRepository(DataContext context) : base(context) { }
+    public AuthorRepository(AppDbContext context) : base(context) { }
 
     protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
                                                                         {

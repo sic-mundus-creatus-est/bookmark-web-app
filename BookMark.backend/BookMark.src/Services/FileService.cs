@@ -1,7 +1,6 @@
 public interface IFileService
 {
-    Task<string> SaveFileAsync(IFormFile file, string[] allowedFileExtensions);
-    bool ValidateFileSize(IFormFile file, long maxSizeBytes);
+    Task<string> SaveFileAsync(IFormFile file, string[] allowedFileExtensions, long maxFileSize);
     void DeleteFile(string fileNameWithExtension);
 }
 
@@ -12,6 +11,8 @@ public class FileService : IFileService
     private const string UPLOADS_FOLDER_NAME = "Uploads";
     private readonly string uploadsPath;
 
+    private const long Bytes = 1024L * 1024; // Bytes in a MB
+
     public FileService(IWebHostEnvironment environment)
     {
         uploadsPath = Path.Combine(environment.ContentRootPath, UPLOADS_FOLDER_NAME);
@@ -20,8 +21,13 @@ public class FileService : IFileService
     }
     
 
-    public async Task<string> SaveFileAsync(IFormFile file, string[] allowedFileExtensions)
+    public async Task<string> SaveFileAsync(IFormFile file, string[] allowedFileExtensions, long maxFileSizeMegaBytes)
     {
+        if (file == null || file.Length == 0)
+            throw new ArgumentException($"The uploaded file '{file?.FileName}' is empty! Unable to save it on the server.", nameof(file));
+        if(file.Length > maxFileSizeMegaBytes*Bytes)
+            throw new ArgumentException($"The uploaded file '{file?.FileName}' exceedes the max file size of {maxFileSizeMegaBytes}MB! Unable to save it on the server.", nameof(file));
+
         ValidateFileExtension(file.FileName, allowedFileExtensions);
 
         EnsureDirectoryExists(uploadsPath);
@@ -34,13 +40,6 @@ public class FileService : IFileService
     }
 
 
-    public bool ValidateFileSize(IFormFile file, long maxSizeBytes)
-    {
-        if (file == null) return false;
-        return file.Length <= maxSizeBytes;
-    }
-
-
     public void DeleteFile(string fileNameWithExtension)
     {
         if (string.IsNullOrEmpty(fileNameWithExtension))
@@ -49,7 +48,7 @@ public class FileService : IFileService
         var filePath = GetFilePath(fileNameWithExtension);
 
         if (!File.Exists(filePath))
-            throw new FileNotFoundException("File not found!", filePath);
+            throw new FileNotFoundException("File not found!", fileNameWithExtension);
 
         File.Delete(filePath);
     }
@@ -63,17 +62,17 @@ public class FileService : IFileService
                 Directory.CreateDirectory(path);
         }
 
+        private static void ValidateFileExtension(string fileName, string[] allowedExtensions)
+        {
+            var ext = Path.GetExtension(fileName);
+            if (!allowedExtensions.Contains(ext))
+                throw new ArgumentException($"Invalid file extension. Allowed: {string.Join(", ", allowedExtensions)}");
+        }
+
         private static string GenerateUniqueFileName(string originalFileName)
         {
             var ext = Path.GetExtension(originalFileName);
             return $"{Guid.NewGuid()}{ext}";
-        }
-
-        private void ValidateFileExtension(string fileName, string[] allowedExtensions)
-        {
-            var ext = Path.GetExtension(fileName);
-            if (!allowedExtensions.Contains(ext)) // TODO: Start adding try and catch and propagate throws...
-                throw new ArgumentException($"Invalid file extension. Allowed: {string.Join(", ", allowedExtensions)}");
         }
 
         private static async Task SaveFileToDisk(IFormFile file, string fullPath)

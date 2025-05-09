@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-using BookMark.backend.Models.Roles;
-using BookMark.backend.Models;
-using BookMark.backend.DTOs.Auth;
+using BookMark.Models.Roles;
+using BookMark.Models;
+using BookMark.DTOs.Auth;
 
-namespace BookMark.backend.Controllers;
+namespace BookMark.Controllers;
 
 [ApiController]
 [Route("api/auth")]

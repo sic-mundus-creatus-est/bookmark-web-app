@@ -1,30 +1,31 @@
-using BookMark.backend.Data;
-using BookMark.backend.Models;
+using BookMark.Data;
+using BookMark.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace BookMark.backend.Services.Repositories;
+namespace BookMark.Services.Repositories;
 
 public interface IBaseRepository<TModel>
 {
+    Task<TModel> CreateAsync(TModel entityToCreate);
     Task<TModel?> GetByIdAsync(string id);
+    Task<TModel?> GetTrackedByIdAsync(string id);
     Task<IEnumerable<TModel>> GetAllAsync();
     Task<PaginatedList<TModel>> GetConstrainedAsync(int pageIndex,
-                                                        int pageSize,
-                                                        bool sortDescending = false,
-                                                        string? sortBy = null,
-                                                        Dictionary<string, string>? filters = null);
-    Task<TModel> CreateAsync(TModel entityData);
-    Task<TModel?> UpdateAsync(TModel existingEntity, object entityData);
+                                                    int pageSize,
+                                                    bool sortDescending = false,
+                                                    string? sortBy = null,
+                                                    Dictionary<string, string>? filters = null);
+    Task<TModel?> UpdateAsync(TModel entityToUpdate, object updateData);
     Task DeleteAsync(TModel entity);
 }
 
 public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : BaseModel
 {
-    protected readonly DataContext _context;
+    protected readonly AppDbContext _context;
     protected DbSet<TModel> _dbSet { get; set; }
 
     protected abstract IReadOnlySet<string> AllowedFilterProps { get; }
@@ -41,17 +42,29 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
         
 
-    public BaseRepository(DataContext context)
+    public BaseRepository(AppDbContext context)
     {
         _context = context;
         _dbSet = context.Set<TModel>();
     }
 
 
+    public virtual async Task<TModel> CreateAsync(TModel entityToCreate)
+    {
+        await _dbSet.AddAsync(entityToCreate);
+        await SaveChangesAsync();
+
+        return entityToCreate;
+    }
+
     public virtual async Task<TModel?> GetByIdAsync(string id)
     {
-        var entity = await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
-        return entity;
+        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public virtual async Task<TModel?> GetTrackedByIdAsync(string id)
+    {
+        return await _dbSet.FirstOrDefaultAsync(b => b.Id == id);
     }
 
     public virtual async Task<IEnumerable<TModel>> GetAllAsync()
@@ -75,38 +88,39 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
             var match = Regex.Match(key, @"^([a-zA-Z]+)(==|>=|<=|>|<|~=)$");
             if (!match.Success)
-                return new PaginatedList<TModel>([], pageIndex, -1);
+                throw new ArgumentException($"Invalid filter key '{key}'. Keys must end with a comparison operator (==, >=, <=, >, <, ~=).", nameof(filters));
 
             string propName = match.Groups[1].Value;
             string op = match.Groups[2].Value;
 
             if (!FilterPropTypes.ContainsKey(propName))
-                return new PaginatedList<TModel>([], pageIndex, -1);
+                throw new ArgumentException($"Invalid filter key '{key}'. Allowed keys are: {string.Join(", ", FilterPropTypes.Keys)}.", nameof(filters));
 
+            object typedValue;
             try
             {
-                object typedValue = Convert.ChangeType(value, FilterPropTypes[propName]);
-
-                string predicate;
-                object[] values;
-
-                if (op == "~=" && FilterPropTypes[propName] == typeof(string))
-                {
-                    predicate = $"{propName}.Contains(@0)";
-                    values = [typedValue];
-                }
-                else
-                {
-                    predicate = $"{propName} {op} @0";
-                    values = [typedValue];
-                }
-
-                query = query.Where(predicate, values);
+                typedValue = Convert.ChangeType(value, FilterPropTypes[propName]);
             }
-            catch
+            catch (Exception ex) when (ex is InvalidCastException || ex is FormatException || ex is OverflowException)
             {
-                return new PaginatedList<TModel>([], pageIndex, -5);
+                throw new FormatException($"Invalid filter value format for key '{key}'. Expected a value in the format of type '{FilterPropTypes[propName].Name}'.");
             }
+
+            string predicate;
+            object[] values;
+
+            if (op == "~=" && FilterPropTypes[propName] == typeof(string))
+            {
+                predicate = $"{propName}.Contains(@0)";
+                values = [typedValue];
+            }
+            else
+            {
+                predicate = $"{propName} {op} @0";
+                values = [typedValue];
+            }
+
+            query = query.Where(predicate, values);
         }
 
         var direction = sortDescending ? "descending" : "ascending";
@@ -115,8 +129,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         else if (FilterPropTypes.ContainsKey(sortBy))
             query = query.OrderBy( $"{sortBy} {direction}" );
         else
-            return new PaginatedList<TModel>([], pageIndex, -1);
-        
+            throw new ArgumentException($"Invalid sorting parameter '{sortBy}'. Valid options are: {string.Join(", ", FilterPropTypes.Keys)}.", nameof(sortBy));
 
         var count = await query.CountAsync();
         var entities = await query
@@ -129,24 +142,16 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     }
 
 
-    public virtual async Task<TModel> CreateAsync(TModel newEntity)
+    public virtual async Task<TModel?> UpdateAsync(TModel entityToUpdate, object updateData)
     {
-        await _dbSet.AddAsync(newEntity);
-        await SaveChangesAsync();
-
-        return newEntity;
-    }
-
-    public virtual async Task<TModel?> UpdateAsync(TModel dbEntity, object newEntityData)
-    {
-        var entry = _context.Entry(dbEntity);
+        var entry = _context.Entry(entityToUpdate);
         var keyProperty = _context.Model.FindEntityType(typeof(TModel))?.FindPrimaryKey()?.Properties.FirstOrDefault()?.Name;
 
-        foreach (var property in newEntityData.GetType().GetProperties())
+        foreach (var property in updateData.GetType().GetProperties())
         {
             if (property.Name == keyProperty) continue; // Skips the primary key (Id)
 
-            var newValue = property.GetValue(newEntityData);
+            var newValue = property.GetValue(updateData);
             if (newValue != null)
             {
                 entry.Property(property.Name).CurrentValue = newValue;
@@ -155,7 +160,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         }
 
         await SaveChangesAsync();
-        return dbEntity;
+        return entityToUpdate;
     }
 
     public virtual async Task DeleteAsync(TModel entity)
@@ -173,10 +178,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
-        }
-        finally
-        {
-            _context.ChangeTracker.Clear();
+            throw;
         }
     }
 

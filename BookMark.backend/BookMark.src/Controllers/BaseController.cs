@@ -1,25 +1,38 @@
-using BookMark.backend.Models;
-using BookMark.backend.Services.Repositories;
+using BookMark.Models;
+using BookMark.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookMark.backend.Controllers;
+namespace BookMark.Controllers;
 
 [ApiController]
 public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase where TModel : BaseModel
 {
     protected readonly IBaseRepository<TModel> _repository;
     public BaseController(IBaseRepository<TModel> repository) 
-    { 
+    {
         _repository = repository;
     }
 
 
-    [HttpGet("get-by-id/{id}")]
-    public virtual async Task<ActionResult<TModel>> GetById([FromRoute] string id)
+    [HttpPost("create")]
+    public virtual async Task<ActionResult<TModel>> Create([FromBody] TCreateDTO creationData)
+    {
+        TModel entityToCreate = Activator.CreateInstance<TModel>();
+        entityToCreate.MapFrom(creationData!);
+
+        var createdEntity = await _repository.CreateAsync(entityToCreate);
+        return CreatedAtAction(nameof(Get), new { id = entityToCreate.Id }, createdEntity); // 201
+    }
+
+
+    [HttpGet("get/{id}")]
+    public virtual async Task<ActionResult<TModel>> Get([FromRoute] string id)
     {           
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null)
-            return NotFound(); // 404
+            return Problem( title: "Not Found",
+                            detail: $"No {typeof(TModel).Name} with ID '{id}' was found.",
+                            statusCode: StatusCodes.Status404NotFound );
 
         return Ok(entity); // 200
     }
@@ -43,51 +56,33 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO> : ControllerBase whe
     {
         var result = await _repository.GetConstrainedAsync(
             pageIndex, pageSize, sortDescending, sortBy, filters);
-        
-        if(result.TotalPages == -1)
-            return BadRequest();
-        else if(result.TotalPages == -5)
-            return StatusCode(StatusCodes.Status500InternalServerError);
 
         return Ok(result);
     }
 
 
-    [HttpPost("create")]
-    public virtual async Task<ActionResult<TModel>> Create([FromBody] TCreateDTO dto)
-    {           
-        if (dto == null)
-            return BadRequest(); // 400
-
-        TModel entity = Activator.CreateInstance<TModel>();
-        entity.MapFrom(dto);
-        
-        var createdEntity = await _repository.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, new { message = "Book created successfully.", data = createdEntity }); // 201
-    }
-
-
-    [HttpPatch("update-by-id/{id}")]
-    public virtual async Task<ActionResult<TModel>> Update([FromRoute] string id, [FromBody] TUpdateDTO updatedData)
-    {           
-        if (updatedData == null)
-            return BadRequest(); // 400
-
+    [HttpPatch("update/{id}")]
+    public virtual async Task<ActionResult<TModel>> Update([FromRoute] string id, [FromBody] TUpdateDTO updateData)
+    {
         TModel? entityToUpdate = await _repository.GetByIdAsync(id);
         if (entityToUpdate == null)
-            return NotFound(); // 404
+            return Problem( title: "Not Found",
+                            detail: $"No {nameof(TModel)} with ID '{id}' was found. Nothing to update.",
+                            statusCode: StatusCodes.Status404NotFound );
 
-        var updatedEntity = await _repository.UpdateAsync(entityToUpdate, updatedData);
+        var updatedEntity = await _repository.UpdateAsync(entityToUpdate, updateData!);
         return Ok(updatedEntity); // 200
     }
 
 
-    [HttpDelete("delete-by-id/{id}")]
-    public virtual async Task<ActionResult> DeleteById([FromRoute] string id)
+    [HttpDelete("delete/{id}")]
+    public virtual async Task<ActionResult> Delete([FromRoute] string id)
     {           
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _repository.GetTrackedByIdAsync(id);
         if (entity == null)
-            return NotFound(); // 404
+            return Problem( title: "Not Found",
+                            detail: $"No {nameof(TModel)} with ID '{id}' was found. It may have been deleted or never existed.",
+                            statusCode: StatusCodes.Status404NotFound );
 
         await _repository.DeleteAsync(entity);
         return NoContent(); // 204

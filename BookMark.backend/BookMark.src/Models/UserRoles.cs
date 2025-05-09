@@ -1,4 +1,4 @@
-namespace BookMark.backend.Models.Roles;
+namespace BookMark.Models.Roles;
 
 public static class UserRoles
 {

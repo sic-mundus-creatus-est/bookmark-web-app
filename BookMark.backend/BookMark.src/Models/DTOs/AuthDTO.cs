@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace BookMark.backend.DTOs.Auth;
+namespace BookMark.DTOs.Auth;
 
 public class RegisterUserDTO
 {

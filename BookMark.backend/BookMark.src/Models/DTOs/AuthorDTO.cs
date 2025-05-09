@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+namespace BookMark.DTOs;
+
 public class AuthorCreateDTO
 {
     [Required]

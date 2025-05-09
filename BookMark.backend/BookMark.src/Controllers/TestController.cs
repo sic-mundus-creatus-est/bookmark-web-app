@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using BookMark.backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using BookMark.backend.Models.Roles;
+using BookMark.Models.Roles;
 
-namespace BookMark.backend.Controllers;
+namespace BookMark.Controllers;
 
 [ApiController]
 [Route("api/test")]

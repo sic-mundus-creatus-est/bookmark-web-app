@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
-namespace BookMark.backend.Models.Relationships;
+namespace BookMark.Models.Relationships;
 
 public enum BookAuthorRole
 {

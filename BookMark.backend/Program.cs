@@ -6,17 +6,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-using BookMark.backend.Interfaces;
-using BookMark.backend.Services;
-using BookMark.backend.Data;
-using BookMark.backend.Models;
-using BookMark.backend.Services.Repositories;
+using BookMark.Services;
+using BookMark.Data;
+using BookMark.Models;
+using BookMark.Services.Repositories;
 using Microsoft.Extensions.FileProviders;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
-builder.Services.AddDbContext<DataContext>(options => {
+builder.Services.AddDbContext<AppDbContext>(options => {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.EnableSensitiveDataLogging(); } );
 
@@ -38,12 +39,26 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddTransient<IWeatherService, WeatherService>();
 builder.Services.AddTransient<IFileService, FileService>();
 builder.Services.AddScoped<BookRepository>();
 builder.Services.AddScoped<AuthorRepository>();
 
 builder.Services.AddControllers();
+
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Instance =
+            $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
+
+        context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
+
+        Activity? activity = context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
+        context.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
+    };
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -79,7 +94,7 @@ builder.Services.AddSwaggerGen(c =>
 // ---------------------------------------------------------------------------------------
 // Identity Setup
 builder.Services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<DataContext>()
+                .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>
@@ -123,6 +138,10 @@ builder.Services.AddAuthentication(options =>
 // ---------------------------------------------------------------------------------------
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+
+app.UseStatusCodePages();
 
 //FILE UPLOADING-------------------------------------------------------------------
 var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");

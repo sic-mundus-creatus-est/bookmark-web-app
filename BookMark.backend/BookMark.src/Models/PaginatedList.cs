@@ -1,4 +1,4 @@
-namespace BookMark.backend.Models;
+namespace BookMark.Models;
 
 public class PaginatedList<T>
 {

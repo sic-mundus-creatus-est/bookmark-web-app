@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace BookMark.backend.Models;
+namespace BookMark.Models;
 public class User : IdentityUser
 {
     [Required]

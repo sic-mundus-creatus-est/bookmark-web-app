@@ -1,7 +1,9 @@
-using BookMark.backend.Controllers;
-using BookMark.backend.Models;
-using BookMark.backend.Services.Repositories;
+using BookMark.Models;
+using BookMark.Services.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using BookMark.DTOs;
+
+namespace BookMark.Controllers;
 
 [ApiController]
 [Route("api/authors")]

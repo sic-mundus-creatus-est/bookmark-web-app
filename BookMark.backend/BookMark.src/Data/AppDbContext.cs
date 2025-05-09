@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-using BookMark.backend.Models;
-using BookMark.backend.Models.Relationships;
+using BookMark.Models;
+using BookMark.Models.Relationships;
 
-namespace BookMark.backend.Data;
-public class DataContext : IdentityDbContext<User>
+namespace BookMark.Data;
+public class AppDbContext : IdentityDbContext<User>
 {
-    public DataContext(DbContextOptions<DataContext> options)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)

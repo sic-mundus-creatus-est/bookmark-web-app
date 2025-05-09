@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using BookMark.backend.Models.Relationships;
+using BookMark.Models.Relationships;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace BookMark.backend.DTOs;
+namespace BookMark.DTOs;
 
 public class BookCreateDTO
 {
@@ -11,9 +11,9 @@ public class BookCreateDTO
     public string Title { get; set; } = "";
 
     [Required]
-    [MaxLength(16)]
+    [Length(1, Controllers.BookController.MAX_BOOK_AUTHORS)]
     [SwaggerSchema("Array input with [FromForm] doesn't work in Swagger, test with Postman.")]
-    public List<BookAuthorDTO> AuthorsWithRoles { get; set; } = null!;
+    public List<AuthorWithRoleDTO> AuthorsWithRoles { get; set; } = null!;
 
     [Required]
     [MaxLength(255)]
@@ -56,7 +56,7 @@ public class BookUpdateDTO
     public string? Description { get; set; }
 }
 
-public class BookAuthorDTO
+public class AuthorWithRoleDTO
 {
     [Required]
     public string AuthorId { get; set; } = null!;

@@ -1,10 +1,10 @@
-using BookMark.backend.Data;
-using BookMark.backend.DTOs;
-using BookMark.backend.Models;
-using BookMark.backend.Models.Relationships;
+using BookMark.Data;
+using BookMark.Models;
+using BookMark.Models.Relationships;
 using Microsoft.EntityFrameworkCore;
+using static BookMark.Controllers.BookController;
 
-namespace BookMark.backend.Services.Repositories;
+namespace BookMark.Services.Repositories;
 
 public class BookRepository : BaseRepository<Book>
 {
@@ -20,7 +20,7 @@ public class BookRepository : BaseRepository<Book>
                                                                             nameof(Book.Description)
                                                                         };
     
-    public BookRepository(DataContext context) : base(context)
+    public BookRepository(AppDbContext context) : base(context)
     {
         _bookAuthorDbSet = context.Set<BookAuthor>();
     }
@@ -39,48 +39,57 @@ public class BookRepository : BaseRepository<Book>
     }
 
 
-    public async Task AddBookAuthorsAsync(Book book, List<BookAuthorDTO> authorsWithRoles)
+    public async Task AddBookAuthorsAsync(List<BookAuthor> bookAuthors)
     {
-        var existingBookAuthors = await _bookAuthorDbSet
-        .Where(ba => ba.BookId == book.Id)
-        .Select(ba => ba.AuthorId)
-        .ToListAsync();
+        var bookId = bookAuthors.First().BookId;
 
-        var newBookAuthors = authorsWithRoles
-            .GroupBy(ba => ba.AuthorId)
-            .Select(g => g.First())
-            .Where(ba => !existingBookAuthors.Contains(ba.AuthorId))
-            .Select(ba => new BookAuthor
-            {
-                Book = book,
-                BookId = book.Id,
-                AuthorId = ba.AuthorId,
-                Role = ba.Role
-            })
-            .ToList();
+        int existingBookAuthorsCount = await _bookAuthorDbSet.CountAsync(ba => ba.BookId == bookId);
 
-        if (newBookAuthors.Any())
+        var newBookAuthors = new List<BookAuthor>();
+        foreach (var ba in bookAuthors)
         {
-            _bookAuthorDbSet.AddRange(newBookAuthors);
-            await SaveChangesAsync();
+            bool exists = await _bookAuthorDbSet
+                                .AnyAsync( existing => 
+                        existing.BookId == ba.BookId && 
+                    existing.AuthorId == ba.AuthorId );
+
+            if (!exists)
+                newBookAuthors.Add(ba);
         }
+
+        if (newBookAuthors.Count == 0)
+            throw new InvalidOperationException("All specified authors are already associated with this book.");
+
+        if (newBookAuthors.Count + existingBookAuthorsCount > MAX_BOOK_AUTHORS)
+            throw new ArgumentException($"A book cannot have more than {MAX_BOOK_AUTHORS} authors." +
+                                                    " The provided author(s) would exceed this limit.");
+
+        _bookAuthorDbSet.AddRange(newBookAuthors);
+        await SaveChangesAsync();
     }
 
 
-    public async Task<bool> RemoveBookAuthorsAsync(string bookId, List<string> authorIds)
+    public async Task RemoveBookAuthorsAsync(string bookId, List<string> authorIds)
     {
-        var bookAuthorsToRemove = await _bookAuthorDbSet
-            .Where(ba => ba.BookId == bookId && authorIds.Contains(ba.AuthorId))
-            .ToListAsync();
+        var totalBookAuthors = await _bookAuthorDbSet.CountAsync(ba => ba.BookId == bookId);
 
-        if (bookAuthorsToRemove.Any())
-        {
-            _bookAuthorDbSet.RemoveRange(bookAuthorsToRemove);
-            await SaveChangesAsync();
-            return true;
-        }
+        if (totalBookAuthors - authorIds.Count < 1)
+            throw new ArgumentException("Too many authors provided. A book must retain at least one associated author. " +
+                                        $"Currently, it has {totalBookAuthors} authors, so only {totalBookAuthors - 1} can be removed.", nameof(authorIds));
 
-        return false; // No relationships found
+        var authorsToRemove = await _bookAuthorDbSet.AsNoTracking()
+                                    .Where(ba => ba.BookId == bookId && authorIds.Contains(ba.AuthorId))
+                                    .ToListAsync();
+
+        if (authorsToRemove.Count == 0)
+            throw new InvalidOperationException("No matching authors found to remove, or they have already been removed from this book.");
+        
+        if (authorsToRemove.Count != authorIds.Count)
+            throw new ArgumentException("One or more of the provided author IDs are not associated with this book." +
+                                                        " Please verify that all IDs are valid.", nameof(authorIds));
+
+        _bookAuthorDbSet.RemoveRange(authorsToRemove);
+        await _context.SaveChangesAsync();
     }
 
 }

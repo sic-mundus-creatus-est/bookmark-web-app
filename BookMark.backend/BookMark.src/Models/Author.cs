@@ -1,7 +1,8 @@
 using System.Text.Json.Serialization;
-using BookMark.backend.Models.Relationships;
+using BookMark.DTOs;
+using BookMark.Models.Relationships;
 
-namespace BookMark.backend.Models;
+namespace BookMark.Models;
 
 public class Author : BaseModel
 {
