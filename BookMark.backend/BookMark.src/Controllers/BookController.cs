@@ -9,7 +9,7 @@ namespace BookMark.Controllers;
 
 [ApiController]
 [Route("api/books")]
-public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO>
+public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO, BookResponseDTO>
 {
     protected readonly AuthorRepository _authorRepository;
     protected readonly IFileService _fileService;
@@ -26,7 +26,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO>
 
 
     [HttpPost("create")]
-    public override async Task<ActionResult<Book>> Create([FromForm] BookCreateDTO creationData)
+    public override async Task<ActionResult<BookResponseDTO>> Create([FromForm] BookCreateDTO creationData)
     {
         var bookToCreate = new Book();
         bookToCreate.MapFrom(creationData);
@@ -39,12 +39,16 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO>
         }
         
         var createdBook = await _repository.CreateAsync(bookToCreate);
-        return CreatedAtAction(nameof(Get), new { id = bookToCreate.Id }, createdBook);
+
+        var response = new BookResponseDTO();
+        createdBook.MapTo(response);
+
+        return CreatedAtAction(nameof(Get), new { id = bookToCreate.Id }, response);
     }
 
 
     [HttpPost("{id}/add-authors")]
-    public async Task<IActionResult> AddAuthors([FromRoute] string id, [FromBody] List<AuthorWithRoleDTO> authorsWithRoles)
+    public async Task<IActionResult> AddAuthors([FromRoute] string id, [FromBody] List<BookAddAuthorsDTO> authorsWithRoles)
     {
         var book = await _repository.GetTrackedByIdAsync(id);
         if (book == null)

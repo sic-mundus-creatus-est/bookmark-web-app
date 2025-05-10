@@ -42,6 +42,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddTransient<IFileService, FileService>();
 builder.Services.AddScoped<BookRepository>();
 builder.Services.AddScoped<AuthorRepository>();
+builder.Services.AddScoped<UserRepository>();
 
 builder.Services.AddControllers();
 
@@ -102,7 +103,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     // Default User settings.
     options.User.AllowedUserNameCharacters =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-    options.User.RequireUniqueEmail = false;
+    options.User.RequireUniqueEmail = true;
 
     // Default Password settings.
     options.Password.RequireDigit = true;

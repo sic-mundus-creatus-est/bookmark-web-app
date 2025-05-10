@@ -14,7 +14,7 @@ public interface IBaseRepository<TModel>
     Task<TModel?> GetByIdAsync(string id);
     Task<TModel?> GetTrackedByIdAsync(string id);
     Task<IEnumerable<TModel>> GetAllAsync();
-    Task<PaginatedList<TModel>> GetConstrainedAsync(int pageIndex,
+    Task<Page<TModel>> GetConstrainedAsync(int pageIndex,
                                                     int pageSize,
                                                     bool sortDescending = false,
                                                     string? sortBy = null,
@@ -23,7 +23,7 @@ public interface IBaseRepository<TModel>
     Task DeleteAsync(TModel entity);
 }
 
-public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : BaseModel
+public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : class, IBaseModel
 {
     protected readonly AppDbContext _context;
     protected DbSet<TModel> _dbSet { get; set; }
@@ -73,11 +73,11 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     }
 
 
-    public async Task<PaginatedList<TModel>> GetConstrainedAsync( int pageIndex,
-                                                                    int pageSize,
-                                                                    bool sortDescending = false,
-                                                                    string? sortBy = null,
-                                                                    Dictionary<string, string>? filters = null ) {
+    public async Task<Page<TModel>> GetConstrainedAsync( int pageIndex,
+                                                            int pageSize,
+                                                            bool sortDescending = false,
+                                                            string? sortBy = null,
+                                                            Dictionary<string, string>? filters = null ) {
         var query = _dbSet.AsNoTracking().AsQueryable();
 
         if (!filters.IsNullOrEmpty())
@@ -132,13 +132,21 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
             throw new ArgumentException($"Invalid sorting parameter '{sortBy}'. Valid options are: {string.Join(", ", FilterPropTypes.Keys)}.", nameof(sortBy));
 
         var count = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(count / (double)pageSize);
+
+        
+        if (pageIndex < 1 || (totalPages > 0 && pageIndex > totalPages))
+        {
+            throw new ArgumentException($"You requested page {pageIndex}, but there are only {totalPages} page(s) available with the given constraints.", nameof(pageIndex));
+        }
+
         var entities = await query
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        var totalPages = (int)Math.Ceiling(count / (double)pageSize);
-        return new PaginatedList<TModel>(entities, pageIndex, totalPages);
+
+        return new Page<TModel>(entities, pageIndex, totalPages);
     }
 
 

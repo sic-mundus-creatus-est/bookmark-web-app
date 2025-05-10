@@ -8,7 +8,7 @@ namespace BookMark.Controllers.Utils;
 
 public static class BookUtils
 {
-    public static async Task<List<BookAuthor>> AssembleBookAuthors(Book book, List<AuthorWithRoleDTO> authorsWithRoles, IBaseRepository<Author> authorRepository)
+    public static async Task<List<BookAuthor>> AssembleBookAuthors(Book book, List<BookAddAuthorsDTO> authorsWithRoles, IBaseRepository<Author> authorRepository)
     {// used during creation
         var bookAuthors = new List<BookAuthor>();
         

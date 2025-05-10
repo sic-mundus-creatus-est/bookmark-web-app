@@ -1,6 +1,6 @@
 namespace BookMark.Models;
 
-public class PaginatedList<T>
+public class Page<T>
 {
     public List<T>? Items { get; }
     public int PageIndex { get; }
@@ -8,7 +8,7 @@ public class PaginatedList<T>
     public bool HasPreviousPage => PageIndex > 1;
     public bool HasNextPage => PageIndex < TotalPages;
 
-    public PaginatedList(List<T> items, int pageIndex, int totalPages)
+    public Page(List<T> items, int pageIndex, int totalPages)
     {
         Items = items;
         PageIndex = pageIndex;

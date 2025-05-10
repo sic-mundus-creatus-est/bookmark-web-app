@@ -13,7 +13,7 @@ public class BookCreateDTO
     [Required]
     [Length(1, Controllers.BookController.MAX_BOOK_AUTHORS)]
     [SwaggerSchema("Array input with [FromForm] doesn't work in Swagger, test with Postman.")]
-    public List<AuthorWithRoleDTO> AuthorsWithRoles { get; set; } = null!;
+    public List<BookAddAuthorsDTO> AuthorsWithRoles { get; set; } = null!;
 
     [Required]
     [MaxLength(255)]
@@ -56,10 +56,22 @@ public class BookUpdateDTO
     public string? Description { get; set; }
 }
 
-public class AuthorWithRoleDTO
+public class BookAddAuthorsDTO
 {
     [Required]
     public string AuthorId { get; set; } = null!;
     [Required]
     public BookAuthorRole Role { get; set; }
+}
+
+public class BookResponseDTO
+{
+    public string Id { get; set; } = null!;
+    public string Title { get; set; } = null!;
+    public string OriginalLanguage {get; set; } = null!;
+    public int PageCount { get; set; }
+    public int PublicationYear { get; set; } 
+    public string? Genre { get; set; }
+    public string? Description { get; set; }
+    public string? CoverImage { get; set; }
 }

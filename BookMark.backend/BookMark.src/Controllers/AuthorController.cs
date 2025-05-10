@@ -7,7 +7,7 @@ namespace BookMark.Controllers;
 
 [ApiController]
 [Route("api/authors")]
-public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUpdateDTO>
+public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUpdateDTO, AuthorResponseDTO>
 {
     public AuthorController(AuthorRepository repository) : base(repository) { }
 

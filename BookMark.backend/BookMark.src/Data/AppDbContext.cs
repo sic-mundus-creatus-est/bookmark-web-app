@@ -32,7 +32,7 @@ public class AppDbContext : IdentityDbContext<User>
 
     public override int SaveChanges()
     {
-        foreach (var entry in ChangeTracker.Entries<BaseModel>())
+        foreach (var entry in ChangeTracker.Entries<IBaseModel>())
         {
             if (entry.State == EntityState.Modified)
             {
@@ -45,7 +45,7 @@ public class AppDbContext : IdentityDbContext<User>
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var entry in ChangeTracker.Entries<BaseModel>())
+        foreach (var entry in ChangeTracker.Entries<IBaseModel>())
         {
             if (entry.State == EntityState.Modified)
             {
