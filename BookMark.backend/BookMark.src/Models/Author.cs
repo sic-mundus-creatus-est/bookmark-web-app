@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using BookMark.DTOs;
 using BookMark.Models.Relationships;
 
 namespace BookMark.Models;
 
-public class Author : IBaseModel
+public class Author : IModel
 {
     [Key]
     public string Id { get; private set; }
@@ -16,14 +15,12 @@ public class Author : IBaseModel
 
     public string? Career { get; set; }
 
-    [JsonIgnore]
-    public IList<BookAuthor>? BookAuthors { get; set; }
-
 // --------------------------------------------------------
-    [JsonIgnore]
     public DateTime CreatedAt { get; private set; }
-    [JsonIgnore]
     public DateTime UpdatedAt { get; set; }
+// --------------------------------------------------------
+// --------------------------------------------------------
+    public IList<BookAuthor>? BookAuthors { get; set; }
 // --------------------------------------------------------
 
     public Author()

@@ -1,6 +1,6 @@
 namespace BookMark.Models;
 
-public interface IBaseModel
+public interface IModel
 {
     string Id { get; }
     DateTime CreatedAt { get; }

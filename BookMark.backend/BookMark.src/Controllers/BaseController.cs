@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookMark.Controllers;
 
 [ApiController]
-public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : ControllerBase where TModel : IBaseModel
+public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : ControllerBase where TModel : IModel
 {
     protected readonly IBaseRepository<TModel> _repository;
     public BaseController(IBaseRepository<TModel> repository) 

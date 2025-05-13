@@ -1,9 +1,8 @@
-using System.Text.Json.Serialization;
 using BookMark.DTOs;
 using Microsoft.AspNetCore.Identity;
 
 namespace BookMark.Models;
-public class User : IdentityUser, IBaseModel
+public class User : IdentityUser, IModel
 {
     [PersonalData]
     public string FirstName { get; set; } = null!;
@@ -15,9 +14,7 @@ public class User : IdentityUser, IBaseModel
     public string? Country { get; set; }
 
 // --------------------------------------------------------
-    [JsonIgnore]
     public DateTime CreatedAt { get; private set; }
-    [JsonIgnore]
     public DateTime UpdatedAt { get; set; }
 // --------------------------------------------------------
 

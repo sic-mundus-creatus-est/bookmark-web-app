@@ -59,8 +59,11 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
 
 
         await _userManager.AddToRoleAsync(userToCreate, UserRoles.RegularUser);
+        
+        var response = new UserResponseDTO();
+        userToCreate.MapTo(response);
 
-        return Ok(new { Status = "Success", Message = "User created successfully!" });
+        return CreatedAtAction(nameof(Get), new { id = userToCreate.Id }, response);
     }
 
 

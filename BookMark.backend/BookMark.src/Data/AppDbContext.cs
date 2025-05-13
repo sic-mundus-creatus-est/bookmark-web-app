@@ -28,11 +28,19 @@ public class AppDbContext : IdentityDbContext<User>
             .OnDelete(DeleteBehavior.Cascade);
         // Explicit configuration of the join table name
         modelBuilder.Entity<BookAuthor>().ToTable("BookAuthors");
+
+        modelBuilder.Entity<Book>()
+        .Navigation(b => b.BookAuthors)
+        .AutoInclude();
+
+        modelBuilder.Entity<BookAuthor>()
+            .Navigation(ba => ba.Author)
+            .AutoInclude();
     }
 
     public override int SaveChanges()
     {
-        foreach (var entry in ChangeTracker.Entries<IBaseModel>())
+        foreach (var entry in ChangeTracker.Entries<IModel>())
         {
             if (entry.State == EntityState.Modified)
             {
@@ -45,7 +53,7 @@ public class AppDbContext : IdentityDbContext<User>
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var entry in ChangeTracker.Entries<IBaseModel>())
+        foreach (var entry in ChangeTracker.Entries<IModel>())
         {
             if (entry.State == EntityState.Modified)
             {

@@ -8,7 +8,7 @@ public class BookCreateDTO
 {
     [Required]
     [MaxLength(255)]
-    public string Title { get; set; } = "";
+    public string Title { get; set; } = null!;
 
     [Required]
     [Length(1, Controllers.BookController.MAX_BOOK_AUTHORS)]
@@ -17,7 +17,7 @@ public class BookCreateDTO
 
     [Required]
     [MaxLength(255)]
-    public string OriginalLanguage {get; set; } = "";
+    public string OriginalLanguage {get; set; } = null!;
 
     [Required]
     [Range(0, int.MaxValue)]
@@ -27,7 +27,7 @@ public class BookCreateDTO
     public int PublicationYear { get; set; } = 0;
 
     [MaxLength(255)]
-    public string? Genre { get; set; } // TODO: Turn into an array of type Genre to correctly store in the db...
+    public string? Genre { get; set; } // TODO: Turn into an array of type Genre to store multiple genres in the db...
 
     [MaxLength(4000)]
     public string? Description { get; set; }
@@ -64,6 +64,13 @@ public class BookAddAuthorsDTO
     public BookAuthorRole Role { get; set; }
 }
 
+public class BookAuthorResponseDTO
+{
+    public string Id { get; set; } = null!;
+    public string FirstName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
+}
+
 public class BookResponseDTO
 {
     public string Id { get; set; } = null!;
@@ -74,4 +81,5 @@ public class BookResponseDTO
     public string? Genre { get; set; }
     public string? Description { get; set; }
     public string? CoverImage { get; set; }
+    public List<BookAuthorResponseDTO> Authors { get; set; } = null!;
 }

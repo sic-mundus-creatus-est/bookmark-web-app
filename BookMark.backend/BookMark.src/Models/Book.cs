@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using BookMark.DTOs;
 using BookMark.Models.Relationships;
 
 namespace BookMark.Models;
 
-public class Book : IBaseModel
+public class Book : IModel
 {
     [Key]
     public string Id { get; private set; }
@@ -25,13 +24,10 @@ public class Book : IBaseModel
     public string? CoverImage { get; set; }
 
 // --------------------------------------------------------
-    [JsonIgnore]
     public DateTime CreatedAt { get; private set; }
-    [JsonIgnore]
     public DateTime UpdatedAt { get; set; }
 // --------------------------------------------------------
 // --------------------------------------------------------
-    [JsonIgnore]
     public IList<BookAuthor>? BookAuthors { get; set; }
 // --------------------------------------------------------
 
@@ -66,6 +62,26 @@ public class Book : IBaseModel
             response.Genre = Genre;
             response.Description = Description;
             response.CoverImage = CoverImage;
+
+            if (BookAuthors != null)
+            {
+                response.Authors ??= [];
+
+                foreach (var bookAuthor in BookAuthors)
+                {
+                    var author = bookAuthor.Author;
+                    if (author != null)
+                    {
+                        response.Authors.Add(new BookAuthorResponseDTO
+                                            {
+                                                Id = author.Id,
+                                                FirstName = author.FirstName,
+                                                LastName = author.LastName
+                                            });
+                    }
+                    else throw new InvalidOperationException($"Book (ID: {Id}) contains a BookAuthor entry with a null Author. This may indicate corrupt or incomplete data.");
+                }
+            }
         }
     }
 }
