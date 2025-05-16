@@ -1,4 +1,4 @@
-namespace BookMark.Models;
+namespace BookMark.Models.Domain;
 
 public interface IModel
 {
@@ -6,6 +6,11 @@ public interface IModel
     DateTime CreatedAt { get; }
     DateTime UpdatedAt { get; set; }
 
+#region MAPPING
+
     void MapFrom(object source);
     void MapTo(object dest);
+
+#endregion
+
 }

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookMark.Services;
+namespace BookMark.Services.Core;
 
 public class CustomExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
 {

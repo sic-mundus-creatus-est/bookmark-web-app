@@ -2,14 +2,14 @@ using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
-using BookMark.Models.Roles;
-using BookMark.Models;
 using BookMark.DTOs;
+using BookMark.Models.Roles;
+using BookMark.Models.Domain;
 using BookMark.Services.Repositories;
 
 namespace BookMark.Controllers;

@@ -1,5 +1,5 @@
 using BookMark.Data;
-using BookMark.Models;
+using BookMark.Models.Domain;
 
 namespace BookMark.Services.Repositories;
 

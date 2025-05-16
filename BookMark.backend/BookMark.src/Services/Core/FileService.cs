@@ -1,3 +1,5 @@
+namespace BookMark.Services.Core;
+
 public interface IFileService
 {
     Task<string> SaveFileAsync(IFormFile file, string[] allowedFileExtensions, long maxFileSize);

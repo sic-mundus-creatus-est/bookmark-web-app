@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+
 using BookMark.DTOs;
 using BookMark.Models.Relationships;
 
-namespace BookMark.Models;
+namespace BookMark.Models.Domain;
 
 public class Author : IModel
 {
@@ -29,6 +30,8 @@ public class Author : IModel
         CreatedAt = DateTime.Now;
     }
 
+#region MAPPING
+
     public void MapFrom(object source)
     {
         if(source is AuthorCreateDTO creationData)
@@ -49,4 +52,7 @@ public class Author : IModel
             response.Career = Career;
         }
     }
+
+#endregion
+
 }

@@ -1,6 +1,8 @@
+using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.Serialization;
+
+using BookMark.Models.Domain;
 
 namespace BookMark.Models.Relationships;
 

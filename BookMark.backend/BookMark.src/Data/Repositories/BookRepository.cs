@@ -1,7 +1,8 @@
-using BookMark.Data;
-using BookMark.Models;
-using BookMark.Models.Relationships;
 using Microsoft.EntityFrameworkCore;
+
+using BookMark.Data;
+using BookMark.Models.Domain;
+using BookMark.Models.Relationships;
 using static BookMark.Controllers.BookController;
 
 namespace BookMark.Services.Repositories;

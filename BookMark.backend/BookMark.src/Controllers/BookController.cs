@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 
-using BookMark.Models;
-using BookMark.Services.Repositories;
-using BookMark.Controllers.Utils;
 using BookMark.DTOs;
+using BookMark.Services.Core;
+using BookMark.Models.Domain;
+using BookMark.Services.Domain;
+using BookMark.Services.Repositories;
 
 namespace BookMark.Controllers;
 
@@ -11,16 +12,16 @@ namespace BookMark.Controllers;
 [Route("api/books")]
 public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO, BookResponseDTO>
 {
-    protected readonly AuthorRepository _authorRepository;
+    protected readonly BookService _bookService;
     protected readonly IFileService _fileService;
 
     private const int COVER_IMAGE_MAX_SIZE_MB = 10;
     private static readonly string[] AllowedCoverImageExtensions = { ".jpg", ".jpeg", ".png" };
     public const int MAX_BOOK_AUTHORS = 16;
 
-    public BookController(BookRepository repository, AuthorRepository authorRepository, IFileService fileService) : base(repository)
+    public BookController(BookRepository repository, BookService bookService, IFileService fileService) : base(repository)
     {
-        _authorRepository = authorRepository;
+        _bookService = bookService;
         _fileService = fileService;
     }
 
@@ -31,19 +32,18 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
         var bookToCreate = new Book();
         bookToCreate.MapFrom(creationData);
 
-        bookToCreate.BookAuthors = await BookUtils.AssembleBookAuthors(bookToCreate, creationData.AuthorsWithRoles, _authorRepository);
+        bookToCreate.BookAuthors = await _bookService.AssembleBookAuthors(bookToCreate, creationData.AuthorsWithRoles);
 
         if(creationData.CoverImageFile != null)
-        {
-            bookToCreate.CoverImage = await _fileService.SaveFileAsync(creationData.CoverImageFile!, AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB);
-        }
-        
+            bookToCreate.CoverImage = await _fileService.SaveFileAsync(creationData.CoverImageFile,
+                                            AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB);
+
         var createdBook = await _repository.CreateAsync(bookToCreate);
 
         var response = new BookResponseDTO();
-        createdBook.MapTo(response);
+        createdBook!.MapTo(response);
 
-        return CreatedAtAction(nameof(Get), new { id = bookToCreate.Id }, response);
+        return CreatedAtAction(nameof(Get), new { id = createdBook.Id }, response);
     }
 
 
@@ -61,12 +61,12 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
                             detail: "At least one author ID with a role must be provided.",
                             statusCode: StatusCodes.Status400BadRequest );
 
-        var bookAuthors = await BookUtils.AssembleBookAuthors(book, authorsWithRoles, _authorRepository);
+        var bookAuthors = await _bookService.AssembleBookAuthors(book, authorsWithRoles);
 
         if (_repository is BookRepository bookRepo)
             await bookRepo.AddBookAuthorsAsync(bookAuthors);
 
-        return Ok("Specified author(s) were successfully associated with the book.");
+        return Ok();
 
     }
 
@@ -112,7 +112,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
         if (!string.IsNullOrEmpty(oldCover))
             _fileService.DeleteFile(oldCover);
 
-        return Ok("The book's cover image was successfully updated.");
+        return Ok();
     }
 
 

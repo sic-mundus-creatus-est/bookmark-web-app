@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using BookMark.Models.Relationships;
 using Swashbuckle.AspNetCore.Annotations;
+
+using BookMark.Models.Relationships;
 
 namespace BookMark.DTOs;
 

@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+
 using BookMark.DTOs;
 using BookMark.Models.Relationships;
 
-namespace BookMark.Models;
+namespace BookMark.Models.Domain;
 
 public class Book : IModel
 {
@@ -36,6 +37,8 @@ public class Book : IModel
         Id = Guid.NewGuid().ToString();
         CreatedAt = DateTime.Now;
     }
+
+#region MAPPING
 
     public void MapFrom(object source)
     {
@@ -84,4 +87,7 @@ public class Book : IModel
             }
         }
     }
+
+#endregion
+
 }

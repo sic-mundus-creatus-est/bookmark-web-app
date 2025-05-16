@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-using BookMark.Models;
+using BookMark.Models.Domain;
 using BookMark.Models.Relationships;
 
 namespace BookMark.Data;
+
 public class AppDbContext : IdentityDbContext<User>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)

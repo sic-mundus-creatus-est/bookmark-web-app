@@ -1,7 +1,9 @@
-using BookMark.DTOs;
 using Microsoft.AspNetCore.Identity;
 
-namespace BookMark.Models;
+using BookMark.DTOs;
+
+namespace BookMark.Models.Domain;
+
 public class User : IdentityUser, IModel
 {
     [PersonalData]
@@ -22,6 +24,8 @@ public class User : IdentityUser, IModel
     {
         CreatedAt = DateTime.Now;
     }
+
+#region MAPPING
 
     public void MapFrom(object source)
     {
@@ -48,4 +52,7 @@ public class User : IdentityUser, IModel
             response.Country = Country;
         }
     }
+
+#endregion
+
 }

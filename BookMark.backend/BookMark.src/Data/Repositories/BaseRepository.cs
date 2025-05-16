@@ -1,10 +1,13 @@
-using BookMark.Data;
-using BookMark.Models;
+using System.Reflection;
+using System.Linq.Dynamic.Core;
+using System.Text.RegularExpressions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Linq.Dynamic.Core;
-using System.Reflection;
-using System.Text.RegularExpressions;
+
+using BookMark.Data;
+using BookMark.Models;
+using BookMark.Models.Domain;
 
 namespace BookMark.Services.Repositories;
 
@@ -78,6 +81,9 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
                                                         bool sortDescending = false,
                                                         string? sortBy = null,
                                                         Dictionary<string, string>? filters = null) {
+        if(pageSize<=0)
+            throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+
         var query = _dbSet.AsNoTracking().AsQueryable();
 
         if (!filters.IsNullOrEmpty())
@@ -135,7 +141,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         var totalPages = (int)Math.Ceiling(count / (double)pageSize);
 
         
-        if (pageIndex < 1 || (totalPages > 0 && pageIndex > totalPages))
+        if (pageIndex < 1 || (totalPages > 0 && pageIndex > totalPages) || totalPages==0)
         {
             throw new ArgumentException($"You requested page {pageIndex}, but there are only {totalPages} page(s) available with the given constraints.", nameof(pageIndex));
         }
