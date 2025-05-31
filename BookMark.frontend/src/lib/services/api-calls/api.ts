@@ -3,7 +3,7 @@ const API_BASE_URL = "http://localhost:5234/api";
 export async function apiCall(
   endpoint: string,
   method: string = "GET",
-  body: unknown
+  body?: unknown
 ) {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {

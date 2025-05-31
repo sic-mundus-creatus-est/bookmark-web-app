@@ -16,6 +16,10 @@ export const AppRouter = createBrowserRouter([
         element: <PrivateRoute component={HomePage} />,
       },
       {
+        path: "/home",
+        element: <HomePage />,
+      },
+      {
         path: "/info",
         element: <div></div>,
       },

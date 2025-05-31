@@ -33,7 +33,6 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     }
 
 
-    [AllowAnonymous]
     [HttpPost("create")]
     public override async Task<ActionResult<UserResponseDTO>> Create([FromBody] UserCreateDTO creationData)
     {
@@ -67,7 +66,6 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     }
 
 
-    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginDTO loginData)
     {
@@ -117,6 +115,8 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
         return token;
     }
 
+
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpDelete("delete/{id}")]
     public override async Task<ActionResult> Delete(string id)
     {

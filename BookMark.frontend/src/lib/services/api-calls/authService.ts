@@ -4,9 +4,9 @@ export function loginUser(credentials: {
   usernameOrEmail: string;
   password: string;
 }) {
-  return apiCall("/auth/login", "POST", credentials);
+  return apiCall("/user/login", "POST", credentials);
 }
 
 export function registerUser(data: Record<string, unknown>) {
-  return apiCall("/auth/register", "POST", data);
+  return apiCall("/user/create", "POST", data);
 }
