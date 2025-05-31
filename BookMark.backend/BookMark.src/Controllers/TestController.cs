@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using BookMark.backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using BookMark.Models.Roles;
 
@@ -9,26 +8,23 @@ namespace BookMark.Controllers;
 [Route("api/test")]
 public class TestController : ControllerBase
 {
-    private readonly IWeatherService _weatherService;
-
-    public TestController(IWeatherService weatherService)
+    [HttpGet("guest-user-test")]
+    public IActionResult GuestUserTest()
     {
-        _weatherService = weatherService;
+        return Ok(new { Message = "You are a guest/anonymous user!" });
     }
 
     [Authorize(Roles = UserRoles.RegularUser)]
-    [HttpGet("hello-world")]
-    public IActionResult Get()
+    [HttpGet("regular-user-test")]
+    public IActionResult RegularUserTest()
     {
-        return Ok(new { Message = "Hello World!" });
+        return Ok(new { Message = "You are an regular user!" });
     }
 
     [Authorize(Roles = UserRoles.Admin)]
-    [HttpGet("weather-forecast")]
-    public IActionResult GetWeatherForecast()
+    [HttpGet("admin-test")]
+    public IActionResult AdminTest()
     {
-        var forecast = _weatherService.GetWeatherForecast();
-        return Ok(forecast);
+        return Ok(new { Message = "You are an admin!" });
     }
 }
-
