@@ -1,29 +1,29 @@
 using Microsoft.EntityFrameworkCore;
 
-using BookMark.Data;
 using BookMark.Models.Domain;
 using BookMark.Models.Relationships;
 using static BookMark.Controllers.BookController;
 
-namespace BookMark.Services.Repositories;
+namespace BookMark.Data.Repositories;
 
 public class BookRepository : BaseRepository<Book>
 {
     protected DbSet<BookAuthor> _bookAuthorDbSet { get; set; }
+    protected DbSet<BookGenre> _bookGenreDbSet { get; set; }
 
     protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
                                                                         {
-                                                                            nameof(Book.Title), 
-                                                                            nameof(Book.OriginalLanguage), 
+                                                                            nameof(Book.Title),
+                                                                            nameof(Book.OriginalLanguage),
                                                                             nameof(Book.PublicationYear),
                                                                             nameof(Book.PageCount),
-                                                                            nameof(Book.Genre),
                                                                             nameof(Book.Description)
                                                                         };
-    
+
     public BookRepository(AppDbContext context) : base(context)
     {
         _bookAuthorDbSet = context.Set<BookAuthor>();
+        _bookGenreDbSet = context.Set<BookGenre>();
     }
 
 
@@ -34,13 +34,16 @@ public class BookRepository : BaseRepository<Book>
         if (newBook.BookAuthors?.Any() == true)
             await _bookAuthorDbSet.AddRangeAsync(newBook.BookAuthors);
 
+        if (newBook.BookGenres?.Any() == true)
+            await _bookGenreDbSet.AddRangeAsync(newBook.BookGenres);
+
         await SaveChangesAsync();
 
         return newBook;
     }
 
 
-    public async Task AddBookAuthorsAsync(List<BookAuthor> bookAuthors)
+    public async Task AddBookAuthorsAsync(ICollection<BookAuthor> bookAuthors)
     {
         var bookId = bookAuthors.First().BookId;
 

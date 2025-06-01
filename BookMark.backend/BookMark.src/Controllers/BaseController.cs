@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using BookMark.Models;
 using BookMark.Models.Domain;
-using BookMark.Services.Repositories;
+using BookMark.Data.Repositories;
 
 namespace BookMark.Controllers;
 
@@ -97,10 +97,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
 
         var updatedEntity = await _repository.UpdateAsync(entityToUpdate, updateData!);
 
-        var response = Activator.CreateInstance<TResponseDTO>();
-        updatedEntity!.MapTo(response!);
-
-        return Ok(response); // 200
+        return Ok(); // 200
     }
 
 

@@ -10,11 +10,13 @@ public class AppDbContext : IdentityDbContext<User>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // --------------------------------------------------------
+        // BookAuthors Relationship
         modelBuilder.Entity<BookAuthor>()
             .HasKey(ba => new { ba.BookId, ba.AuthorId });
         modelBuilder.Entity<BookAuthor>()
@@ -27,16 +29,42 @@ public class AppDbContext : IdentityDbContext<User>
             .WithMany(a => a.BookAuthors) // Navigation Property in Author
             .HasForeignKey(ba => ba.AuthorId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
-        // Explicit configuration of the join table name
         modelBuilder.Entity<BookAuthor>().ToTable("BookAuthors");
 
         modelBuilder.Entity<Book>()
-        .Navigation(b => b.BookAuthors)
-        .AutoInclude();
+                    .Navigation(b => b.BookAuthors)
+                    .AutoInclude();
 
         modelBuilder.Entity<BookAuthor>()
-            .Navigation(ba => ba.Author)
-            .AutoInclude();
+                    .Navigation(ba => ba.Author)
+                    .AutoInclude();
+        // --------------------------------------------------------
+
+        // --------------------------------------------------------
+        // BookGenres Relationship
+        modelBuilder.Entity<BookGenre>()
+            .HasKey(bg => new { bg.BookId, bg.GenreId });
+        modelBuilder.Entity<BookGenre>()
+            .HasOne(bg => bg.Book)
+            .WithMany(b => b.BookGenres) // Navigation Property in Book
+            .HasForeignKey(bg => bg.BookId) //Foreign Key
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<BookGenre>()
+            .HasOne(bg => bg.Genre)
+            .WithMany(g => g.BookGenres) // Navigation Property in Genre
+            .HasForeignKey(bg => bg.GenreId) //Foreign Key
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<BookGenre>().ToTable("BookGenres");
+
+        modelBuilder.Entity<Book>()
+                    .Navigation(b => b.BookGenres)
+                    .AutoInclude();
+
+        modelBuilder.Entity<BookGenre>()
+                    .Navigation(bg => bg.Genre)
+                    .AutoInclude();
+        // --------------------------------------------------------
+
     }
 
     public override int SaveChanges()
@@ -69,5 +97,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
     public DbSet<BookAuthor> BookAuthors { get; set; }
+    public DbSet<Genre> Genres { get; set; }
+    public DbSet<BookGenre> BookGenres { get; set; }
 
 }

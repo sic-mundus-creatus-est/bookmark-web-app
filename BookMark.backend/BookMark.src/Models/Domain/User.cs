@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-using BookMark.DTOs;
+using BookMark.Models.DTOs;
 
 namespace BookMark.Models.Domain;
 

@@ -14,7 +14,7 @@ using BookMark.Data;
 using BookMark.Services.Core;
 using BookMark.Models.Domain;
 using BookMark.Services.Domain;
-using BookMark.Services.Repositories;
+using BookMark.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -56,6 +56,7 @@ builder.Services.AddScoped<BookService>();
 
 builder.Services.AddScoped<BookRepository>();
 builder.Services.AddScoped<AuthorRepository>();
+builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<UserRepository>();
 //BOOKMARK-SERVICES--------------------------------------
 

@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 
-using BookMark.DTOs;
+using BookMark.Models.DTOs;
 using BookMark.Models.Roles;
 using BookMark.Models.Domain;
-using BookMark.Services.Repositories;
+using BookMark.Data.Repositories;
 
 namespace BookMark.Controllers;
 

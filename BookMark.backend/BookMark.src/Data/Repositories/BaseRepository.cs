@@ -5,11 +5,10 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-using BookMark.Data;
 using BookMark.Models;
 using BookMark.Models.Domain;
 
-namespace BookMark.Services.Repositories;
+namespace BookMark.Data.Repositories;
 
 public interface IBaseRepository<TModel>
 {

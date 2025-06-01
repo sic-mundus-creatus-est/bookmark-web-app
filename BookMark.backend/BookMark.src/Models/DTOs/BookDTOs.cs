@@ -3,7 +3,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 using BookMark.Models.Relationships;
 
-namespace BookMark.DTOs;
+namespace BookMark.Models.DTOs;
 
 public class BookCreateDTO
 {
@@ -17,6 +17,10 @@ public class BookCreateDTO
     public List<BookAddAuthorsDTO> AuthorsWithRoles { get; set; } = null!;
 
     [Required]
+    [Length(1, Controllers.BookController.MAX_GENRES)]
+    public List<string> GenreIds { get; set; } = null!;
+
+    [Required]
     [MaxLength(255)]
     public string OriginalLanguage {get; set; } = null!;
 
@@ -26,9 +30,6 @@ public class BookCreateDTO
 
     [Range(0, int.MaxValue)]
     public int PublicationYear { get; set; } = 0;
-
-    [MaxLength(255)]
-    public string? Genre { get; set; } // TODO: Turn into an array of type Genre to store multiple genres in the db...
 
     [MaxLength(4000)]
     public string? Description { get; set; }
@@ -50,9 +51,6 @@ public class BookUpdateDTO
     [Range(0, int.MaxValue)]
     public int? PageCount { get; set; }
 
-    [MaxLength(255)]
-    public string? Genre { get; set; }
-
     [MaxLength(4000)]
     public string? Description { get; set; }
 }
@@ -72,15 +70,21 @@ public class BookAuthorResponseDTO
     public string LastName { get; set; } = null!;
 }
 
+public class BookGenreResponseDTO
+{
+    public string Id { get; set; } = null!;
+    public string Name { get; set; } = null!;
+}
+
 public class BookResponseDTO
 {
     public string Id { get; set; } = null!;
     public string Title { get; set; } = null!;
-    public string OriginalLanguage {get; set; } = null!;
+    public string OriginalLanguage { get; set; } = null!;
     public int PageCount { get; set; }
-    public int PublicationYear { get; set; } 
-    public string? Genre { get; set; }
+    public int PublicationYear { get; set; }
     public string? Description { get; set; }
     public string? CoverImage { get; set; }
     public List<BookAuthorResponseDTO> Authors { get; set; } = null!;
+    public List<BookGenreResponseDTO> Genres { get; set; } = null!;
 }

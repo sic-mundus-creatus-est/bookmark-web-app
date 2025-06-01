@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
-using BookMark.DTOs;
+using BookMark.Models.DTOs;
 using BookMark.Models.Domain;
-using BookMark.Services.Repositories;
+using BookMark.Data.Repositories;
 
 namespace BookMark.Controllers;
 

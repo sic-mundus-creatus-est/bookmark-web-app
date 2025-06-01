@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 
-using BookMark.DTOs;
+using BookMark.Models.DTOs;
 using BookMark.Services.Core;
 using BookMark.Models.Domain;
 using BookMark.Services.Domain;
-using BookMark.Services.Repositories;
+using BookMark.Data.Repositories;
 
 namespace BookMark.Controllers;
 
@@ -18,6 +18,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     private const int COVER_IMAGE_MAX_SIZE_MB = 10;
     private static readonly string[] AllowedCoverImageExtensions = { ".jpg", ".jpeg", ".png" };
     public const int MAX_BOOK_AUTHORS = 16;
+    public const int MAX_GENRES = 16;
 
     public BookController(BookRepository repository, BookService bookService, IFileService fileService) : base(repository)
     {
@@ -33,8 +34,9 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
         bookToCreate.MapFrom(creationData);
 
         bookToCreate.BookAuthors = await _bookService.AssembleBookAuthors(bookToCreate, creationData.AuthorsWithRoles);
+        bookToCreate.BookGenres = await _bookService.AssembleBookGenres(bookToCreate, creationData.GenreIds);
 
-        if(creationData.CoverImageFile != null)
+        if (creationData.CoverImageFile != null)
             bookToCreate.CoverImage = await _fileService.SaveFileAsync(creationData.CoverImageFile,
                                             AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB);
 

@@ -1,7 +1,6 @@
-using BookMark.Data;
 using BookMark.Models.Domain;
 
-namespace BookMark.Services.Repositories;
+namespace BookMark.Data.Repositories;
 
 public class AuthorRepository : BaseRepository<Author>
 {

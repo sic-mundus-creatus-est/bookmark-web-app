@@ -1,30 +1,27 @@
 using System.ComponentModel.DataAnnotations;
-
 using BookMark.Models.DTOs;
-using BookMark.Models.Relationships;
 
 namespace BookMark.Models.Domain;
 
-public class Author : IModel
+public class Genre : IModel
 {
     [Key]
     public string Id { get; private set; }
 
-    public string FirstName { get; set; } = null!;
+    [Required]
+    public string Name { get; set; } = null!;
 
-    public string LastName { get; set; } = null!;
-
-    public string? Career { get; set; }
+    public string? Description { get; set; }
 
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; set; }
 // --------------------------------------------------------
 // --------------------------------------------------------
-    public ICollection<BookAuthor>? BookAuthors { get; set; }
+    public ICollection<BookGenre>? BookGenres { get; set; }
 // --------------------------------------------------------
 
-    public Author()
+    public Genre()
     {
         Id = Guid.NewGuid().ToString();
         CreatedAt = DateTime.Now;
@@ -34,22 +31,20 @@ public class Author : IModel
 
     public void MapFrom(object source)
     {
-        if(source is AuthorCreateDTO creationData)
+        if(source is GenreCreateDTO creationData)
         {
-            FirstName = creationData.FirstName;
-            LastName = creationData.LastName;
-            Career = creationData.Career;
+            Name = creationData.Name;
+            Description = creationData.Description;
         }
     }
 
     public void MapTo(object dest)
     {
-        if(dest is AuthorResponseDTO response)
+        if(dest is GenreResponseDTO response)
         {
             response.Id = Id;
-            response.FirstName = FirstName;
-            response.LastName = LastName;
-            response.Career = Career;
+            response.Name = Name;
+            response.Description = Description;
         }
     }
 

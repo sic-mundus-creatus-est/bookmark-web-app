@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace BookMark.DTOs;
+namespace BookMark.Models.DTOs;
 
 public class AuthorCreateDTO
 {
