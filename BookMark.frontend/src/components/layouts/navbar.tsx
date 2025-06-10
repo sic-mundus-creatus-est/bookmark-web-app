@@ -7,18 +7,12 @@ import { navConfig } from "@/config/navConfig";
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 bottom-0 w-full bg-border z-50">
+    <nav className="sticky top-0 bottom-0 w-full bg-background z-50">
       <AuthRow />
 
       <div className="container mx-auto flex items-center justify-between px-4">
         <DesktopNavbar />
         <MobileNavbar />
-      </div>
-
-      <div className="bg-secondary pt-2 pb-2">
-        <div className="container mx-auto flexpx-4 md:px-8">
-          <ContentRow />
-        </div>
       </div>
     </nav>
   );
@@ -26,14 +20,14 @@ export function Navbar() {
 
 function AuthRow() {
   return (
-    <div className="pt-2 pb-1">
-      <div className="container mx-auto flex justify-end px-4 md:px-8 space-x-4 flex-wrap">
+    <div className="pt-2">
+      <div className="container mx-auto flex justify-end pr-10 sm:pr-10 md:pr-10 lg:pr-48 space-x-4 flex-wrap text-popover">
         {navConfig.Auth.items?.map((item) => {
           const Icon = item.icon === "log-in" ? LogIn : UserPlus;
           return (
             <a
               href={item.to}
-              className="flex items-center text-sm mb-2 md:mb-0"
+              className="flex items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
               key={item.title}
             >
               <span className="mr-1">
@@ -48,14 +42,19 @@ function AuthRow() {
   );
 }
 
-function ContentRow() {
-  const contentLinks = navConfig.Content.items;
+export function ContentRow() {
+  const contentLinks = navConfig.Categories.items;
 
   return (
-    <div className="flex pl-7 lg:pl-0 sm:pl-4 space-x-4 text-gray-600 text-sm flex-wrap font-serif">
+    <div className="flex text-md flex-wrap font-bold text-popover">
       {contentLinks?.map((item, index) => (
-        <div key={item.title} className="flex items-center space-x-4">
-          <a href={item.to || item.href}>{item.title}</a>
+        <div key={item.title} className="flex items-center space-x-5">
+          <a
+            href={item.to || item.href}
+            className="transition-transform duration-200 ease-in-out hover:scale-105 hover:text-primary hover:drop-shadow-md"
+          >
+            {item.title}
+          </a>
           {index < contentLinks.length - 1 && (
             <Separator orientation="vertical" />
           )}

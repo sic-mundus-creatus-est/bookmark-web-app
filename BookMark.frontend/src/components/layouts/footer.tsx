@@ -1,44 +1,48 @@
-import { Separator } from "@/components/ui/separator";
 import { appConfig } from "@/config/appConfig";
 
 export function Footer() {
   return (
-    <footer className="bg-accent py-6 text-sm text-gray-500">
-      <div className="container mx-auto px-4 md:px-8">
-        <div className="flex flex-wrap justify-center gap-6 text-center">
-          <a href="#" className="hover:text-primary">
-            Home
-          </a>
-          <a href="#" className="hover:text-primary">
-            Books
-          </a>
-          <a href="#" className="hover:text-primary">
-            Reviews
-          </a>
-          <a href="#" className="hover:text-primary">
-            Community
-          </a>
-          <a href="#" className="hover:text-primary">
-            About
-          </a>
-          <a href="#" className="hover:text-primary">
-            Terms
-          </a>
-          <a href="#" className="hover:text-primary">
-            Privacy
-          </a>
-          <a href="#" className="hover:text-primary">
-            Help
-          </a>
-        </div>
+    <footer className="bg-accent pb-12 pt-8 text-sm">
+      <div className="container mx-auto px-10 sm:px-10 md:px-4 lg:px-28">
+        <div className="flex flex-col md:flex-row md:items-center justify-center sm:gap-4 md-gap-6 lg:gap-16">
+          {/* Left: Title + Author */}
+          <div className="font-[Helvetica]">
+            <p className="font-semibold text-3xl md:text-4xl text-background">
+              {appConfig.name}
+              <span className="text-popover font-bold">™</span>
+            </p>
+            <p className="text-sm font-semibold -mt-1">
+              A project by {appConfig.author.index}{" "}
+              <span className="text-popover">©</span> 2025
+            </p>
+          </div>
 
-        <Separator className="my-4 bg-gray-300" />
-
-        <div className="text-center">
-          <p className="font-semibold text-lg">{appConfig.name}</p>
-          <p className="text-xs">
-            A project by {appConfig.author.index} © 2025
-          </p>
+          {/* Right: Description */}
+          <div className="text-sm font-semibold pt-4 md:pt-0 lg:pt-0 font-[Verdana]">
+            {appConfig.description.split(". ").map((sentence, i) => {
+              const words = sentence.trim().split(" ");
+              return (
+                <p key={i} className="leading-tight">
+                  {words.map((word, index) => {
+                    const cleanWord = word.replace(/[.,!?]/g, "");
+                    const isBookmark = cleanWord.toLowerCase() === "bookmark";
+                    return (
+                      <span
+                        key={index}
+                        className={
+                          isBookmark ? "text-popover font-bold" : undefined
+                        }
+                      >
+                        {word}
+                        {index !== words.length - 1 && " "}
+                      </span>
+                    );
+                  })}
+                  {i !== appConfig.description.split(". ").length - 1 && "."}
+                </p>
+              );
+            })}
+          </div>
         </div>
       </div>
     </footer>

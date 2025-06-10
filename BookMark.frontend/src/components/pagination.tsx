@@ -53,12 +53,12 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <nav className={`mt-8 text-center font-serif ${className}`}>
-      <div className="inline-flex flex-wrap items-center justify-center gap-2 text-base sm:text-lg text-gray-700">
+    <nav className={`mt-2 text-center font-serif ${className}`}>
+      <div className="inline-flex flex-wrap items-center justify-center gap-2 text-xl sm:text-lg">
         {currentPage > 1 && (
           <span
             onClick={() => onPageChange(currentPage - 1)}
-            className="cursor-pointer text-gray-600 hover:text-black hover:underline transition"
+            className="cursor-pointer text-accent hover:text-popover hover:underline underline-offset-4 decoration-[2px] transition"
           >
             ← Back
           </span>
@@ -66,7 +66,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
         {getRange().map((page, i) =>
           typeof page === "string" ? (
-            <span key={i} className="text-gray-400 select-none">
+            <span key={i} className="text-accent select-none">
               {page}
             </span>
           ) : (
@@ -75,8 +75,8 @@ export const Pagination: React.FC<PaginationProps> = ({
               onClick={() => onPageChange(page)}
               className={`cursor-pointer px-1 ${
                 page === currentPage
-                  ? "text-black underline decoration-[2px] underline-offset-4"
-                  : "text-gray-600 hover:text-black hover:underline transition"
+                  ? "text-popover underline decoration-[2px] underline-offset-4"
+                  : "text-accent hover:text-popover hover:underline underline-offset-4 decoration-[2px] transition"
               }`}
             >
               {page}
@@ -87,7 +87,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         {currentPage < totalPages && (
           <span
             onClick={() => onPageChange(currentPage + 1)}
-            className="cursor-pointer text-gray-600 hover:text-black hover:underline transition"
+            className="cursor-pointer text-accent hover:text-popover hover:underline underline-offset-4 decoration-[2px] transition"
           >
             Next →
           </span>

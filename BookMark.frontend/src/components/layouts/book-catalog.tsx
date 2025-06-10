@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BookCard, BookCardPlaceholder } from "@/components/ui/book-card";
 import { Pagination } from "@/components/pagination";
-import { Book } from "@/components/ui/book-card";
+import { Book } from "@/lib/types/book";
 
 interface BookCatalogProps {
   itemsPerPage?: number;
@@ -9,10 +9,12 @@ interface BookCatalogProps {
     page: number,
     limit: number
   ) => Promise<{
-    books: Book[];
-    totalItems: number;
+    items: Book[];
+    pageIndex: number;
+    totalPages: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
   }>;
-  className?: string;
 }
 
 /**
@@ -20,25 +22,37 @@ interface BookCatalogProps {
  */
 export function BookCatalog({
   fetchBooks,
-  itemsPerPage = 14,
+  itemsPerPage = 12,
 }: BookCatalogProps) {
   const [books, setBooks] = useState<Book[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  function mapBooks(items: any[]): Book[] {
+    return (items ?? []).map(
+      (book): Book => ({
+        id: book.id,
+        title: book.title,
+        authors: book.authors?.map((a: any) => a),
+        description: book.description,
+        coverImage: book.coverImage,
+        rating: Math.random() * 2 + 3, // TODO
+        ratingCount: Math.floor(Math.random() * 1000), // TODO
+      })
+    );
+  }
 
   useEffect(() => {
-    const load = async () => {
+    const loadCatalog = async () => {
       setLoading(true);
       try {
-        const { books, totalItems } = await fetchBooks(
-          currentPage,
-          itemsPerPage
-        );
+        const response = await fetchBooks(currentPage, itemsPerPage);
+
+        const books: Book[] = mapBooks(response.items);
+
         setBooks(books);
-        setTotalItems(totalItems); // now this works!!!
+        setTotalPages(response.totalPages);
       } catch (error) {
         console.error("Failed to fetch books", error);
       } finally {
@@ -46,12 +60,12 @@ export function BookCatalog({
       }
     };
 
-    load();
+    loadCatalog();
   }, [currentPage, itemsPerPage, fetchBooks]);
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 justify-items-center px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-4 justify-items-center">
         {loading
           ? Array.from({ length: itemsPerPage }).map((_, i) => (
               <BookCardPlaceholder key={`loading-placeholder-${i}`} />
@@ -63,7 +77,7 @@ export function BookCatalog({
             ))}
       </div>
 
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

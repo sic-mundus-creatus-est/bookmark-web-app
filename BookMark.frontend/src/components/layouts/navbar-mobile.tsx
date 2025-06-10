@@ -13,10 +13,7 @@ interface IDrawerButtonProps {
 
 const DrawerButton: React.FC<IDrawerButtonProps> = ({ text, onClick }) => {
   return (
-    <div
-      className="rounded-2xl w-full px-9 pt-3 pb-0 cursor-pointer hover:bg-gray-300"
-      onClick={onClick}
-    >
+    <div className="w-full px-9 pt-3 pb-0 cursor-pointer" onClick={onClick}>
       <span className="text-xl text-end block font-bold font- truncate">
         {text}
       </span>
@@ -44,7 +41,7 @@ export function MobileNavbar() {
     <>
       <div className="lg:hidden w-full items-center">
         {/* static */}
-        <div className="flex justify-between pr-2 pt-1 pb-2 flex-wrap">
+        <div className="flex justify-between pb-2 flex-wrap px-2">
           <Logo />
 
           <Hamburger
@@ -52,6 +49,7 @@ export function MobileNavbar() {
             toggled={open}
             toggle={setOpen}
             direction="left"
+            color="hsl(var(--accent))"
           />
         </div>
 
@@ -64,30 +62,33 @@ export function MobileNavbar() {
           }`}
         >
           {shouldRender && (
-            <div className="flex flex-col space-y-1 pb-9 pt-4 px-4 items-stretch">
-              <div className="bg-card rounded-2xl w-full pb-3 pt-1 px-4 flex flex-col shadow-xl">
+            <div className="flex flex-col space-y-1 pb-4 pt-2 px-4 items-stretch text-background">
+              <div className="bg-accent rounded-lg w-full pb-3 pt-1 px-4 flex flex-col shadow-xl">
                 {navConfig.Categories.items!.map((item) => (
-                  <div key={item.title}>
+                  <div key={item.title} className="hover:text-popover">
                     <DrawerButton
                       text={item.title.toUpperCase()}
                       onClick={() => console.log(`${item.title} clicked`)}
                     />
-                    <div className="h-px w-full bg-border"></div>
+                    <div className="h-px w-full bg-popover"></div>
                   </div>
                 ))}
               </div>
-
-              <div className="relative w-full">
-                <Input
-                  placeholder="Search..."
-                  className="w-full bg-secondary pl-4 pr-12"
-                />
-                <span className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-ring p-2 rounded-r-2xl text-white">
-                  <SearchIcon size={20} strokeWidth={3} />
-                </span>
-              </div>
             </div>
           )}
+        </div>
+
+        <div
+          className="relative pb-2 px-6"
+          style={{ minWidth: "clamp(20rem, 30vw, 100%)" }}
+        >
+          <Input
+            placeholder="Search..."
+            className="bg-muted text-accent rounded-lg border-b-2 border-accent w-full"
+          />
+          <span className="absolute right-0 mr-6 transform -translate-y-9 bg-accent p-2 rounded-r-lg text-background">
+            <SearchIcon size={20} strokeWidth={3} />
+          </span>
         </div>
       </div>
     </>

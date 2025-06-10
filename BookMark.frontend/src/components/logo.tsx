@@ -8,9 +8,9 @@ export default function Logo() {
   return (
     <NavLink
       to={navConfig.Home.to!}
-      className="text-4xl font-extrabold font-sans flex items-center select-none"
+      className="flex items-center z-50 text-4xl text-accent font-extrabold select-none"
     >
-      <Bookmark size={47} strokeWidth={3} />
+      <Bookmark size={47} strokeWidth={3} className="text-popover" />
       {appConfig.name.toUpperCase()}
     </NavLink>
   );

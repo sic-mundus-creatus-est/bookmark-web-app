@@ -12,7 +12,7 @@ interface IAppConfig {
 export const appConfig: IAppConfig = {
   name: "BookMark",
   description:
-    "Search, track, and review your books in one place. Never lose your next great read, bookmark it!",
+    "Search, track, and review books in one place. Never lose your next great read, bookmark it!",
 
   repository: "https://github.com/sic-mundus-creatus-est/bookmark-app",
   author: {

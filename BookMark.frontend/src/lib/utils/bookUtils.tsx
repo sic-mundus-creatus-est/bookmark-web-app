@@ -3,7 +3,7 @@ interface RatingToStarsProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 }
 
-export const RatingToStars = ({ rating, size = "md" }: RatingToStarsProps) => {
+export const RatingToStars = ({ rating, size = "lg" }: RatingToStarsProps) => {
   const fullStars = Math.floor(rating);
   const fraction = rating - fullStars;
   const emptyStars = 5 - fullStars - (fraction > 0 ? 1 : 0);
@@ -32,7 +32,7 @@ export const RatingToStars = ({ rating, size = "md" }: RatingToStarsProps) => {
     <div className="flex items-center">
       {/* Full stars */}
       {[...Array(fullStars)].map((_, i) => (
-        <span key={`full-star-${i}`} className={`${sizeClass} text-yellow-300`}>
+        <span key={`full-star-${i}`} className={`${sizeClass} text-popover`}>
           ★
         </span>
       ))}
@@ -41,7 +41,7 @@ export const RatingToStars = ({ rating, size = "md" }: RatingToStarsProps) => {
       {fraction > 0 && (
         <span
           key="fraction-plus"
-          className={`${fractionSizeClass} font-bold text-yellow-300 pt-1`}
+          className={`${fractionSizeClass} font-bold text-popover pt-1`}
         >
           ⁺
         </span>
@@ -49,7 +49,7 @@ export const RatingToStars = ({ rating, size = "md" }: RatingToStarsProps) => {
 
       {/* Empty stars */}
       {[...Array(emptyStars)].map((_, i) => (
-        <span key={`empty-star-${i}`} className={`${sizeClass} text-gray-300`}>
+        <span key={`empty-star-${i}`} className={`${sizeClass} text-muted`}>
           ★
         </span>
       ))}

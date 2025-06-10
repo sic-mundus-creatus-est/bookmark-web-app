@@ -45,21 +45,4 @@ export const navConfig: { [key: string]: INavItem } = {
       },
     ],
   },
-  Content: {
-    title: "Content",
-    items: [
-      {
-        title: "Genres",
-        to: "/genres",
-      },
-      {
-        title: "Reviews",
-        to: "/reviews",
-      },
-      {
-        title: "Ratings",
-        to: "/ratings",
-      },
-    ],
-  },
 };

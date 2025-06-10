@@ -12,7 +12,7 @@ export const AppRouter = createBrowserRouter([
     element: <AppLayout />,
     children: [
       {
-        path: "/",
+        path: "/private",
         element: <PrivateRoute component={HomePage} />,
       },
       {
@@ -24,7 +24,7 @@ export const AppRouter = createBrowserRouter([
         element: <div></div>,
       },
       {
-        path: "/test",
+        path: "/",
         element: <TestPage />,
       },
       {
@@ -39,6 +39,6 @@ export const AppRouter = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/test" />,
+    element: <Navigate to="/" />,
   },
 ]);
