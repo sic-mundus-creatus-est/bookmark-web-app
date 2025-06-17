@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 using BookMark.Models;
 using BookMark.Models.Domain;
+using System.Data;
 
 namespace BookMark.Data.Repositories;
 
@@ -80,8 +81,10 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
                                                         bool sortDescending = false,
                                                         string? sortBy = null,
                                                         Dictionary<string, string>? filters = null) {
-        if(pageSize<=0)
-            throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+        if (pageIndex < 1)
+            throw new ArgumentOutOfRangeException(nameof(pageIndex), "PageIndex must be greater than 0.");
+        if (pageSize < 1)
+                throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than zero.");
 
         var query = _dbSet.AsNoTracking().AsQueryable();
 
@@ -93,13 +96,13 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
             var match = Regex.Match(key, @"^([a-zA-Z]+)(==|>=|<=|>|<|~=)$");
             if (!match.Success)
-                throw new ArgumentException($"Invalid filter key '{key}'. Keys must end with a comparison operator (==, >=, <=, >, <, ~=).", nameof(filters));
+                throw new FormatException($"Invalid filter key format for '{key}'. Keys must end with a comparison operator (==, >=, <=, >, <, ~=).");
 
             string propName = match.Groups[1].Value;
             string op = match.Groups[2].Value;
 
             if (!FilterPropTypes.ContainsKey(propName))
-                throw new ArgumentException($"Invalid filter key '{key}'. Allowed keys are: {string.Join(", ", FilterPropTypes.Keys)}.", nameof(filters));
+                throw new KeyNotFoundException($"Invalid filter key '{key}'. Allowed keys are: {string.Join(", ", FilterPropTypes.Keys)}.");
 
             object typedValue;
             try
@@ -134,22 +137,22 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         else if (FilterPropTypes.ContainsKey(sortBy))
             query = query.OrderBy( $"{sortBy} {direction}" );
         else
-            throw new ArgumentException($"Invalid sorting parameter '{sortBy}'. Valid options are: {string.Join(", ", FilterPropTypes.Keys)}.", nameof(sortBy));
+            throw new KeyNotFoundException($"Invalid sorting parameter '{sortBy}'. Valid options are: {string.Join(", ", FilterPropTypes.Keys)}.");
 
         var count = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(count / (double)pageSize);
 
-        
-        if (pageIndex < 1 || (totalPages > 0 && pageIndex > totalPages) || totalPages==0)
+
+        if (totalPages > 0 && pageIndex > totalPages)
+            throw new ArgumentOutOfRangeException(nameof(pageIndex), $"You requested page {pageIndex}, but there are only {totalPages} page(s) available with the given constraints.");
+
+        List<TModel> entities = [];
+        if (totalPages > 0)
         {
-            throw new ArgumentException($"You requested page {pageIndex}, but there are only {totalPages} page(s) available with the given constraints.", nameof(pageIndex));
+            entities = await query.Skip((pageIndex - 1) * pageSize)
+                                  .Take(pageSize)
+                                  .ToListAsync();
         }
-
-        var entities = await query
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
 
         return new Page<TModel>(entities, pageIndex, totalPages);
     }

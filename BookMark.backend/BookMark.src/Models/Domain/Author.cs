@@ -10,11 +10,12 @@ public class Author : IModel
     [Key]
     public string Id { get; private set; }
 
-    public string FirstName { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public string LastName { get; set; } = null!;
+    public string? Biography { get; set; }
 
-    public string? Career { get; set; }
+    public DateOnly? BirthDate { get; set; }
+    public DateOnly? DeathDate { get; set; }
 
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
@@ -34,22 +35,24 @@ public class Author : IModel
 
     public void MapFrom(object source)
     {
-        if(source is AuthorCreateDTO creationData)
+        if (source is AuthorCreateDTO creationData)
         {
-            FirstName = creationData.FirstName;
-            LastName = creationData.LastName;
-            Career = creationData.Career;
+            Name = creationData.Name;
+            Biography = creationData.Biography;
+            BirthDate = creationData.BirthDate;
+            DeathDate = creationData.DeathDate;
         }
     }
 
     public void MapTo(object dest)
     {
-        if(dest is AuthorResponseDTO response)
+        if (dest is AuthorResponseDTO response)
         {
             response.Id = Id;
-            response.FirstName = FirstName;
-            response.LastName = LastName;
-            response.Career = Career;
+            response.Name = Name;
+            response.Biography = Biography;
+            response.BirthDate = BirthDate;
+            response.DeathDate = DeathDate;
         }
     }
 

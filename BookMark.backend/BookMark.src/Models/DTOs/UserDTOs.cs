@@ -5,12 +5,12 @@ namespace BookMark.Models.DTOs;
 public class UserCreateDTO
 {
     [Required]
-    [Length(1,32)]
+    [Length(1, 32)]
     public string Username { get; set; } = null!;
 
     [Required]
     [EmailAddress]
-    [MaxLength(254)]
+    [MaxLength(256)]
     public string Email { get; set; } = null!;
 
     [Required]
@@ -21,11 +21,10 @@ public class UserCreateDTO
     public string ConfirmPassword { get; set; } = null!;
 
     [Required]
-    public string FirstName { get; set; } = null!;
+    [MaxLength(64)]
+    public string DisplayName { get; set; } = null!;
 
-    [Required]
-    public string LastName { get; set; } = null!;
-
+    [MaxLength(64)]
     public string? Country { get; set; }
 }
 
@@ -40,8 +39,10 @@ public class UserLoginDTO
 
 public class UserUpdateDTO
 {
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
+    [MaxLength(64)]
+    public string? DisplayName { get; set; }
+
+    [MaxLength(64)]
     public string? Country { get; set; }
 }
 
@@ -50,7 +51,6 @@ public class UserResponseDTO
     public string Id { get; set; } = null!;
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
+    public string DisplayName { get; set; } = null!;
     public string? Country { get; set; }
 }

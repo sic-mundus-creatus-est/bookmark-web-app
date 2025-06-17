@@ -8,8 +8,7 @@ public class UserRepository : BaseRepository<User>
 
     protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
                                                                         {
-                                                                            nameof(User.FirstName), 
-                                                                            nameof(User.LastName), 
+                                                                            nameof(User.DisplayName), 
                                                                             nameof(User.Country)
                                                                         };
 }

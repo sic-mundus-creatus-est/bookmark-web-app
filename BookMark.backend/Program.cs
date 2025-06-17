@@ -27,28 +27,6 @@ builder.Services.AddDbContext<AppDbContext>( options => {
         options.EnableSensitiveDataLogging(); } );
 //APP-DB-CONTEXT------------------------------------------
 
-//CONTROLLERS-----------------------------------------------
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.MaxDepth = 64;
-});
-//CONTROLLERS-----------------------------------------------
-
-//CORS-----------------------------
-var specificOrgins = "AppOrigins";
-
-builder.Services.AddCors( options => {
-    options.AddPolicy(name: specificOrgins,
-    policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
-    }); } );
-//CORS-----------------------------
-
 //BOOKMARK-SERVICES--------------------------------------
 builder.Services.AddTransient<IFileService, FileService>();
 
@@ -59,6 +37,29 @@ builder.Services.AddScoped<AuthorRepository>();
 builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<UserRepository>();
 //BOOKMARK-SERVICES--------------------------------------
+
+//CORS-----------------------------
+var corsPolicy = "CorsPolicy";
+
+builder.Services.AddCors( options => {
+    options.AddPolicy(name: corsPolicy,
+    builder =>
+    {
+        builder
+        .WithOrigins("http://localhost:5173")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    }); } );
+//CORS-----------------------------
+
+//CONTROLLERS-----------------------------------------------
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.MaxDepth = 64;
+});
+//CONTROLLERS-----------------------------------------------
 
 //CUSTOM-EXCEPTION-HANDLING-------------------------------------
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
@@ -177,7 +178,8 @@ app.UseStaticFiles(new StaticFileOptions
 
 
 //CORS-----------------------------
-app.UseCors(specificOrgins);
+app.UseRouting();
+app.UseCors(corsPolicy);
 //CORS-----------------------------
 
 //SWAGGER----------------------------

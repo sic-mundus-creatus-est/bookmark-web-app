@@ -7,10 +7,7 @@ namespace BookMark.Models.Domain;
 public class User : IdentityUser, IModel
 {
     [PersonalData]
-    public string FirstName { get; set; } = null!;
-    
-    [PersonalData]
-    public string LastName { get; set; } = null!;
+    public string DisplayName { get; set; } = null!;
 
     [PersonalData]
     public string? Country { get; set; }
@@ -33,8 +30,7 @@ public class User : IdentityUser, IModel
         {
             UserName = creationData.Username;
             Email = creationData.Email;
-            FirstName = creationData.FirstName;
-            LastName = creationData.LastName;
+            DisplayName = creationData.DisplayName;
             Country = creationData.Country;
             SecurityStamp = Guid.NewGuid().ToString();
         }
@@ -47,8 +43,7 @@ public class User : IdentityUser, IModel
             response.Id = Id;
             response.Username = UserName!;
             response.Email = Email!;
-            response.FirstName = FirstName;
-            response.LastName = LastName;
+            response.DisplayName = DisplayName;
             response.Country = Country;
         }
     }

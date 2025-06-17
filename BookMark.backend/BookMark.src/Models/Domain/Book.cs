@@ -72,14 +72,13 @@ public class Book : IModel
                     var author = bookAuthor.Author;
                     if (author != null)
                     {
-                        response.Authors.Add(new BookAuthorResponseDTO
+                        response.Authors.Add(new BookAutoIncludesDTO
                         {
                             Id = author.Id,
-                            FirstName = author.FirstName,
-                            LastName = author.LastName
+                            Name = author.Name,
                         });
                     }
-                    else throw new InvalidOperationException($"Book (ID: {Id}) contains a BookAuthor entry with a null Author. This may indicate corrupt or incomplete data.");
+                    else throw new InvalidDataException($"Retrieved a BookAuthor entry with a null Author. This may indicate corrupt or incomplete data.");
                 }
             }
 
@@ -92,13 +91,13 @@ public class Book : IModel
                     var genre = bookGenre.Genre;
                     if (genre != null)
                     {
-                        response.Genres.Add(new BookGenreResponseDTO
+                        response.Genres.Add(new BookAutoIncludesDTO
                         {
                             Id = genre.Id,
                             Name = genre.Name
                         });
                     }
-                    else throw new InvalidOperationException($"Book (ID: {Id}) contains a BookGenre entry with a null Genre. This may indicate corrupt or incomplete data.");
+                    else throw new InvalidDataException($"Retrieved a BookGenre entry with a null Genre. This may indicate corrupt or incomplete data.");
                 }
             }
         }

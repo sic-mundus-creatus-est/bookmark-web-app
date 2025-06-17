@@ -10,19 +10,26 @@ public class CustomExceptionHandler(IProblemDetailsService problemDetailsService
         Exception exception,
         CancellationToken cancellationToken)
     {
+        var statusCode = exception switch
+        {
+            FormatException => StatusCodes.Status400BadRequest,
+            ArgumentException => StatusCodes.Status400BadRequest,
+            KeyNotFoundException => StatusCodes.Status400BadRequest,
+            InvalidOperationException => StatusCodes.Status404NotFound,
+            InvalidDataException => StatusCodes.Status500InternalServerError,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+
         var problemDetails = new ProblemDetails
         {
-            Status = exception switch
-            {
-                ArgumentException => StatusCodes.Status400BadRequest,
-                FormatException => StatusCodes.Status400BadRequest,
-                InvalidOperationException => StatusCodes.Status400BadRequest,
-                _ => StatusCodes.Status500InternalServerError
-            },
+            Status = statusCode,
             Title = "An error occurred",
             Type = exception.GetType().Name,
             Detail = exception.Message
         };
+
+        httpContext.Response.StatusCode = statusCode;
 
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {

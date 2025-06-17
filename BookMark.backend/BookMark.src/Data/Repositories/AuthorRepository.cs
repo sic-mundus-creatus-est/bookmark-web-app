@@ -8,8 +8,9 @@ public class AuthorRepository : BaseRepository<Author>
 
     protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
                                                                         {
-                                                                            nameof(Author.FirstName), 
-                                                                            nameof(Author.LastName), 
-                                                                            nameof(Author.Career)
+                                                                            nameof(Author.Name),
+                                                                            nameof(Author.Biography),
+                                                                            nameof(Author.BirthDate),
+                                                                            nameof(Author.DeathDate)
                                                                         };
 }

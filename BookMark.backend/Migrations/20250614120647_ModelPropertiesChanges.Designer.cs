@@ -4,6 +4,7 @@ using BookMark.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookMark.backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250614120647_ModelPropertiesChanges")]
+    partial class ModelPropertiesChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,14 +48,14 @@ namespace BookMark.backend.Migrations
                     b.Property<string>("Biography")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly?>("BirthDate")
-                        .HasColumnType("date");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateOnly?>("DeathDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfDeath")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()

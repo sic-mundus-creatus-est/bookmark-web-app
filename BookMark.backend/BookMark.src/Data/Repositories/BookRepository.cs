@@ -62,7 +62,7 @@ public class BookRepository : BaseRepository<Book>
         }
 
         if (newBookAuthors.Count == 0)
-            throw new InvalidOperationException("All specified authors are already associated with this book.");
+            throw new ArgumentException("All specified authors are already associated with this book.");
 
         if (newBookAuthors.Count + existingBookAuthorsCount > MAX_BOOK_AUTHORS)
             throw new ArgumentException($"A book cannot have more than {MAX_BOOK_AUTHORS} authors." +
@@ -86,7 +86,7 @@ public class BookRepository : BaseRepository<Book>
                                     .ToListAsync();
 
         if (authorsToRemove.Count == 0)
-            throw new InvalidOperationException("No matching authors found to remove, or they have already been removed from this book.");
+            throw new ArgumentException("No matching authors found to remove, or they have already been removed from this book.");
         
         if (authorsToRemove.Count != authorIds.Count)
             throw new ArgumentException("One or more of the provided author IDs are not associated with this book." +

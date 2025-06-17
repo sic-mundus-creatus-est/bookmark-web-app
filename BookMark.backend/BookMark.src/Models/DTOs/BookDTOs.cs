@@ -8,7 +8,7 @@ namespace BookMark.Models.DTOs;
 public class BookCreateDTO
 {
     [Required]
-    [MaxLength(255)]
+    [MaxLength(256)]
     public string Title { get; set; } = null!;
 
     [Required]
@@ -21,7 +21,7 @@ public class BookCreateDTO
     public List<string> GenreIds { get; set; } = null!;
 
     [Required]
-    [MaxLength(255)]
+    [MaxLength(64)]
     public string OriginalLanguage {get; set; } = null!;
 
     [Required]
@@ -39,10 +39,10 @@ public class BookCreateDTO
 
 public class BookUpdateDTO
 {
-    [MaxLength(255)]
+    [MaxLength(256)]
     public string? Title { get; set; }
 
-    [MaxLength(255)]
+    [MaxLength(64)]
     public string? OriginalLanguage {get; set; }
 
     [Range(0, int.MaxValue)]
@@ -63,14 +63,7 @@ public class BookAddAuthorsDTO
     public BookAuthorRole Role { get; set; }
 }
 
-public class BookAuthorResponseDTO
-{
-    public string Id { get; set; } = null!;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-}
-
-public class BookGenreResponseDTO
+public class BookAutoIncludesDTO
 {
     public string Id { get; set; } = null!;
     public string Name { get; set; } = null!;
@@ -85,6 +78,6 @@ public class BookResponseDTO
     public int PublicationYear { get; set; }
     public string? Description { get; set; }
     public string? CoverImage { get; set; }
-    public List<BookAuthorResponseDTO> Authors { get; set; } = null!;
-    public List<BookGenreResponseDTO> Genres { get; set; } = null!;
+    public List<BookAutoIncludesDTO> Authors { get; set; } = null!;
+    public List<BookAutoIncludesDTO> Genres { get; set; } = null!;
 }
