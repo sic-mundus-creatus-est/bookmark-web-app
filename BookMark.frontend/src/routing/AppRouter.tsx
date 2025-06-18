@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { AppLayout } from "@/components/layouts/app-layout";
 import { TestPage } from "@/pages/TestPage";
 import { BookPage } from "@/pages/BookPage";
+import { AddBookPage } from "@/pages/AddBookPage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -20,16 +21,16 @@ export const AppRouter = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/info",
-        element: <div></div>,
+        path: "/book/:id",
+        element: <BookPage />,
+      },
+      {
+        path: "/add-book",
+        element: <AddBookPage />,
       },
       {
         path: "/",
         element: <TestPage />,
-      },
-      {
-        path: "/book/:id",
-        element: <BookPage />,
       },
     ],
   },

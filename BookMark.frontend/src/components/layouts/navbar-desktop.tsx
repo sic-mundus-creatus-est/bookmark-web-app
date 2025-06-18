@@ -1,8 +1,8 @@
 import { SearchIcon } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import Logo from "@/components/logo";
-import { ContentRow } from "./navbar";
+import { Logo } from "@/components/logo";
+import { navConfig } from "@/config/navConfig";
 
 export function DesktopNavbar() {
   return (
@@ -17,6 +17,25 @@ export function DesktopNavbar() {
       </div>
 
       <SearchBar />
+    </div>
+  );
+}
+
+export function ContentRow() {
+  const contentLinks = navConfig.Categories.items;
+
+  return (
+    <div className="flex text-md flex-wrap font-bold text-popover gap-5">
+      {contentLinks?.map((item) => (
+        <div key={item.title} className="flex items-center space-x-5">
+          <a
+            href={item.to || item.href}
+            className="hover:scale-105 hover:text-primary"
+          >
+            {item.title}
+          </a>
+        </div>
+      ))}
     </div>
   );
 }

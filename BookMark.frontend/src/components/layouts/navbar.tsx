@@ -1,5 +1,4 @@
 import { LogIn, UserPlus } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 import { DesktopNavbar } from "@/components/layouts/navbar-desktop";
 import { MobileNavbar } from "@/components/layouts/navbar-mobile";
@@ -38,28 +37,6 @@ function AuthRow() {
           );
         })}
       </div>
-    </div>
-  );
-}
-
-export function ContentRow() {
-  const contentLinks = navConfig.Categories.items;
-
-  return (
-    <div className="flex text-md flex-wrap font-bold text-popover">
-      {contentLinks?.map((item, index) => (
-        <div key={item.title} className="flex items-center space-x-5">
-          <a
-            href={item.to || item.href}
-            className="transition-transform duration-200 ease-in-out hover:scale-105 hover:text-primary hover:drop-shadow-md"
-          >
-            {item.title}
-          </a>
-          {index < contentLinks.length - 1 && (
-            <Separator orientation="vertical" />
-          )}
-        </div>
-      ))}
     </div>
   );
 }

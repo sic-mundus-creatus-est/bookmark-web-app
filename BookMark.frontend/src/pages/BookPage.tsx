@@ -2,12 +2,10 @@ import { useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { RatingToStars } from "@/lib/utils/bookUtils";
-import {
-  getBookById,
-  FILE_FETCH_BASE_URL,
-} from "@/lib/services/api-calls/bookService";
+import { getBookById } from "@/lib/services/api-calls/bookService";
 import { useEffect, useState } from "react";
 import { Book } from "@/lib/types/book";
+import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
 
 export function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -51,8 +49,8 @@ export function BookPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-4 sm:mx-4 md:mx-14 lg:mx-24 flex flex-col gap-14">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-10 items-start p-4">
+    <div className="container mx-auto px-4 sm:px-6 md:px-10 lg:px-14 xl:px-24 flex-grow">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4">
         {/* Cover */}
         <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
           <CardContent
@@ -62,11 +60,11 @@ export function BookPage() {
             <img
               src={
                 book.coverImage
-                  ? `${FILE_FETCH_BASE_URL}${book.coverImage}`
+                  ? `${API_FILE_RESOURCES_URL}${book.coverImage}`
                   : "/cover_placeholder.jpg"
               }
               alt={`Cover of ${book.title}`}
-              className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent"
+              className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent-foreground"
             />
           </CardContent>
           <CardFooter className="pb-2 flex flex-col px-4">
@@ -74,14 +72,12 @@ export function BookPage() {
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-5">
                   <RatingToStars rating={3.4} size="3xl" />
-                  <span className="text-3xl font-medium text-muted">
-                    {/* {book.rating.toFixed(1)} */} {3.4}
-                  </span>
+                  <span className="text-3xl font-medium text-muted">{3.4}</span>
                 </div>
 
                 <div className="pl-1 -mt-3">
                   <span className="text-xs font-mono text-background">
-                    {/* {book.ratingCount?.toLocaleString() ?? 0} ratings */}{" "}
+                    {" "}
                     18587 ratings
                   </span>
                 </div>
@@ -107,7 +103,7 @@ export function BookPage() {
               <span className="italic">by </span>
               {book.authors.map((a, i) => (
                 <span key={a.id} className="text-xl">
-                  {a.firstName} {a.lastName}
+                  {a.name}
                   {i < book.authors.length - 1 ? ", " : ""}
                 </span>
               ))}

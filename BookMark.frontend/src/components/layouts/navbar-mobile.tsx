@@ -4,19 +4,17 @@ import Hamburger from "hamburger-react";
 
 import { navConfig } from "@/config/navConfig";
 import { Input } from "@/components/ui/input";
-import Logo from "@/components/logo";
+import { Logo } from "@/components/logo";
 
 interface IDrawerButtonProps {
-  text: string;
+  title: string;
   onClick: () => void;
 }
 
-const DrawerButton: React.FC<IDrawerButtonProps> = ({ text, onClick }) => {
+const DrawerButton: React.FC<IDrawerButtonProps> = ({ title, onClick }) => {
   return (
     <div className="w-full px-9 pt-3 pb-0 cursor-pointer" onClick={onClick}>
-      <span className="text-xl text-end block font-bold font- truncate">
-        {text}
-      </span>
+      <span className="block text-xl text-end font-bold truncate">{title}</span>
     </div>
   );
 };
@@ -39,9 +37,9 @@ export function MobileNavbar() {
 
   return (
     <>
-      <div className="lg:hidden w-full items-center">
+      <div className="w-full items-center lg:hidden">
         {/* static */}
-        <div className="flex justify-between pb-2 flex-wrap px-2">
+        <div className="flex flex-wrap justify-between pb-2 px-2">
           <Logo />
 
           <Hamburger
@@ -62,17 +60,24 @@ export function MobileNavbar() {
           }`}
         >
           {shouldRender && (
-            <div className="flex flex-col space-y-1 pb-4 pt-2 px-4 items-stretch text-background">
-              <div className="bg-accent rounded-lg w-full pb-3 pt-1 px-4 flex flex-col shadow-xl">
-                {navConfig.Categories.items!.map((item) => (
-                  <div key={item.title} className="hover:text-popover">
-                    <DrawerButton
-                      text={item.title.toUpperCase()}
-                      onClick={() => console.log(`${item.title} clicked`)}
-                    />
-                    <div className="h-px w-full bg-popover"></div>
-                  </div>
-                ))}
+            <div className="flex flex-col items-stretch space-y-1 pb-4 pt-2 px-4 text-background">
+              <div className="w-full flex flex-col rounded-lg pb-3 pt-1 px-2 bg-accent border-b-4 border-popover">
+                {navConfig.Categories.items!.map((item, index) => {
+                  return (
+                    <div
+                      key={item.title}
+                      className={`rounded-md font-[Verdana] hover:text-popover ${
+                        (index == 0 || index == 1) &&
+                        `border-b-4 border-accent-foreground`
+                      } ${index == 2 && `-mb-1`}`}
+                    >
+                      <DrawerButton
+                        title={item.title.toUpperCase()}
+                        onClick={() => console.log(`${item.title} clicked`)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -84,9 +89,9 @@ export function MobileNavbar() {
         >
           <Input
             placeholder="Search..."
-            className="bg-muted text-accent rounded-lg border-b-2 border-accent w-full"
+            className="w-full rounded-lg bg-muted text-accent border-b-2 border-accent"
           />
-          <span className="absolute right-0 mr-6 transform -translate-y-9 bg-accent p-2 rounded-r-lg text-background">
+          <span className="absolute right-0 mr-6 p-2 rounded-r-lg bg-accent text-background transform -translate-y-9">
             <SearchIcon size={20} strokeWidth={3} />
           </span>
         </div>

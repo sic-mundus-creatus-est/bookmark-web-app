@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+
+import { Book } from "@/lib/types/book";
+import { Author } from "@/lib/types/author";
 import { BookCard, BookCardPlaceholder } from "@/components/ui/book-card";
 import { Pagination } from "@/components/pagination";
-import { Book } from "@/lib/types/book";
 
 interface BookCatalogProps {
   itemsPerPage?: number;
@@ -34,7 +36,9 @@ export function BookCatalog({
       (book): Book => ({
         id: book.id,
         title: book.title,
-        authors: book.authors?.map((a: any) => a),
+        authors: book.authors?.map((a: Author) => a),
+        originalLanguage: book.originalLanguage,
+        pageCount: book.pageCount,
         description: book.description,
         coverImage: book.coverImage,
         rating: Math.random() * 2 + 3, // TODO
@@ -53,8 +57,18 @@ export function BookCatalog({
 
         setBooks(books);
         setTotalPages(response.totalPages);
-      } catch (error) {
-        console.error("Failed to fetch books", error);
+      } catch (error: any) {
+        console.error(
+          `ERROR WHILE FETCHING BOOKS:`,
+          `\n----------------------------------`,
+          `\n[${error.instance}]`,
+          `\nError: ${error.status}`,
+          `\n----------------------------------`,
+          `\nType: ${error.type}`,
+          `\nTitle: ${error.title}`,
+          `\nDetail: ${error.detail}`,
+          `\nTrace ID: ${error.traceId}`
+        );
       } finally {
         setLoading(false);
       }

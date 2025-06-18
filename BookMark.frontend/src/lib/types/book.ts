@@ -1,26 +1,16 @@
-export type Book = {
+import { Author } from "@/lib/types/author";
+import { Genre } from "@/lib/types//genre";
+
+export interface Book {
   id: string;
   title: string;
   authors: Author[];
+  pageCount: number;
+  originalLanguage: string;
   genres?: Genre[];
   publicationYear?: string;
-  pageCount?: number;
-  originalLanguage?: string;
   description?: string;
   coverImage?: string;
   rating?: number;
   ratingCount?: number;
-};
-
-export type Author = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  career?: string;
-};
-
-export type Genre = {
-  id: string;
-  name: string;
-  description?: string;
-};
+}

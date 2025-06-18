@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { FILE_FETCH_BASE_URL } from "@/lib/services/api-calls/bookService";
+import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
 import { Book } from "@/lib/types/book";
 import { RatingToStars } from "@/lib/utils/bookUtils";
 import { Link } from "react-router-dom";
@@ -19,7 +19,7 @@ export function BookCard({ book }: { book: Book }) {
           <img
             src={
               book.coverImage
-                ? `${FILE_FETCH_BASE_URL}${book.coverImage}`
+                ? `${API_FILE_RESOURCES_URL}${book.coverImage}`
                 : "/cover_placeholder.jpg"
             }
             alt={`Cover of ${book.title}`}
@@ -58,7 +58,7 @@ export function BookCard({ book }: { book: Book }) {
             <span className="italic font">by </span>
             {book.authors.map((a, i) => (
               <span key={a.id} className="font-semibold">
-                {a.firstName} {a.lastName}
+                {a.name}
                 {i < book.authors.length - 1 ? ", " : ""}
               </span>
             ))}

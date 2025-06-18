@@ -1,5 +1,5 @@
 import { roles } from "@/config/roles";
-import { apiCall } from "./api";
+import { apiCall, GET } from "./api";
 
 export const getRoleTestMessage = async (userRoles: string[]) => {
   let endpoint = "/test/guest-user-test"; // Defaults to guest
@@ -10,10 +10,5 @@ export const getRoleTestMessage = async (userRoles: string[]) => {
     endpoint = "/test/regular-user-test";
   }
 
-  try {
-    const data = await apiCall(endpoint, "GET", null);
-    return data;
-  } catch (error) {
-    throw new Error("Failed to fetch role message: " + error);
-  }
+  return await apiCall({ method: GET, endpoint: endpoint });
 };

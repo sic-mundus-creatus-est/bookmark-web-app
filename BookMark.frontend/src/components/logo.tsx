@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import { appConfig } from "@/config/appConfig";
 import { navConfig } from "@/config/navConfig";
 
-export default function Logo() {
+export function Logo() {
   return (
     <NavLink
       to={navConfig.Home.to!}
