@@ -6,7 +6,7 @@ import { getAllGenres } from "@/lib/services/api-calls/genreService";
 import { AuthorWithNameAndRole } from "@/lib/types/author";
 import { Genre } from "@/lib/types/genre";
 import { ImageUp, Plus, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AUTHOR_ROLES = [
@@ -318,7 +318,7 @@ export function AddBookPage() {
                 Genres:
               </div>
               <div className="flex flex-wrap gap-1">
-                {allGenres.map((genre, i) => (
+                {chosenGenres.map((genre, i) => (
                   <div key={i} className="inline-flex items-center gap-1">
                     <GenreSelector
                       genre={genre}
@@ -598,32 +598,46 @@ function GenreSelector({
           tabIndex={-1}
           className="z-20 absolute overflow-auto rounded-lg bg-accent border-accent border-2 right-0 font-[Helvetica] font-medium"
         >
-          {availableGenres.map((g) => (
-            <li
-              key={g.id}
-              role="option"
-              tabIndex={0}
-              aria-selected={genre.id === g.id}
-              className={`cursor-pointer px-3 hover:bg-accent hover:text-popover ${
-                genre.id === g.id
-                  ? "bg-accent text-muted font-semibold border-4 border-popover"
-                  : "text-muted"
-              }`}
-              onClick={() => {
-                onChange(g);
-                setDropdownOpen(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onChange(g);
-                  setDropdownOpen(false);
-                }
-              }}
-            >
-              {g.name}
-            </li>
-          ))}
+          {availableGenres.map((g, index) => {
+            const nextGenre = availableGenres[index + 1];
+            const isCurrentSelected = genre.id === g.id;
+            const isNextSelected = nextGenre && genre.id === nextGenre.id;
+
+            return (
+              <Fragment key={g.id}>
+                <li
+                  role="option"
+                  tabIndex={0}
+                  aria-selected={isCurrentSelected}
+                  className={`cursor-pointer px-3 hover:bg-accent hover:text-popover ${
+                    isCurrentSelected
+                      ? "bg-accent text-muted font-semibold border-4 border-popover"
+                      : "text-muted"
+                  }`}
+                  onClick={() => {
+                    onChange(g);
+                    setDropdownOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onChange(g);
+                      setDropdownOpen(false);
+                    }
+                  }}
+                >
+                  {g.name}
+                </li>
+
+                {/* Separator */}
+                {index < availableGenres.length - 1 &&
+                  !isCurrentSelected &&
+                  !isNextSelected && (
+                    <li aria-hidden="true" className="h-0.5 bg-popover my-1" />
+                  )}
+              </Fragment>
+            );
+          })}
         </ul>
       )}
     </div>

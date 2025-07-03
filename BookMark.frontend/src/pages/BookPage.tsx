@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { RatingToStars } from "@/lib/utils/bookUtils";
@@ -118,12 +118,14 @@ export function BookPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {book.genres!.map((genre) => (
-                  <Badge
-                    key={`${genre.id}`}
-                    className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica]"
-                  >
-                    {genre.name}
-                  </Badge>
+                  <Link to={`/genre/${genre.id}`}>
+                    <Badge
+                      key={`${genre.id}`}
+                      className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica]"
+                    >
+                      {genre.name}
+                    </Badge>
+                  </Link>
                 ))}
               </div>
             </div>

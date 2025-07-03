@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 export function BookCard({ book }: { book: Book }) {
   return (
     <Link to={`/book/${book.id}`}>
-      <Card className="rounded-lg flex flex-col relative bg-muted">
+      <Card className="rounded-lg flex flex-col relative">
         <div
           className="relative group w-full overflow-hidden"
           style={{ aspectRatio: "2/3" }}
@@ -28,7 +28,7 @@ export function BookCard({ book }: { book: Book }) {
 
           {/* Book description on hover */}
           <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none 
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg duration-300 pointer-events-none 
               bg-gradient-to-b from-accent/20 via-accent/60 to-accent/70"
           />
 
@@ -47,7 +47,7 @@ export function BookCard({ book }: { book: Book }) {
         </div>
 
         {/* Book Details */}
-        <CardContent className="p-2 flex-grow flex flex-col border-r-2 border-l-2 border-b-4 border-accent rounded-b-lg">
+        <CardContent className="p-2 flex-grow flex flex-col border-r-2 border-l-2 border-b-4 border-accent rounded-b-lg  bg-muted">
           {/* Title - exactly 2 lines */}
           <h3 className="font-bold font-[Helvetica] text-md leading-tight line-clamp-2 mb-1 h-[2.5rem] overflow-hidden text-accent hover:text-popover">
             {book.title}

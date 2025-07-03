@@ -1,4 +1,5 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
+
 import { PrivateRoute } from "./PrivateRoute";
 import { HomePage } from "../pages/HomePage";
 import { LoginPage } from "../pages/LoginPage";
@@ -6,6 +7,7 @@ import { AppLayout } from "@/components/layouts/app-layout";
 import { TestPage } from "@/pages/TestPage";
 import { BookPage } from "@/pages/BookPage";
 import { AddBookPage } from "@/pages/AddBookPage";
+import { GenrePage } from "@/pages/GenrePage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -27,6 +29,10 @@ export const AppRouter = createBrowserRouter([
       {
         path: "/add-book",
         element: <AddBookPage />,
+      },
+      {
+        path: "/genre/:id",
+        element: <GenrePage />,
       },
       {
         path: "/",
