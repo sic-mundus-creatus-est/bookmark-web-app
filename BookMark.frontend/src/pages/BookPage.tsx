@@ -102,10 +102,12 @@ export function BookPage() {
             >
               <span className="italic">by </span>
               {book.authors.map((a, i) => (
-                <span key={a.id} className="text-xl">
-                  {a.name}
-                  {i < book.authors.length - 1 ? ", " : ""}
-                </span>
+                <Link to={`/author/${a.id}`}>
+                  <span key={a.id} className="text-xl hover:text-popover">
+                    {a.name}
+                    {i < book.authors.length - 1 ? ", " : ""}
+                  </span>
+                </Link>
               ))}
             </p>
           </div>
@@ -121,7 +123,7 @@ export function BookPage() {
                   <Link to={`/genre/${genre.id}`}>
                     <Badge
                       key={`${genre.id}`}
-                      className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica]"
+                      className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover"
                     >
                       {genre.name}
                     </Badge>

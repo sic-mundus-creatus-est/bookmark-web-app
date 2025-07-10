@@ -27,7 +27,7 @@ export function GenrePage() {
 
   //==============================================================================
   useEffect(() => {
-    async function fetchBook() {
+    async function fetchGenre() {
       try {
         setLoading(true);
         setError(false);
@@ -42,7 +42,7 @@ export function GenrePage() {
       }
     }
 
-    fetchBook();
+    fetchGenre();
   }, [id]);
   //-----------------------------------------------------
   if (loading) {
@@ -158,7 +158,7 @@ interface GenreDescriptionProps {
   description?: string;
   maxLength?: number;
 }
-function GenreDescription({
+export function GenreDescription({
   description = "No description",
   maxLength = 400,
 }: GenreDescriptionProps) {

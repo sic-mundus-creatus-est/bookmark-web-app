@@ -2,8 +2,8 @@ export interface Author {
   id: string;
   name: string;
   biography?: string;
-  dateOfBirth?: Date;
-  dateOfDeath?: Date;
+  birthDate?: string;
+  deathDate?: string;
 }
 
 export interface AuthorWithRole {

@@ -8,6 +8,7 @@ import { TestPage } from "@/pages/TestPage";
 import { BookPage } from "@/pages/BookPage";
 import { AddBookPage } from "@/pages/AddBookPage";
 import { GenrePage } from "@/pages/GenrePage";
+import { AuthorPage } from "@/pages/AuthorPage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -23,16 +24,20 @@ export const AppRouter = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/book/:id",
-        element: <BookPage />,
-      },
-      {
         path: "/add-book",
         element: <AddBookPage />,
       },
       {
+        path: "/book/:id",
+        element: <BookPage />,
+      },
+      {
         path: "/genre/:id",
         element: <GenrePage />,
+      },
+      {
+        path: "/author/:id",
+        element: <AuthorPage />,
       },
       {
         path: "/",

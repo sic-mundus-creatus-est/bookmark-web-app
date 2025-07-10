@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 
-import { UserRoundPen } from "lucide-react";
 import { BookCopy } from "lucide-react";
 
 import { Footer } from "@/components/layouts/footer";
@@ -8,6 +7,7 @@ import { Navbar } from "@/components/layouts/navbar";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { FloatingActionMenu } from "@/components/ui/floating-action-menu";
 import { AddGenreModal } from "@/components/layouts/add-genre-modal";
+import { AddAuthorModal } from "./add-author-modal";
 
 export function AppLayout() {
   return (
@@ -25,11 +25,7 @@ export function AppLayout() {
           to="/add-book"
         />
         <AddGenreModal />
-        <FloatingActionButton
-          label="Add Author"
-          icon={<UserRoundPen />}
-          to="/add-author"
-        />
+        <AddAuthorModal />
       </FloatingActionMenu>
     </div>
   );
