@@ -1,6 +1,6 @@
 import { Book } from "@/lib/types/book";
-import { BookCard } from "../ui/book-card";
 import { Author } from "@/lib/types/author";
+import { BookCard } from "@/components/ui/book/book-card";
 
 import {
   Carousel,

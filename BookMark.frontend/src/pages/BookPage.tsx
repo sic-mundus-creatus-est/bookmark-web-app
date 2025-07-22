@@ -1,11 +1,11 @@
 import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { RatingToStars } from "@/lib/utils/bookUtils";
 import { getBookById } from "@/lib/services/api-calls/bookService";
 import { useEffect, useState } from "react";
 import { Book } from "@/lib/types/book";
 import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
+import { BookRatingStars } from "@/components/ui/book/book-rating-stars";
 
 export function BookPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,7 +49,7 @@ export function BookPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 md:px-10 lg:px-14 xl:px-24 flex-grow">
+    <div className="container mx-auto px-4 sm:px-6 md:px-4 lg:px-2 xl:px-10 2xl:px-24 flex-grow">
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4">
         {/* Cover */}
         <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
@@ -71,7 +71,7 @@ export function BookPage() {
             <div className="flex justify-center mx-10">
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-5">
-                  <RatingToStars rating={3.4} size="3xl" />
+                  <BookRatingStars rating={3.4} starSize="3xl" showEmptyStars />
                   <span className="text-3xl font-medium text-muted">{3.4}</span>
                 </div>
 
@@ -165,7 +165,7 @@ export function BookPage() {
             </div>
           </div>
 
-          <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 text-balance">
+          <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 text-balance flex">
             {book.description}
           </p>
         </div>

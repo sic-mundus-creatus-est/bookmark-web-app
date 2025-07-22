@@ -1,4 +1,4 @@
-import { Author } from "@/lib/types/author";
+import { Author, AuthorWithRole } from "@/lib/types/author";
 import { Genre } from "@/lib/types//genre";
 
 export interface Book {
@@ -13,4 +13,15 @@ export interface Book {
   coverImage?: string;
   rating?: number;
   ratingCount?: number;
+}
+
+export interface CreateBookParams {
+  title: string;
+  authorsWithRoles: AuthorWithRole[];
+  genreIds: string[];
+  originalLanguage: string;
+  pageCount: number;
+  publicationYear?: number;
+  description?: string;
+  coverImageFile?: File;
 }

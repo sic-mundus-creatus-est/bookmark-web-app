@@ -5,22 +5,12 @@ import {
   buildConstrainedQueryParams,
   ConstrainedQueryParams,
 } from "@/lib/services/api-calls/api";
-import { AuthorWithRole } from "@/lib/types/author";
+import { CreateBookParams } from "@/lib/types/book";
 
 export function getBookById(id: string) {
   return apiCall({ method: GET, endpoint: `/api/books/get/${id}` });
 }
 
-interface CreateBookParams {
-  title: string;
-  authorsWithRoles: AuthorWithRole[];
-  genreIds: string[];
-  originalLanguage: string;
-  pageCount: number;
-  publicationYear?: number;
-  description?: string;
-  coverImageFile?: File;
-}
 export async function createBook(params: CreateBookParams) {
   const formData = new FormData();
 

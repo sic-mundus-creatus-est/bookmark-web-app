@@ -1,14 +1,19 @@
-interface RatingToStarsProps {
+interface RatingStarsProps {
   rating: number;
-  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+  starSize?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+  showEmptyStars?: boolean;
 }
 
-export const RatingToStars = ({ rating, size = "lg" }: RatingToStarsProps) => {
+export const BookRatingStars = ({
+  rating,
+  starSize = "lg",
+  showEmptyStars = false,
+}: RatingStarsProps) => {
   const fullStars = Math.floor(rating);
   const fraction = rating - fullStars;
   const emptyStars = 5 - fullStars - (fraction > 0 ? 1 : 0);
 
-  const sizeClass = {
+  const starTextSize = {
     xs: "text-xs",
     sm: "text-sm",
     md: "text-base",
@@ -16,9 +21,9 @@ export const RatingToStars = ({ rating, size = "lg" }: RatingToStarsProps) => {
     xl: "text-xl",
     "2xl": "text-2xl",
     "3xl": "text-3xl",
-  }[size];
+  }[starSize];
 
-  const fractionSizeClass = {
+  const fractionTextSize = {
     xs: "text-base",
     sm: "text-lg",
     md: "text-xl",
@@ -26,33 +31,37 @@ export const RatingToStars = ({ rating, size = "lg" }: RatingToStarsProps) => {
     xl: "text-3xl",
     "2xl": "text-4xl",
     "3xl": "text-4xl",
-  }[size];
+  }[starSize];
 
   return (
     <div className="flex items-center">
       {/* Full stars */}
       {[...Array(fullStars)].map((_, i) => (
-        <span key={`full-star-${i}`} className={`${sizeClass} text-popover`}>
+        <span key={`full-star-${i}`} className={`${starTextSize} text-popover`}>
           ★
         </span>
       ))}
 
-      {/* Fractions */}
+      {/* Fractions (+) */}
       {fraction > 0 && (
         <span
           key="fraction-plus"
-          className={`${fractionSizeClass} font-bold text-popover pt-1`}
+          className={`${fractionTextSize} font-bold text-popover pt-1`}
         >
           ⁺
         </span>
       )}
 
       {/* Empty stars */}
-      {[...Array(emptyStars)].map((_, i) => (
-        <span key={`empty-star-${i}`} className={`${sizeClass} text-muted`}>
-          ★
-        </span>
-      ))}
+      {showEmptyStars &&
+        [...Array(emptyStars)].map((_, i) => (
+          <span
+            key={`empty-star-${i}`}
+            className={`${starTextSize} text-muted`}
+          >
+            ★
+          </span>
+        ))}
     </div>
   );
 };

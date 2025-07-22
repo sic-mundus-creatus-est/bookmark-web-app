@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Book } from "@/lib/types/book";
 import { Author } from "@/lib/types/author";
-import { BookCard, BookCardPlaceholder } from "@/components/ui/book-card";
+import { BookCard, BookCardPlaceholder } from "@/components/ui/book/book-card";
 import { Pagination } from "@/components/pagination";
 
 interface BookCatalogProps {
@@ -79,7 +79,7 @@ export function BookCatalog({
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-4 justify-items-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4 justify-items-center">
         {loading
           ? Array.from({ length: itemsPerPage }).map((_, i) => (
               <BookCardPlaceholder key={`loading-placeholder-${i}`} />

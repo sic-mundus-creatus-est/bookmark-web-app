@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
 import { Book } from "@/lib/types/book";
-import { RatingToStars } from "@/lib/utils/bookUtils";
 import { Link } from "react-router-dom";
+import { BookRatingStars } from "./book-rating-stars";
 
 /**
  * A BookCard component displays a book's cover, title, author, and rating with a hover effect that reveals a truncated description.
@@ -47,15 +47,15 @@ export function BookCard({ book }: { book: Book }) {
         </div>
 
         {/* Book Details */}
-        <CardContent className="p-2 flex-grow flex flex-col border-r-2 border-l-2 border-b-4 border-accent rounded-b-lg  bg-muted">
+        <CardContent className="p-2 pb-0 flex-grow flex flex-col border-r-2 border-l-2 border-b-4 border-accent rounded-b-lg  bg-muted">
           {/* Title - exactly 2 lines */}
-          <h3 className="font-bold font-[Helvetica] text-md leading-tight line-clamp-2 mb-1 h-[2.5rem] overflow-hidden text-accent hover:text-popover">
+          <h3 className="font-bold font-[Helvetica] text-lg leading-tight line-clamp-2 mb-1 h-[2.5rem] overflow-hidden text-accent hover:text-popover">
             {book.title}
           </h3>
 
           {/* Author */}
-          <div className="text-xs font-[Verdana] text-accent line-clamp-1">
-            <span className="italic font">by </span>
+          <div className="text-sfont-[Verdana] text-accent line-clamp-1">
+            <span className="italic">by </span>
             {book.authors.map((a, i) => (
               <span key={a.id} className="font-semibold">
                 {a.name}
@@ -67,8 +67,8 @@ export function BookCard({ book }: { book: Book }) {
           {/* Rating */}
           <div className="mt-auto">
             <div className="flex items-center -mt-1 space-x-1">
-              <RatingToStars rating={book.rating!} />
-              <span className="text-sm text-accent font-[Verdana]">
+              <BookRatingStars rating={book.rating!} />
+              <span className="text-sm text-accent font-[Verdana] font-semibold">
                 {book.rating?.toFixed(1)}
               </span>
             </div>
