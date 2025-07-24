@@ -1,20 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface BookPageCountInputProps {
-  pageCount: number;
-  setPageCount: (count: number) => void;
+  onChange?: (count: number) => void;
 }
-export function BookPageCountInput({
-  pageCount,
-  setPageCount,
-}: BookPageCountInputProps) {
+export function BookPageCountInput({ onChange }: BookPageCountInputProps) {
+  const [pageCount, setPageCount] = useState(0);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = parseInt(e.target.value, 10);
-    setPageCount(Number.isNaN(num) ? 0 : Math.max(0, num));
+    const validCount = Number.isNaN(num) ? 0 : Math.max(0, num);
+    setPageCount(validCount);
+    onChange?.(validCount);
   };
 
-  const increase = () => setPageCount(pageCount + 1);
-  const decrease = () => setPageCount(Math.max(0, pageCount - 1));
+  const increase = () => {
+    const newCount = pageCount + 1;
+    setPageCount(newCount);
+    onChange?.(newCount);
+  };
+
+  const decrease = () => {
+    const newCount = Math.max(0, pageCount - 1);
+    setPageCount(newCount);
+    onChange?.(newCount);
+  };
 
   return (
     <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center px-2">

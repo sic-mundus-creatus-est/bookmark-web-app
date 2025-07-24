@@ -1,16 +1,39 @@
 import { ImageUp, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface BookCoverImageUploadProps {
-  coverImageFile: File | null;
-  setCoverImageFile: (file: File | null) => void;
-  setPreviewUrl: (coverUrl: string) => void;
+  onChange?: (file: File | null) => void;
 }
 
-export function BookCoverImageUpload({
-  coverImageFile,
-  setCoverImageFile,
-  setPreviewUrl,
-}: BookCoverImageUploadProps) {
+export function BookCoverImageUpload({ onChange }: BookCoverImageUploadProps) {
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCoverImageFile(file);
+      setPreviewUrl(url);
+      onChange?.(file);
+    }
+  };
+
+  const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCoverImageFile(null);
+    setPreviewUrl("");
+    onChange?.(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      // to avoid memory leaks
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   return (
     <label
       title="Upload Cover"
@@ -21,20 +44,14 @@ export function BookCoverImageUpload({
         id="cover-image-upload"
         type="file"
         accept=".jpg,.jpeg,.png"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setCoverImageFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
-          }
-        }}
+        onChange={handleFileChange}
         className="hidden"
       />
       <div className="relative w-full h-full">
         {coverImageFile ? (
           <>
             <img
-              src={URL.createObjectURL(coverImageFile)}
+              src={previewUrl}
               alt="Cover Preview"
               className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
             />
@@ -42,12 +59,7 @@ export function BookCoverImageUpload({
             <button
               title="Remove Cover"
               className="absolute top-1 right-1 bg-accent text-muted hover:text-red-500 rounded-full p-1  m-1 shadow-md border-popover border-2"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setCoverImageFile(null);
-                setPreviewUrl("");
-              }}
+              onClick={handleRemoveImage}
             >
               <X size={17} strokeWidth={3} />
             </button>

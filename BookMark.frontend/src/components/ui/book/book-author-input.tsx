@@ -3,33 +3,29 @@ import { Fragment, useEffect, useRef, useState } from "react";
 
 interface BookAuthorInputProps {
   placeholder?: string;
-  inputValue: string;
-  selectedBookAuthors: AuthorWithNameAndRole[];
-  onInputChange: (val: string) => void;
-  onAuthorSelect: (author: AuthorWithNameAndRole) => void;
-  fetchAuthorSuggestions: (query: string) => Promise<any[]>;
+  selectedAuthors: AuthorWithNameAndRole[];
+  fetchAuthorSuggestions: (query: string) => Promise<AuthorWithNameAndRole[]>;
+  onChange?: (authors: AuthorWithNameAndRole[]) => void;
 }
 export function BookAuthorInput({
-  placeholder,
-  inputValue,
-  selectedBookAuthors,
-  onInputChange,
-  onAuthorSelect,
+  placeholder = "Search authors...",
+  selectedAuthors,
   fetchAuthorSuggestions,
+  onChange,
 }: BookAuthorInputProps) {
+  const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<AuthorWithNameAndRole[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedSuggestion, setFocusedSuggestion] = useState<number | null>(
     null
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
-
   const cacheRef = useRef<Record<string, AuthorWithNameAndRole[]>>({});
   const cacheKeysRef = useRef<string[]>([]);
 
   const availableSuggestions = suggestions.filter(
-    (s) => !selectedBookAuthors.some((a) => a.id === s.id)
+    (s) => !selectedAuthors.some((a) => a.id === s.id)
   );
 
   useEffect(() => {
@@ -96,13 +92,22 @@ export function BookAuthorInput({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const handleSelectAuthor = (author: AuthorWithNameAndRole) => {
+    author.roleId = 0;
+    const updatedAuthors = [...selectedAuthors, author];
+    onChange?.(updatedAuthors);
+    setInputValue("");
+    setShowSuggestions(false);
+    setFocusedSuggestion(null);
+  };
+
   return (
     <div className="relative" ref={containerRef}>
       <input
         type="text"
         value={inputValue}
         onChange={(e) => {
-          onInputChange(e.target.value);
+          setInputValue(e.target.value);
           setFocusedSuggestion(0);
           setShowSuggestions(true);
         }}
@@ -136,9 +141,7 @@ export function BookAuthorInput({
                 : availableSuggestions[0];
 
             if (selected) {
-              onAuthorSelect(selected);
-              setShowSuggestions(false);
-              setFocusedSuggestion(null);
+              handleSelectAuthor(selected);
             }
           } else if (showSuggestions && e.key === "Escape") {
             setShowSuggestions(false);
@@ -158,11 +161,7 @@ export function BookAuthorInput({
                     : ""
                 }`}
                 onMouseEnter={() => setFocusedSuggestion(index)}
-                onClick={() => {
-                  onAuthorSelect(author);
-                  setShowSuggestions(false);
-                  setFocusedSuggestion(null);
-                }}
+                onClick={() => handleSelectAuthor(author)}
               >
                 {author.name}
               </li>

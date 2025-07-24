@@ -1,29 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface BookTitleInputProps {
-  title: string;
   maxLength?: number;
-  setTitle: (value: string) => void;
+  onChange?: (value: string) => void;
 }
 export function BookTitleInput({
-  title,
   maxLength = 128,
-  setTitle,
+  onChange,
 }: BookTitleInputProps) {
+  const [title, setTitle] = useState("");
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const resizeTextarea = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTitle(e.target.value);
-    resizeTextarea();
-  };
 
   useEffect(() => {
     resizeTextarea();
@@ -35,6 +22,21 @@ export function BookTitleInput({
     window.addEventListener("resize", handleWindowResize);
     return () => window.removeEventListener("resize", handleWindowResize);
   }, [title]);
+
+  const resizeTextarea = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setTitle(newValue);
+    if (onChange) onChange(newValue);
+    resizeTextarea();
+  };
 
   return (
     <div>

@@ -23,5 +23,5 @@ export interface CreateBookParams {
   pageCount: number;
   publicationYear?: number;
   description?: string;
-  coverImageFile?: File;
+  coverImageFile?: File | null;
 }
