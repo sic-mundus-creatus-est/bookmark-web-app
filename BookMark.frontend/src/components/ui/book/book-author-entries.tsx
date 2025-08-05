@@ -4,41 +4,48 @@ import { X } from "lucide-react";
 
 import { BookAuthorRoleSelector } from "@/components/ui/book/book-author-role-selector";
 import { AuthorWithNameAndRole } from "@/lib/types/author";
+import { bookAuthorRoles } from "@/config/roles";
 
 interface BookAuthorEntriesProps {
-  authors: AuthorWithNameAndRole[];
-  onChange: (updatedAuthors: AuthorWithNameAndRole[]) => void;
+  entries?: AuthorWithNameAndRole[];
+  onChange?: (updatedAuthors: AuthorWithNameAndRole[]) => void;
 }
 export function BookAuthorEntries({
-  authors,
+  entries = [],
   onChange,
 }: BookAuthorEntriesProps) {
   const handleAuthorRoleChange = (authorIndex: number, newRoleId: number) => {
-    const updatedAuthors = [...authors];
+    const updatedAuthors = [...entries];
     updatedAuthors[authorIndex] = {
       ...updatedAuthors[authorIndex],
       roleId: newRoleId,
     };
-    onChange(updatedAuthors);
+    onChange?.(updatedAuthors);
   };
 
   const handleRemoveAuthor = (index: number) => {
     // skips the removed author
     const updatedAuthors = [
-      ...authors.slice(0, index),
-      ...authors.slice(index + 1),
+      ...entries.slice(0, index),
+      ...entries.slice(index + 1),
     ];
-    onChange(updatedAuthors);
+    onChange?.(updatedAuthors);
   };
 
   return (
     <>
-      <span className="italic">by </span>
-      {authors.map((author, i) => (
-        <div key={i} className="inline-flex items-center gap-2 mr-3">
+      <span className="italic font-serif">by </span>
+      {entries.map((author, i) => (
+        <div key={author.id} className="inline-flex items-center gap-2 mr-3">
           <div className="inline-flex gap-1">
             <Link to={`/author/${author.id}`}>
-              <span className="text-accent hover:text-popover">
+              <span
+                className="text-accent hover:text-popover"
+                title={`${
+                  bookAuthorRoles[author.roleId as keyof typeof bookAuthorRoles]
+                    .label
+                }`}
+              >
                 {author.name}
               </span>
             </Link>
@@ -57,7 +64,7 @@ export function BookAuthorEntries({
             <X strokeWidth={5} size={22} className="p-1" />
           </button>
 
-          {authors.length > 1 && i !== authors.length - 1 && (
+          {entries.length > 1 && i !== entries.length - 1 && (
             <span className="-ml-1 font-bold">,</span>
           )}
         </div>

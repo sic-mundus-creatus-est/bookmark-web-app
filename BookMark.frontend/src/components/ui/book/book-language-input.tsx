@@ -1,14 +1,15 @@
-import { useState } from "react";
-
 interface BookLanguageInputProps {
+  value?: string;
+  maxLength?: number;
   onChange?: (value: string) => void;
 }
-export function BookLanguageInput({ onChange }: BookLanguageInputProps) {
-  const [language, setLanguage] = useState("");
-
+export function BookLanguageInput({
+  value,
+  maxLength = 64,
+  onChange,
+}: BookLanguageInputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setLanguage(newValue);
     onChange?.(newValue);
   };
 
@@ -23,8 +24,8 @@ export function BookLanguageInput({ onChange }: BookLanguageInputProps) {
           title="Original Language"
           placeholder="Language"
           className="px-1 my-1 text-md uppercase text-accent bg-transparent focus:outline-none border-b-2 border-accent/50 w-full"
-          value={language}
-          maxLength={64}
+          value={value}
+          maxLength={maxLength}
           onChange={handleChange}
         />
       </div>

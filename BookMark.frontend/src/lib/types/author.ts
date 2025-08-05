@@ -7,7 +7,7 @@ export interface Author {
 }
 
 export interface AuthorWithRole {
-  authorId: string;
+  id: string;
   roleId: number;
 }
 

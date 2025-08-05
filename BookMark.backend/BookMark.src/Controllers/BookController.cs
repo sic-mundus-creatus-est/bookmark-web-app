@@ -49,8 +49,31 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     }
 
 
+    [HttpPut("{id}/replace-authors")]
+    public async Task<IActionResult> ReplaceAuthors([FromRoute] string id, [FromBody] List<BookAuthorDTO> authorsWithRoles)
+    {
+        var book = await _repository.GetTrackedByIdAsync(id);
+        if (book == null)
+            return Problem(title: "Book Not Found",
+                            detail: $"No Book with ID '{id}' was found.",
+                            statusCode: StatusCodes.Status404NotFound);
+
+        if (authorsWithRoles.Count == 0)
+            return Problem(title: "Bad Request",
+                            detail: "At least one author ID with a role must be provided.",
+                            statusCode: StatusCodes.Status400BadRequest);
+
+        var bookAuthors = await _bookService.AssembleBookAuthors(book, authorsWithRoles);
+
+        if (_repository is BookRepository bookRepo)
+            await bookRepo.ReplaceBookAuthorsAsync(book.Id, bookAuthors);
+
+        return Ok();
+    }
+
+
     [HttpPost("{id}/add-authors")]
-    public async Task<IActionResult> AddAuthors([FromRoute] string id, [FromBody] List<BookAddAuthorsDTO> authorsWithRoles)
+    public async Task<IActionResult> AddAuthors([FromRoute] string id, [FromBody] List<BookAuthorDTO> authorsWithRoles)
     {
         var book = await _repository.GetTrackedByIdAsync(id);
         if (book == null)
@@ -93,6 +116,30 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
             await bookRepo.RemoveBookAuthorsAsync(id, authorIds);
 
         return NoContent();
+    }
+
+
+    [HttpPut("{id}/replace-genres")]
+    public async Task<IActionResult> ReplaceGenres([FromRoute] string id, [FromBody] List<string> genreIds)
+    {
+        var book = await _repository.GetTrackedByIdAsync(id);
+        if (book == null)
+            return Problem(title: "Book Not Found",
+                            detail: $"No Book with ID '{id}' was found.",
+                            statusCode: StatusCodes.Status404NotFound);
+
+        if (genreIds.Count == 0)
+            return Problem(title: "Bad Request",
+                            detail: "At least one genre ID must be provided.",
+                            statusCode: StatusCodes.Status400BadRequest);
+
+        var bookGenres = await _bookService.AssembleBookGenres(book, genreIds);
+
+
+        if (_repository is BookRepository bookRepo)
+            await bookRepo.ReplaceBookGenresAsync(book.Id, bookGenres);
+
+        return Ok();
     }
 
 

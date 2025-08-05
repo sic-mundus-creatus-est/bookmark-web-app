@@ -3,15 +3,70 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { getBookById } from "@/lib/services/api-calls/bookService";
 import { useEffect, useState } from "react";
-import { Book } from "@/lib/types/book";
+import {
+  Book,
+  EditedBookData,
+  UpdateBookMetadataParams,
+} from "@/lib/types/book";
 import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
 import { BookRatingStars } from "@/components/ui/book/book-rating-stars";
+import { SquarePen, X } from "lucide-react";
+import {
+  BookCoverImageUpload,
+  UploadLabel,
+} from "@/components/ui/book/book-cover-image-upload";
+import { BookTitleInput } from "@/components/ui/book/book-title-input";
+import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
+import { BookAuthorInput } from "@/components/ui/book/book-author-input";
+import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
+import { getAllGenres } from "@/lib/services/api-calls/genreService";
+import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
+import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
+import { BookLanguageInput } from "@/components/ui/book/book-language-input";
+import { BookDescriptionInput } from "@/components/ui/book/book-description-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { validateAndUpdateBook } from "@/lib/services/bookService";
+
+import { useForm } from "react-hook-form";
+import { bookAuthorRoles } from "@/config/roles";
+import { authorInputSuggestions } from "@/lib/services/authorService";
 
 export function BookPage() {
   const { id } = useParams<{ id: string }>();
-  const [book, setBook] = useState<Book | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+
+  const [book, setBook] = useState<Book>();
+
+  //------------------------------------------------------------------------------
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(false);
+
+  const [globalFormError, setGlobalFormError] = useState<string | null>(null);
+  //------------------------------------------------------------------------------
+
+  const {
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { dirtyFields },
+  } = useForm<EditedBookData>({
+    defaultValues: book
+      ? {
+          ...book,
+          coverImageFile: undefined,
+        }
+      : undefined,
+  });
+
+  useEffect(() => {
+    if (book) {
+      reset({
+        ...book,
+        coverImageFile: undefined,
+      });
+    }
+  }, [editMode, book, reset]);
 
   useEffect(() => {
     async function fetchBook() {
@@ -48,126 +103,295 @@ export function BookPage() {
     );
   }
 
+  const handleUpdateBook = async (data: UpdateBookMetadataParams) => {
+    if (!book) return;
+
+    const changedData = Object.fromEntries(
+      Object.entries(dirtyFields)
+        .filter(([, isDirty]) => isDirty)
+        .map(([key]) => [key, data[key as keyof typeof data]])
+    );
+
+    console.log(changedData);
+
+    if (Object.keys(changedData).length <= 0)
+      return setGlobalFormError("You haven’t made any changes.");
+
+    const { success, error } = await validateAndUpdateBook({
+      id: book.id,
+      ...changedData,
+    });
+
+    if (!success) return setGlobalFormError(error!);
+
+    const updatedBook = await getBookById(id!);
+    setBook(updatedBook);
+
+    setEditMode(false);
+  };
+
   return (
     <div className="container mx-auto px-4 sm:px-6 md:px-4 lg:px-2 xl:px-10 2xl:px-24 flex-grow">
+      <div className="flex sm:justify-end justify-center mr-0 sm:mr-6 sm:-mb-4 mt-2">
+        <button
+          title={editMode ? "Cancel Editing" : "Edit"}
+          onClick={() => setEditMode((prev) => !prev)}
+          className="text-accent hover:text-popover"
+        >
+          {editMode ? (
+            <X size={24} strokeWidth={5} />
+          ) : (
+            <SquarePen size={24} strokeWidth={3} />
+          )}
+        </button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4">
         {/* Cover */}
-        <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
+        <Card
+          className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg"
+          style={{ minWidth: "clamp(18rem, 18vw, 100%)" }}
+        >
           <CardContent
             className="p-0 bg-background rounded-t-lg"
             style={{ aspectRatio: "2 / 3" }}
           >
-            <img
-              src={
-                book.coverImage
-                  ? `${API_FILE_RESOURCES_URL}${book.coverImage}`
-                  : "/cover_placeholder.jpg"
-              }
-              alt={`Cover of ${book.title}`}
-              className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent-foreground"
-            />
+            {editMode ? (
+              <BookCoverImageUpload
+                value={
+                  book.coverImage
+                    ? `${API_FILE_RESOURCES_URL}${book.coverImage}`
+                    : null
+                }
+                onChange={(coverImageFile) => {
+                  setValue("coverImageFile", coverImageFile, {
+                    shouldDirty: true,
+                  });
+                }}
+              />
+            ) : (
+              <img
+                src={
+                  book.coverImage
+                    ? `${API_FILE_RESOURCES_URL}${book.coverImage}`
+                    : "/cover_placeholder.jpg"
+                }
+                alt={`Cover of ${book.title}`}
+                className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
+              />
+            )}
           </CardContent>
           <CardFooter className="pb-2 flex flex-col px-4">
-            <div className="flex justify-center mx-10">
-              <div className="flex flex-col">
-                <div className="flex items-baseline gap-5">
-                  <BookRatingStars rating={3.4} starSize="3xl" showEmptyStars />
-                  <span className="text-3xl font-medium text-muted">{3.4}</span>
-                </div>
+            {editMode ? (
+              <UploadLabel />
+            ) : (
+              <div className="flex justify-center mx-10">
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-5">
+                    <BookRatingStars
+                      rating={3.4}
+                      starSize="3xl"
+                      showEmptyStars
+                    />
+                    <span className="text-3xl font-medium text-muted">
+                      {3.4}
+                    </span>
+                  </div>
 
-                <div className="pl-1 -mt-3">
-                  <span className="text-xs font-mono text-background">
-                    {" "}
-                    18587 ratings
-                  </span>
+                  <div className="pl-1 -mt-3">
+                    <span className="text-xs font-mono text-background">
+                      18587 ratings
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </CardFooter>
         </Card>
 
         {/* Book Info */}
-        <div className="flex flex-col gap-5">
-          <div>
-            <h1 className="text-2xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-4xl font-[Verdana] font-bold text-accent leading-tight border-b pb-2 whitespace-normal">
-              {book.title}
-            </h1>
+        <div
+          className="flex flex-col gap-5 min-w-0"
+          style={{ minWidth: "clamp(18rem, 18vw, 100%)" }}
+        >
+          <div className="w-full">
+            {editMode ? (
+              <BookTitleInput
+                value={watch("title")}
+                onChange={(newTitle) => {
+                  setValue("title", newTitle, { shouldDirty: true });
+                }}
+              />
+            ) : (
+              <h1 className="text-2xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-4xl w-full font-[Verdana] font-bold text-accent leading-tight overflow-hidden">
+                {book.title}
+              </h1>
+            )}
 
-            <p
+            <div
               className="text-lg font-serif text-accent pl-4 px-1 pt-2"
               style={{
                 background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.047), rgba(0,0,0,0.0))",
+                  "linear-gradient(to bottom, rgba(0,0,0,0.074), rgba(0,0,0,0.0))",
               }}
             >
-              <span className="italic">by </span>
-              {book.authors.map((a, i) => (
-                <Link to={`/author/${a.id}`}>
-                  <span key={a.id} className="text-xl hover:text-popover">
-                    {a.name}
-                    {i < book.authors.length - 1 ? ", " : ""}
-                  </span>
-                </Link>
-              ))}
-            </p>
+              {editMode ? (
+                <>
+                  <BookAuthorEntries
+                    entries={watch("authors")}
+                    onChange={(updatedAuthors) => {
+                      setValue("authors", [...updatedAuthors], {
+                        shouldDirty: true,
+                      });
+                    }}
+                  />
+                  <div className="mt-2">
+                    <BookAuthorInput
+                      placeholder="Start typing to find an author"
+                      fetchSuggestions={authorInputSuggestions}
+                      entries={watch("authors")}
+                      onChange={(updatedAuthors) => {
+                        setValue("authors", updatedAuthors, {
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="italic">by </span>
+                  {book.authors.map((ba, i) => (
+                    <Link to={`/author/${ba.id}`} key={ba.id}>
+                      <span
+                        className="text-xl hover:text-popover"
+                        title={`${
+                          bookAuthorRoles[
+                            ba.roleId as keyof typeof bookAuthorRoles
+                          ].label
+                        }`}
+                      >
+                        {ba.name}
+                        {i < book.authors.length - 1 ? ", " : ""}
+                      </span>
+                    </Link>
+                  ))}
+                </>
+              )}
+            </div>
           </div>
 
           <div className="rounded-lg border-2 border-b-4 border-accent bg-muted px-5 py-6 space-y-6">
             {/* Genres */}
-            <div className="flex flex-wrap items-start gap-3 text-sm font-[Verdana] pl-2">
-              <div className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
-                Genres:
+            {editMode ? (
+              <BookGenreEntries
+                initialGenres={watch("genres") || []}
+                fetchAllGenres={getAllGenres}
+                onChange={(updatedGenres) => {
+                  setValue("genres", [...updatedGenres], { shouldDirty: true });
+                }}
+              />
+            ) : (
+              <div className="flex flex-wrap items-start gap-3 text-sm font-[Verdana] pl-2">
+                <div className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
+                  Genres:
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {book.genres!.map((bg) => (
+                    <Link to={`/genre/${bg.id}`} key={bg.id}>
+                      <Badge className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover">
+                        {bg.name}
+                      </Badge>
+                    </Link>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {book.genres!.map((genre) => (
-                  <Link to={`/genre/${genre.id}`}>
-                    <Badge
-                      key={`${genre.id}`}
-                      className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover"
-                    >
-                      {genre.name}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Book Metadata */}
             <div className="grid gap-y-3 text-sm font-[Verdana]">
-              <div className="col-span-2 bg-background px-2 py-2 rounded">
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
-                  <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
-                    Published in:
-                  </div>
-                  <div className="text-md text-accent">
-                    {book.publicationYear}.
-                  </div>
-                </div>
-              </div>
+              {editMode ? (
+                <>
+                  <PublicationYearSelector
+                    value={watch("publicationYear")}
+                    onChange={(year) =>
+                      setValue("publicationYear", year, { shouldDirty: true })
+                    }
+                  />
 
-              <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center px-2">
-                <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
-                  Pages:
-                </div>
-                <div className="text-md text-accent">{book.pageCount}</div>
-              </div>
+                  <BookPageCountInput
+                    value={watch("pageCount")}
+                    onChange={(newCount) =>
+                      setValue("pageCount", newCount, { shouldDirty: true })
+                    }
+                  />
 
-              <div className="col-span-2 bg-background px-2 py-2 rounded">
-                <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
-                  <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
-                    Written in:
+                  <BookLanguageInput
+                    value={watch("originalLanguage")}
+                    onChange={(language) =>
+                      setValue("originalLanguage", language, {
+                        shouldDirty: true,
+                      })
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="col-span-2 bg-background px-2 py-2 rounded">
+                    <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
+                      <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
+                        Published in:
+                      </div>
+                      <div className="text-md text-accent">
+                        {book.publicationYear}.
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-md uppercase text-accent">
-                    {book.originalLanguage}
+
+                  <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center px-2">
+                    <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
+                      Pages:
+                    </div>
+                    <div className="text-md text-accent">{book.pageCount}</div>
                   </div>
-                </div>
-              </div>
+
+                  <div className="col-span-2 bg-background px-2 py-2 rounded">
+                    <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
+                      <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
+                        Written in:
+                      </div>
+                      <div className="text-md uppercase text-accent">
+                        {book.originalLanguage}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 text-balance flex">
-            {book.description}
-          </p>
+          {editMode ? (
+            <BookDescriptionInput
+              value={watch("description")}
+              onChange={(newDesc) =>
+                setValue("description", newDesc, { shouldDirty: true })
+              }
+            />
+          ) : (
+            <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 whitespace-normal overflow-hidden w-full">
+              {book.description}
+            </p>
+          )}
+          {editMode ? (
+            <div className="flex justify-end">
+              <SubmitButton
+                label="Update"
+                errorLabel={globalFormError}
+                onSubmit={handleSubmit(handleUpdateBook)}
+                showCancel
+                onCancel={() => setEditMode((prev) => !prev)}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

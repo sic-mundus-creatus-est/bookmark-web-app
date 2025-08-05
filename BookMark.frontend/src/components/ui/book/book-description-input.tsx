@@ -1,14 +1,23 @@
 import React, { useEffect, useRef, useState } from "react";
 
 interface BookDescriptionInputProps {
+  rows?: number;
+  value?: string;
+  title?: string;
   maxLength?: number;
+  placeholder?: string;
   onChange?: (value: string) => void;
 }
 export function BookDescriptionInput({
+  rows = 6,
+  value,
+  title = "Enter Book's Description",
   maxLength = 4000,
+  placeholder = "Description...",
   onChange,
 }: BookDescriptionInputProps) {
-  const [description, setDescription] = useState("");
+  const [charCount, setCharCount] = useState(value?.length ?? 0);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function adjustHeight() {
@@ -21,7 +30,7 @@ export function BookDescriptionInput({
 
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const newValue = e.target.value;
-    setDescription(newValue);
+    setCharCount(newValue.length);
     onChange?.(newValue);
     requestAnimationFrame(adjustHeight);
   }
@@ -32,7 +41,7 @@ export function BookDescriptionInput({
 
   useEffect(() => {
     adjustHeight();
-  }, [description]);
+  }, [value]);
 
   useEffect(() => {
     window.addEventListener("resize", adjustHeight);
@@ -45,19 +54,20 @@ export function BookDescriptionInput({
     <>
       <textarea
         ref={textareaRef}
-        title="Enter Book's Description"
-        value={description}
+        title={title}
+        value={value}
         onChange={handleChange}
         onPaste={handlePaste}
-        placeholder="Description..."
-        rows={6}
+        placeholder={placeholder}
+        rows={rows}
         maxLength={maxLength}
         spellCheck={false}
         style={{ overflow: "hidden" }}
-        className="px-2 resize-none focus:outline-none border-b-2 rounded-lg bg-accent/10 border-accent text-lg leading-relaxed text-accent font-[Georgia] indent-4 text-balance placeholder:text-accent/70 whitespace-normal break-words w-full min-w-[2ch] empty:before:content-[attr(data-placeholder)] before:text-accent/50"
+        className="px-2 resize-none focus:outline-none border-b-2 rounded-lg bg-accent/10 border-accent text-lg leading-relaxed text-accent font-[Georgia] indent-4
+        text-balance placeholder:text-accent/70 whitespace-normal break-words w-full min-w-[2ch] empty:before:content-[attr(data-placeholder)] before:text-accent/50"
       />
       <div className="text-right -mt-4 text-sm text-accent/60 font-mono leading-tight">
-        {description.length}/{4000} characters
+        {charCount}/{maxLength} characters
       </div>
     </>
   );

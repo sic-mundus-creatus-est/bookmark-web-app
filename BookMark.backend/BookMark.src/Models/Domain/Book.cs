@@ -72,10 +72,11 @@ public class Book : IModel
                     var author = bookAuthor.Author;
                     if (author != null)
                     {
-                        response.Authors.Add(new BookAutoIncludesDTO
+                        response.Authors.Add(new BookAuthorResponseDTO
                         {
                             Id = author.Id,
                             Name = author.Name,
+                            RoleId = bookAuthor.Role
                         });
                     }
                     else throw new InvalidDataException($"Retrieved a BookAuthor entry with a null Author. This may indicate corrupt or incomplete data.");
@@ -91,7 +92,7 @@ public class Book : IModel
                     var genre = bookGenre.Genre;
                     if (genre != null)
                     {
-                        response.Genres.Add(new BookAutoIncludesDTO
+                        response.Genres.Add(new BookGenreResponseDTO
                         {
                             Id = genre.Id,
                             Name = genre.Name

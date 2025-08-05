@@ -1,27 +1,17 @@
-import { useEffect, useState } from "react";
-
 interface PublicationYearSelectorProps {
-  defaultYear?: number;
+  value?: number;
   earliestYearOption?: number;
   onChange?: (year: number) => void;
 }
 export function PublicationYearSelector({
-  defaultYear,
-  earliestYearOption = 1000,
+  value,
+  earliestYearOption = 0,
   onChange,
 }: PublicationYearSelectorProps) {
   const currentYear = new Date().getFullYear();
-  const initialYear = defaultYear ?? currentYear;
-
-  const [selectedYear, setSelectedYear] = useState(initialYear);
-
-  useEffect(() => {
-    onChange?.(initialYear);
-  }, [initialYear, onChange]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const year = Number(e.target.value);
-    setSelectedYear(year);
     onChange?.(year);
   };
 
@@ -35,9 +25,12 @@ export function PublicationYearSelector({
           title="Publication Year"
           className="bg-background text-accent px-2 py-1 rounded border-b-2 border-accent/50 focus:outline-none focus:border-accent cursor-pointer"
           style={{ width: "fit-content" }}
-          value={selectedYear}
+          value={value}
           onChange={handleChange}
         >
+          <option value="-1" className="text-accent/50 bg-accent/20">
+            year
+          </option>
           {Array.from(
             { length: currentYear - earliestYearOption + 1 },
             (_, i) => {

@@ -21,20 +21,20 @@ public class BookService
     }
 
 
-    public async Task<ICollection<BookAuthor>> AssembleBookAuthors(Book book, List<BookAddAuthorsDTO> authorsWithRoles)
+    public async Task<ICollection<BookAuthor>> AssembleBookAuthors(Book book, List<BookAuthorDTO> authorsWithRoles)
     {
         var bookAuthors = new Collection<BookAuthor>();
 
-        authorsWithRoles = [.. authorsWithRoles.DistinctBy(x => x.AuthorId)];
+        authorsWithRoles = [.. authorsWithRoles.DistinctBy(x => x.Id)];
         foreach (var aWr in authorsWithRoles)
         {
-            var author = await _authorRepository.GetTrackedByIdAsync(aWr.AuthorId);
+            var author = await _authorRepository.GetTrackedByIdAsync(aWr.Id);
             if (author == null)
-                throw new ArgumentException($"Author with ID '{aWr.AuthorId}' not found!" +
+                throw new ArgumentException($"Author with ID '{aWr.Id}' not found!" +
                     " Cannot proceed with the operation unless all specified authors exist.");
 
-            if (!Enum.IsDefined(typeof(BookAuthorRole), aWr.Role))
-                throw new ArgumentOutOfRangeException(nameof(aWr.Role), aWr.Role, $"Invalid role '{aWr.Role}' for author ID '{aWr.AuthorId}'." +
+            if (!Enum.IsDefined(typeof(BookAuthorRole), aWr.RoleId))
+                throw new ArgumentOutOfRangeException(nameof(aWr.RoleId), aWr.RoleId, $"Invalid role '{aWr.RoleId}' for author ID '{aWr.Id}'." +
                                                                                                     " All authors must have an existing role.");
 
             bookAuthors.Add(new BookAuthor
@@ -43,7 +43,7 @@ public class BookService
                 BookId = book.Id,
                 Author = author,
                 AuthorId = author.Id,
-                Role = aWr.Role
+                Role = aWr.RoleId
             });
         }
 

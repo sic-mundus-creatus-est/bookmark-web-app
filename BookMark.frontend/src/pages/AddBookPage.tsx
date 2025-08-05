@@ -12,15 +12,15 @@ import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
 import { AuthorWithNameAndRole, AuthorWithRole } from "@/lib/types/author";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
 import { BookLanguageInput } from "@/components/ui/book/book-language-input";
-import { getConstrainedAuthors } from "@/lib/services/api-calls/authorService";
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { BookDescriptionInput } from "@/components/ui/book/book-description-input";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { validateAndCreateBook } from "@/lib/services/bookService";
-import { AddButton } from "@/components/ui/add-button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { CreateBookParams } from "@/lib/types/book";
 import { Genre } from "@/lib/types/genre";
+import { authorInputSuggestions } from "@/lib/services/authorService";
 
 export function AddBookPage() {
   //------------------------------------------------------------------------------
@@ -49,11 +49,11 @@ export function AddBookPage() {
   const handleCreateBook = async () => {
     const authorsWithRoles: AuthorWithRole[] = selectedAuthors.map(
       (author) => ({
-        authorId: author.id,
+        id: author.id,
         roleId: author.roleId,
       })
     );
-    const genreIds: string[] = selectedGenres.map((g) => g.id);
+    const genreIds: string[] = selectedGenres.map((sg) => sg.id);
 
     const newBookData: CreateBookParams = {
       title,
@@ -90,7 +90,7 @@ export function AddBookPage() {
 
         {/* Book Info */}
         <div className="flex flex-col gap-5">
-          <BookTitleInput onChange={setTitle} />
+          <BookTitleInput value={title} onChange={setTitle} />
 
           <div
             className="text-lg font-serif text-accent px-4 pt-1 -mt-3"
@@ -100,22 +100,15 @@ export function AddBookPage() {
             }}
           >
             <BookAuthorEntries
-              authors={selectedAuthors}
+              entries={selectedAuthors}
               onChange={setSelectedAuthors}
             />
 
             <div className="mt-2">
               <BookAuthorInput
                 placeholder="Start typing to find an author"
-                fetchAuthorSuggestions={async (query) => {
-                  const result = await getConstrainedAuthors({
-                    filters: { "Name~=": query },
-                    pageIndex: 1,
-                    pageSize: 5,
-                  });
-                  return result.items ?? [];
-                }}
-                selectedAuthors={selectedAuthors}
+                fetchSuggestions={authorInputSuggestions}
+                entries={selectedAuthors}
                 onChange={setSelectedAuthors}
               />
             </div>
@@ -129,21 +122,29 @@ export function AddBookPage() {
 
             {/* Book Metadata */}
             <div className="grid gap-y-3 text-sm font-[Verdana]">
-              <PublicationYearSelector onChange={setPublicationYear} />
+              <PublicationYearSelector
+                value={publicationYear}
+                onChange={setPublicationYear}
+              />
 
-              <BookPageCountInput onChange={setPageCount} />
+              <BookPageCountInput value={pageCount} onChange={setPageCount} />
 
-              <BookLanguageInput onChange={setOriginalLanguage} />
+              <BookLanguageInput
+                value={originalLanguage}
+                onChange={setOriginalLanguage}
+              />
             </div>
           </div>
 
-          <BookDescriptionInput onChange={setDescription} />
+          <BookDescriptionInput value={description} onChange={setDescription} />
 
-          <AddButton
-            label="Add"
-            errorLabel={globalFormError}
-            onClick={handleCreateBook}
-          />
+          <div className="flex justify-end">
+            <SubmitButton
+              label="Add"
+              errorLabel={globalFormError}
+              onSubmit={handleCreateBook}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -53,8 +53,8 @@ public class BookRepository : BaseRepository<Book>
         foreach (var ba in bookAuthors)
         {
             bool exists = await _bookAuthorDbSet
-                                .AnyAsync( existing => 
-                        existing.BookId == ba.BookId && 
+                                .AnyAsync( existing =>
+                        existing.BookId == ba.BookId &&
                     existing.AuthorId == ba.AuthorId );
 
             if (!exists)
@@ -87,7 +87,7 @@ public class BookRepository : BaseRepository<Book>
 
         if (authorsToRemove.Count == 0)
             throw new ArgumentException("No matching authors found to remove, or they have already been removed from this book.");
-        
+
         if (authorsToRemove.Count != authorIds.Count)
             throw new ArgumentException("One or more of the provided author IDs are not associated with this book." +
                                                         " Please verify that all IDs are valid.", nameof(authorIds));
@@ -95,5 +95,51 @@ public class BookRepository : BaseRepository<Book>
         _bookAuthorDbSet.RemoveRange(authorsToRemove);
         await _context.SaveChangesAsync();
     }
+
+    public async Task ReplaceBookAuthorsAsync(string bookId, ICollection<BookAuthor> newBookAuthors)
+    {
+        if (string.IsNullOrWhiteSpace(bookId))
+            throw new ArgumentException("Book ID must be provided.", nameof(bookId));
+
+        if (newBookAuthors == null || newBookAuthors.Count == 0)
+            throw new ArgumentException("At least one author must be provided for replacement.", nameof(newBookAuthors));
+
+        if (newBookAuthors.Count > MAX_BOOK_AUTHORS)
+            throw new ArgumentException($"A book cannot have more than {MAX_BOOK_AUTHORS} authors.");
+
+        var existingAuthors = await _bookAuthorDbSet
+            .Where(ba => ba.BookId == bookId)
+            .ToListAsync();
+
+        _bookAuthorDbSet.RemoveRange(existingAuthors);
+
+        _bookAuthorDbSet.AddRange(newBookAuthors);
+
+        await _context.SaveChangesAsync();
+    }
+    
+
+    public async Task ReplaceBookGenresAsync(string bookId, ICollection<BookGenre> genres)
+    {
+        if (string.IsNullOrWhiteSpace(bookId))
+            throw new ArgumentException("Book ID must be provided.", nameof(bookId));
+
+        if (genres == null || genres.Count == 0)
+            throw new ArgumentException("At least one genre must be provided for replacement.", nameof(genres));
+
+        if (genres.Count > MAX_GENRES)
+            throw new ArgumentException($"A book cannot have more than {MAX_GENRES} genres.");
+
+        var existingGenres = await _bookGenreDbSet
+            .Where(ba => ba.BookId == bookId)
+            .ToListAsync();
+
+        _bookGenreDbSet.RemoveRange(existingGenres);
+
+        _bookGenreDbSet.AddRange(genres);
+
+        await _context.SaveChangesAsync();
+    }
+
 
 }

@@ -50,11 +50,14 @@ export async function apiCall({
     delete headers["Content-Type"];
   }
 
-  return fetch(`${API_BASE_URL}${endpoint}`, {
-    method,
-    headers,
-    body: body instanceof FormData ? body : body ? JSON.stringify(body) : null,
-  }).then(async (response) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method,
+      headers,
+      body:
+        body instanceof FormData ? body : body ? JSON.stringify(body) : null,
+    });
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -69,7 +72,12 @@ export async function apiCall({
     }
 
     return data;
-  });
+  } catch (err: any) {
+    throw {
+      title: "Network or server error",
+      detail: err?.message || "An unexpected error occurred.",
+    };
+  }
 }
 
 //==========================================

@@ -1,51 +1,55 @@
-import { AuthorWithNameAndRole } from "@/lib/types/author";
 import { Fragment, useEffect, useRef, useState } from "react";
+
+import { Author, AuthorWithNameAndRole } from "@/lib/types/author";
 
 interface BookAuthorInputProps {
   placeholder?: string;
-  selectedAuthors: AuthorWithNameAndRole[];
-  fetchAuthorSuggestions: (query: string) => Promise<AuthorWithNameAndRole[]>;
-  onChange?: (authors: AuthorWithNameAndRole[]) => void;
+  entries?: AuthorWithNameAndRole[];
+  fetchSuggestions: (searchTerm: string) => Promise<Author[]>;
+  onChange?: (entries: AuthorWithNameAndRole[]) => void;
 }
 export function BookAuthorInput({
   placeholder = "Search authors...",
-  selectedAuthors,
-  fetchAuthorSuggestions,
+  entries = [],
+  fetchSuggestions,
   onChange,
 }: BookAuthorInputProps) {
-  const [inputValue, setInputValue] = useState("");
-  const [suggestions, setSuggestions] = useState<AuthorWithNameAndRole[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState<Author[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedSuggestion, setFocusedSuggestion] = useState<number | null>(
     null
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const cacheRef = useRef<Record<string, AuthorWithNameAndRole[]>>({});
+  const cacheRef = useRef<Record<string, Author[]>>({});
   const cacheKeysRef = useRef<string[]>([]);
 
   const availableSuggestions = suggestions.filter(
-    (s) => !selectedAuthors.some((a) => a.id === s.id)
+    (s) => !entries.some((a) => a.id === s.id)
   );
 
   useEffect(() => {
-    if (inputValue.trim() === "") {
-      setSuggestions([]);
+    if (searchTerm.trim() === "") {
+      setShowSuggestions(false);
       setFocusedSuggestion(null);
+
+      setSuggestions([]);
       return;
     }
 
-    if (cacheRef.current[inputValue]) {
-      setSuggestions(cacheRef.current[inputValue]);
+    if (cacheRef.current[searchTerm]) {
+      setSuggestions(cacheRef.current[searchTerm]);
       return;
     }
 
     const timeoutId = setTimeout(() => {
       const fetch = async () => {
         try {
-          const items = await fetchAuthorSuggestions(inputValue);
-          cacheRef.current[inputValue] = items;
-          cacheKeysRef.current.push(inputValue);
+          const items = await fetchSuggestions(searchTerm);
+
+          cacheRef.current[searchTerm] = items;
+          cacheKeysRef.current.push(searchTerm);
 
           if (cacheKeysRef.current.length > 20) {
             const oldestKey = cacheKeysRef.current.shift()!;
@@ -55,9 +59,6 @@ export function BookAuthorInput({
           setSuggestions(items);
           setFocusedSuggestion(0);
         } catch (error: any) {
-          setShowSuggestions(false);
-          setFocusedSuggestion(null);
-          setSuggestions([]);
           console.error(
             `ERROR WHILE SEARCHING FOR AUTHORS:`,
             `\n----------------------------------`,
@@ -69,14 +70,19 @@ export function BookAuthorInput({
             `\nDetail: ${error.detail}`,
             `\nTrace ID: ${error.traceId}`
           );
+          setShowSuggestions(false);
+          setFocusedSuggestion(null);
+          setSuggestions([]);
         }
       };
 
       fetch();
     }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [fetchAuthorSuggestions, inputValue]);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [fetchSuggestions, searchTerm]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -92,22 +98,31 @@ export function BookAuthorInput({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const handleSelectAuthor = (author: AuthorWithNameAndRole) => {
-    author.roleId = 0;
-    const updatedAuthors = [...selectedAuthors, author];
+  const handleSelectAuthor = (selectedAuthor: Author) => {
+    const bookAuthor: AuthorWithNameAndRole = {
+      id: selectedAuthor.id,
+      name: selectedAuthor.name,
+      roleId: 0,
+    };
+    bookAuthor.roleId = 0;
+
+    const updatedAuthors = [...entries, bookAuthor];
+
     onChange?.(updatedAuthors);
-    setInputValue("");
+
+    setSearchTerm("");
     setShowSuggestions(false);
     setFocusedSuggestion(null);
+    setSuggestions([]);
   };
 
   return (
     <div className="relative" ref={containerRef}>
       <input
         type="text"
-        value={inputValue}
+        value={searchTerm}
         onChange={(e) => {
-          setInputValue(e.target.value);
+          setSearchTerm(e.target.value);
           setFocusedSuggestion(0);
           setShowSuggestions(true);
         }}
@@ -132,7 +147,7 @@ export function BookAuthorInput({
           } else if (
             showSuggestions &&
             e.key === "Enter" &&
-            inputValue.trim()
+            searchTerm.trim()
           ) {
             e.preventDefault();
             const selected =

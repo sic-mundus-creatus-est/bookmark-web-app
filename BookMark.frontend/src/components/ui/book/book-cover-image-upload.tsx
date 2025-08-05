@@ -1,19 +1,24 @@
-import { ImageUp, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { ImageUp, X } from "lucide-react";
+
 interface BookCoverImageUploadProps {
+  value?: string | null;
+  accept?: string;
   onChange?: (file: File | null) => void;
 }
 
-export function BookCoverImageUpload({ onChange }: BookCoverImageUploadProps) {
-  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+export function BookCoverImageUpload({
+  value,
+  accept = ".jpg,.jpeg,.png",
+  onChange,
+}: BookCoverImageUploadProps) {
+  const [previewUrl, setPreviewUrl] = useState<string>(value ?? "");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      setCoverImageFile(file);
       setPreviewUrl(url);
       onChange?.(file);
     }
@@ -22,7 +27,6 @@ export function BookCoverImageUpload({ onChange }: BookCoverImageUploadProps) {
   const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setCoverImageFile(null);
     setPreviewUrl("");
     onChange?.(null);
   };
@@ -43,12 +47,12 @@ export function BookCoverImageUpload({ onChange }: BookCoverImageUploadProps) {
       <input
         id="cover-image-upload"
         type="file"
-        accept=".jpg,.jpeg,.png"
+        accept={accept}
         onChange={handleFileChange}
         className="hidden"
       />
       <div className="relative w-full h-full">
-        {coverImageFile ? (
+        {previewUrl ? (
           <>
             <img
               src={previewUrl}
@@ -76,14 +80,19 @@ export function BookCoverImageUpload({ onChange }: BookCoverImageUploadProps) {
   );
 }
 
-export function UploadLabel() {
+interface UploadLabelProps {
+  accept?: string;
+}
+export function UploadLabel({
+  accept = ".jpg, .jpeg, .png",
+}: UploadLabelProps) {
   return (
     <label
       title="Upload Cover"
       htmlFor="cover-image-upload"
       className="cursor-pointer block w-full h-full"
     >
-      <div className="flex justify-center mx-10">
+      <div className="flex justify-center mx-10 pt-1">
         <div className="flex flex-col">
           <div className="flex items-center gap-5">
             <div className="inline-block w-[calc(5ch+0.5rem)] pl-4 text-3xl text-muted font-[Helvetica]">
@@ -95,9 +104,7 @@ export function UploadLabel() {
           </div>
 
           <div className="pl-2 -mt-2">
-            <span className="text-xs font-mono text-background">
-              .jpg, .jpeg, .png
-            </span>
+            <span className="text-xs font-mono text-background">{accept}</span>
           </div>
         </div>
       </div>

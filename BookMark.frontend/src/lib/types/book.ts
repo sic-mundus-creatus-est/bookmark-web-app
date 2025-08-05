@@ -1,14 +1,14 @@
-import { Author, AuthorWithRole } from "@/lib/types/author";
+import { AuthorWithNameAndRole, AuthorWithRole } from "@/lib/types/author";
 import { Genre } from "@/lib/types//genre";
 
 export interface Book {
   id: string;
   title: string;
-  authors: Author[];
+  authors: AuthorWithNameAndRole[];
   pageCount: number;
   originalLanguage: string;
   genres?: Genre[];
-  publicationYear?: string;
+  publicationYear?: number;
   description?: string;
   coverImage?: string;
   rating?: number;
@@ -23,5 +23,26 @@ export interface CreateBookParams {
   pageCount: number;
   publicationYear?: number;
   description?: string;
+  coverImageFile?: File | null;
+}
+
+export interface UpdateBookMetadataParams {
+  id: string;
+  title?: string;
+  originalLanguage?: string;
+  publicationYear?: number;
+  pageCount?: number;
+  description?: string;
+}
+
+export interface EditedBookData {
+  id: string;
+  title?: string;
+  originalLanguage?: string;
+  publicationYear?: number;
+  pageCount?: number;
+  description?: string;
+  authors?: AuthorWithNameAndRole[];
+  genres?: Genre[];
   coverImageFile?: File | null;
 }

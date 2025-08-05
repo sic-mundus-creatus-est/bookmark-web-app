@@ -4,8 +4,12 @@ import {
   POST,
   buildConstrainedQueryParams,
   ConstrainedQueryParams,
+  PATCH,
+  PUT,
+  DELETE,
 } from "@/lib/services/api-calls/api";
-import { CreateBookParams } from "@/lib/types/book";
+import { AuthorWithRole } from "@/lib/types/author";
+import { CreateBookParams, UpdateBookMetadataParams } from "@/lib/types/book";
 
 export function getBookById(id: string) {
   return apiCall({ method: GET, endpoint: `/api/books/get/${id}` });
@@ -31,9 +35,9 @@ export async function createBook(params: CreateBookParams) {
   }
 
   params.authorsWithRoles.forEach((author, index) => {
-    formData.append(`AuthorsWithRoles[${index}].AuthorId`, author.authorId);
+    formData.append(`AuthorsWithRoles[${index}].AuthorId`, author.id);
     formData.append(
-      `AuthorsWithRoles[${index}].Role`,
+      `AuthorsWithRoles[${index}].RoleId`,
       author.roleId.toString()
     );
   });
@@ -54,5 +58,52 @@ export function getConstrainedBooks(params: ConstrainedQueryParams) {
   return apiCall({
     method: GET,
     endpoint: `/api/books/get-constrained?${query}`,
+  });
+}
+
+export function updateBook(params: UpdateBookMetadataParams) {
+  console.log(params);
+  return apiCall({
+    method: PATCH,
+    endpoint: `/api/books/update/${params.id}`,
+    body: params,
+  });
+}
+
+export function updateBookCoverImage(id: string, newCover: File) {
+  const formData = new FormData();
+
+  formData.append("NewCover", newCover);
+
+  return apiCall({
+    method: PATCH,
+    endpoint: `/api/books/${id}/update-cover-image`,
+    body: formData,
+  });
+}
+
+export function removeBookCoverImage(id: string) {
+  return apiCall({
+    method: DELETE,
+    endpoint: `/api/books/${id}/remove-cover-image`,
+  });
+}
+
+export function updateBookAuthors(
+  id: string,
+  authorsWithRoles: AuthorWithRole[]
+) {
+  return apiCall({
+    method: PUT,
+    endpoint: `/api/books/${id}/replace-authors`,
+    body: authorsWithRoles,
+  });
+}
+
+export function updateBookGenres(id: string, genreIds: string[]) {
+  return apiCall({
+    method: PUT,
+    endpoint: `/api/books/${id}/replace-genres`,
+    body: genreIds,
   });
 }

@@ -6,15 +6,19 @@ import { Genre } from "@/lib/types/genre";
 import { BookGenreSelector } from "@/components/ui/book/book-genre-selector";
 
 interface BookGenreEntriesProps {
+  initialGenres?: Genre[];
   fetchAllGenres: () => Promise<Genre[]>;
   onChange?: (genres: Genre[]) => void;
 }
 export function BookGenreEntries({
+  initialGenres,
   fetchAllGenres,
   onChange,
 }: BookGenreEntriesProps) {
   const [allGenres, setAllGenres] = useState<Genre[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>(
+    initialGenres ?? []
+  );
 
   useEffect(() => {
     const fetchGenres = async () => {
