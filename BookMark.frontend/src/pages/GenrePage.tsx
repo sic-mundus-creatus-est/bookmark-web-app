@@ -3,18 +3,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { BookShowcase } from "@/components/layouts/book-showcase";
-import { getConstrainedBooks } from "@/lib/services/api-calls/bookService";
-import { getGenreById } from "@/lib/services/api-calls/genreService";
+import {
+  getBooksWithGenre,
+  getGenreById,
+} from "@/lib/services/api-calls/genreService";
 import { Genre } from "@/lib/types/genre";
-
-const fetchBooksFromApi = async (pageIndex: number, pageSize: number) => {
-  const response = await getConstrainedBooks({
-    pageIndex: pageIndex,
-    pageSize: pageSize,
-  });
-
-  return response;
-};
+import { Book } from "@/lib/types/book";
 
 export function GenrePage() {
   //-------------------------------------------------------
@@ -32,8 +26,14 @@ export function GenrePage() {
         setLoading(true);
         setError(false);
 
-        const data = await getGenreById(id!);
-        setGenre(data);
+        if (!id) throw new Error("No author ID provided");
+
+        const [data, books] = await Promise.all([
+          await getGenreById(id),
+          await getBooksWithGenre(id, 10),
+        ]);
+
+        setGenre({ ...data, books });
       } catch (e) {
         console.error("Error fetching book:", e);
         setError(true);
@@ -81,27 +81,24 @@ export function GenrePage() {
 
       <section id="genre-catalogs" className="">
         <GenreCatalogSection
-          id="genre-books-catalog"
           genreName={genre.name}
           sectionType="Books"
-          fetchBooks={fetchBooksFromApi}
+          books={genre.books}
           message="Random featured review or message..."
         />
 
         <GenreCatalogSection
-          id="genre-comics-catalog"
           genreName={genre.name}
           sectionType="Comics"
-          fetchBooks={fetchBooksFromApi}
+          books={genre.books}
           message="Another cool review or message..."
           reverse
         />
 
         <GenreCatalogSection
-          id="genre-manga-catalog"
           genreName={genre.name}
           sectionType="Manga"
-          fetchBooks={fetchBooksFromApi}
+          books={genre.books}
           message="Reviews or insights text here."
         />
       </section>
@@ -111,24 +108,25 @@ export function GenrePage() {
 
 //==============================================================================
 interface GenreCatalogSectionProps {
-  id: string;
   genreName: string;
   sectionType: string;
-  fetchBooks: (pageIndex: number, pageSize: number) => Promise<any>;
   message: string;
   reverse?: boolean;
+  books?: Book[];
 }
 
 export const GenreCatalogSection: React.FC<GenreCatalogSectionProps> = ({
-  id,
   genreName,
   sectionType,
-  fetchBooks,
   message,
   reverse = false,
+  books = [],
 }) => {
   return (
-    <section id={id} className="flex justify-center lg:mx-5 xl:mx-10">
+    <section
+      id={`genre-${genreName}-catalog`}
+      className="flex justify-center lg:mx-5 xl:mx-10"
+    >
       <div className="flex flex-col items-center gap-1 w-full">
         <div>
           <h2 className="mt-2 text-3xl font-extrabold text-accent text-center">
@@ -142,7 +140,7 @@ export const GenreCatalogSection: React.FC<GenreCatalogSectionProps> = ({
           }`}
         >
           <div className="flex-1 min-w-0">
-            <BookShowcase fetchBooks={fetchBooks} />
+            <BookShowcase books={books} />
           </div>
 
           <div className="w-full lg:w-[300px] h-full bg-muted rounded-lg p-4 border-accent border-2 border-b-8">
@@ -159,20 +157,22 @@ interface GenreDescriptionProps {
   maxLength?: number;
 }
 export function GenreDescription({
-  description = "No description",
+  description,
   maxLength = 400,
 }: GenreDescriptionProps) {
   const [expanded, setExpanded] = useState(false);
 
-  if (!description) return null;
+  const safeDescription = description?.trim()
+    ? description
+    : "No description...";
 
-  const isLong = description.length > maxLength;
+  const isLong = safeDescription.length > maxLength;
   const displayText =
-    expanded || !isLong ? description : description.slice(0, maxLength);
+    expanded || !isLong ? safeDescription : safeDescription.slice(0, maxLength);
 
   return (
     <p
-      className="indent-4 text-base font-[Georgia] leading-tight rounded-lg bg-muted p-2 px-3 mx-2 border-2 border-b-4 border-accent break-words"
+      className="w-full indent-4 text-base font-[Georgia] leading-tight rounded-lg bg-muted p-2 px-3 border-2 border-b-4 border-accent break-words"
       style={{ cursor: isLong ? "pointer" : "default" }}
       onClick={() => isLong && setExpanded(!expanded)}
     >

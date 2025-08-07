@@ -30,3 +30,17 @@ export function createAuthor(data: {
     body: data,
   });
 }
+
+export function getAuthorBookGenres(id: string) {
+  return apiCall({
+    method: GET,
+    endpoint: `/api/authors/${id}/books/genres`,
+  });
+}
+
+export function getBooksByAuthor(id: string, count: number) {
+  return apiCall({
+    method: "GET",
+    endpoint: `/api/authors/${id}/books?count=${count}`,
+  });
+}

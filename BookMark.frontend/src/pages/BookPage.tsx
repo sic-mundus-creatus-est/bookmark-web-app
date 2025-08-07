@@ -32,9 +32,9 @@ import { bookAuthorRoles } from "@/config/roles";
 import { authorInputSuggestions } from "@/lib/services/authorService";
 
 export function BookPage() {
+  //------------------------------------------------------------------------------
   const { id } = useParams<{ id: string }>();
-
-  const [book, setBook] = useState<Book>();
+  //------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,6 +42,10 @@ export function BookPage() {
   const [editMode, setEditMode] = useState<boolean>(false);
 
   const [globalFormError, setGlobalFormError] = useState<string | null>(null);
+  //------------------------------------------------------------------------------
+
+  //------------------------------------------------------------------------------
+  const [book, setBook] = useState<Book>();
   //------------------------------------------------------------------------------
 
   const {
@@ -132,7 +136,10 @@ export function BookPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 md:px-4 lg:px-2 xl:px-10 2xl:px-24 flex-grow">
-      <div className="flex sm:justify-end justify-center mr-0 sm:mr-6 sm:-mb-4 mt-2">
+      <div
+        className="flex justify-center md:justify-end mr-0 md:mr-6 md:-mb-2 mt-2"
+        style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+      >
         <button
           title={editMode ? "Cancel Editing" : "Edit"}
           onClick={() => setEditMode((prev) => !prev)}
@@ -145,11 +152,11 @@ export function BookPage() {
           )}
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4 pt-2">
         {/* Cover */}
         <Card
           className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg"
-          style={{ minWidth: "clamp(18rem, 18vw, 100%)" }}
+          style={{ minWidth: "clamp(19rem, 19vw, 100%)" }}
         >
           <CardContent
             className="p-0 bg-background rounded-t-lg"
@@ -211,7 +218,7 @@ export function BookPage() {
         {/* Book Info */}
         <div
           className="flex flex-col gap-5 min-w-0"
-          style={{ minWidth: "clamp(18rem, 18vw, 100%)" }}
+          style={{ minWidth: "clamp(19rem, 19vw, 100%)" }}
         >
           <div className="w-full">
             {editMode ? (

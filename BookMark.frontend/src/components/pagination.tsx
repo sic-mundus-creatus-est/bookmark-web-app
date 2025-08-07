@@ -55,7 +55,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   return (
     <nav className={`mt-2 text-center font-serif ${className}`}>
       <div className="inline-flex flex-wrap items-center justify-center gap-2 text-xl sm:text-lg">
-        {currentPage > 1 && (
+        {currentPage > 1 && totalPages > 1 && (
           <span
             onClick={() => onPageChange(currentPage - 1)}
             className="cursor-pointer text-accent hover:text-popover hover:underline underline-offset-4 decoration-[2px] transition"

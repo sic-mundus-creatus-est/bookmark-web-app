@@ -25,10 +25,10 @@ public class Book : IModel
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; set; }
-// --------------------------------------------------------
-// --------------------------------------------------------
-    public ICollection<BookAuthor>? BookAuthors { get; set; }
-    public ICollection<BookGenre>? BookGenres { get; set; }
+    // --------------------------------------------------------
+    // --------------------------------------------------------
+    public ICollection<BookAuthor> BookAuthors { get; set; } = [];
+    public ICollection<BookGenre> BookGenres { get; set; } = [];
 // --------------------------------------------------------
 
     public Book()

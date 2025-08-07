@@ -39,7 +39,10 @@ export function MobileNavbar() {
     <>
       <div className="w-full items-center lg:hidden">
         {/* static */}
-        <div className="flex flex-wrap justify-between pb-2 px-2">
+        <div
+          className="flex justify-between pb-2 px-2"
+          style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+        >
           <Logo />
 
           <Hamburger
@@ -58,6 +61,7 @@ export function MobileNavbar() {
               ? "max-h-screen opacity-100 transform scale-100"
               : "max-h-0 opacity-0 transform scale-95"
           }`}
+          style={{ minWidth: "clamp(20rem, 20vw, 100%)" }}
         >
           {shouldRender && (
             <div className="flex flex-col items-stretch space-y-1 pb-4 pt-2 px-4 text-background">
@@ -85,7 +89,7 @@ export function MobileNavbar() {
 
         <div
           className="relative pb-2 px-6"
-          style={{ minWidth: "clamp(20rem, 30vw, 100%)" }}
+          style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
         >
           <Input
             placeholder="Search..."

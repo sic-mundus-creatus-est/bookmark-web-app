@@ -1,13 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
 import { Book } from "@/lib/types/book";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BookRatingStars } from "./book-rating-stars";
 
 /**
  * A BookCard component displays a book's cover, title, author, and rating with a hover effect that reveals a truncated description.
  */
 export function BookCard({ book }: { book: Book }) {
+  const navigate = useNavigate();
   return (
     <Link to={`/book/${book.id}`}>
       <Card className="rounded-lg flex flex-col relative">
@@ -23,7 +24,7 @@ export function BookCard({ book }: { book: Book }) {
                 : "/cover_placeholder.jpg"
             }
             alt={`Cover of ${book.title}`}
-            className="w-full h-full rounded-t-lg border-t-2 border-l-2 border-r-2 border-accent" // stretched
+            className="w-full h-full rounded-t-lg border-t-2 border-l-2 border-r-2 border-accent bg-accent"
           />
 
           {/* Book description on hover */}
@@ -57,19 +58,29 @@ export function BookCard({ book }: { book: Book }) {
           <div className="text-sfont-[Verdana] text-accent line-clamp-1">
             <span className="italic">by </span>
             {book.authors.map((a, i) => (
-              <span key={a.id} className="font-semibold">
-                {a.name}
-                {i < book.authors.length - 1 ? ", " : ""}
-              </span>
+              <button
+                key={a.id}
+                className="btn btn-link px-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/author/${a.id}`);
+                }}
+              >
+                <span key={a.id} className="font-semibold hover:text-popover">
+                  {a.name}
+                  {i < book.authors.length - 1 ? ", " : ""}
+                </span>
+              </button>
             ))}
           </div>
 
           {/* Rating */}
           <div className="mt-auto">
             <div className="flex items-center -mt-1 space-x-1">
-              <BookRatingStars rating={book.rating!} />
+              <BookRatingStars rating={book.rating ?? 3.4} />
               <span className="text-sm text-accent font-[Verdana] font-semibold">
-                {book.rating?.toFixed(1)}
+                {book.rating?.toFixed(1) ?? 3.4}
               </span>
             </div>
           </div>

@@ -2,7 +2,10 @@ import { appConfig } from "@/config/appConfig";
 
 export function Footer() {
   return (
-    <footer className="bg-accent pb-12 pt-8 text-sm">
+    <footer
+      className="bg-accent pb-12 pt-8 text-sm"
+      style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+    >
       <div className="container mx-auto px-10 sm:px-10 md:px-4 lg:px-28">
         <div className="flex flex-col md:flex-row md:items-center justify-center sm:gap-4 md-gap-6 lg:gap-16">
           {/* Left: Title + Author */}

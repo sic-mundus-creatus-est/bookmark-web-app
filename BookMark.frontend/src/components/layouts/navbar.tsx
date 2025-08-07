@@ -19,24 +19,25 @@ export function Navbar() {
 
 function AuthRow() {
   return (
-    <div className="pt-2">
-      <div className="container mx-auto flex justify-end pr-10 sm:pr-10 md:pr-10 lg:pr-48 space-x-4 flex-wrap text-popover">
-        {navConfig.Auth.items?.map((item) => {
-          const Icon = item.icon === "log-in" ? LogIn : UserPlus;
-          return (
-            <a
-              href={item.to}
-              className="flex items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
-              key={item.title}
-            >
-              <span className="mr-1">
-                <Icon size={17} strokeWidth={2} />
-              </span>
-              {item.title}
-            </a>
-          );
-        })}
-      </div>
+    <div
+      className=" pt-2 container mx-auto flex justify-end pr-9 sm:pr-10 md:pr-9 lg:pr-48 space-x-4 flex-wrap text-popover"
+      style={{ minWidth: "clamp(23rem, 23vw, 100%)" }}
+    >
+      {navConfig.Auth.items?.map((item) => {
+        const Icon = item.icon === "log-in" ? LogIn : UserPlus;
+        return (
+          <a
+            href={item.to}
+            className="flex items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
+            key={item.title}
+          >
+            <span className="mr-1">
+              <Icon size={17} strokeWidth={2} />
+            </span>
+            {item.title}
+          </a>
+        );
+      })}
     </div>
   );
 }

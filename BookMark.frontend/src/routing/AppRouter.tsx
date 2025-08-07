@@ -4,7 +4,7 @@ import { PrivateRoute } from "./PrivateRoute";
 import { HomePage } from "../pages/HomePage";
 import { LoginPage } from "../pages/LoginPage";
 import { AppLayout } from "@/components/layouts/app-layout";
-import { TestPage } from "@/pages/TestPage";
+import { BooksPage } from "@/pages/BooksPage";
 import { BookPage } from "@/pages/BookPage";
 import { AddBookPage } from "@/pages/AddBookPage";
 import { GenrePage } from "@/pages/GenrePage";
@@ -41,7 +41,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/",
-        element: <TestPage />,
+        element: <BooksPage />,
       },
     ],
   },

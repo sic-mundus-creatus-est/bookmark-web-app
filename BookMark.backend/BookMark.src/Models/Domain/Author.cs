@@ -20,9 +20,9 @@ public class Author : IModel
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; set; }
-// --------------------------------------------------------
-// --------------------------------------------------------
-    public ICollection<BookAuthor>? BookAuthors { get; set; }
+    // --------------------------------------------------------
+    // --------------------------------------------------------
+    public ICollection<BookAuthor> BookAuthors { get; set; } = [];
 // --------------------------------------------------------
 
     public Author()

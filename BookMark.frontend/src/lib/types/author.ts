@@ -1,9 +1,14 @@
+import { Book } from "./book";
+import { Genre } from "./genre";
+
 export interface Author {
   id: string;
   name: string;
   biography?: string;
   birthDate?: string;
   deathDate?: string;
+  genres?: Genre[];
+  books?: Book[];
 }
 
 export interface AuthorWithRole {

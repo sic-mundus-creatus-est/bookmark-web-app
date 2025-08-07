@@ -15,3 +15,10 @@ export function createGenre(data: { name: string; description?: string }) {
     body: data,
   });
 }
+
+export function getBooksWithGenre(id: string, count: number) {
+  return apiCall({
+    method: "GET",
+    endpoint: `/api/genres/${id}/books?count=${count}`,
+  });
+}
