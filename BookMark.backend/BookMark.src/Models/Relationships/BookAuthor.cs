@@ -1,24 +1,8 @@
-using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 using BookMark.Models.Domain;
 
 namespace BookMark.Models.Relationships;
-
-public enum BookAuthorRole
-{
-    [EnumMember(Value = "Author")]
-    FullStackAuthor, // Someone who did everything
-    [EnumMember(Value = "Writer")]
-    Writer,
-    [EnumMember(Value = "Penciler")]
-    Penciler,
-    [EnumMember(Value = "Inker")]
-    Inker,
-    [EnumMember(Value = "Colorist")]
-    Colorist
-}
 
 public class BookAuthor
 {
@@ -31,7 +15,4 @@ public class BookAuthor
     public string AuthorId { get; set; } = null!;
     [ForeignKey("AuthorId")]
     public Author Author { get; set; } = null!;
-
-    [Required]
-    public BookAuthorRole Role { get; set; }
 }

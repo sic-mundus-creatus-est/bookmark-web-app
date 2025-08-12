@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-
+using System.ComponentModel.DataAnnotations.Schema;
 using BookMark.Models.DTOs;
 using BookMark.Models.Relationships;
 
@@ -14,17 +14,22 @@ public class Book : IModel
 
     public string OriginalLanguage { get; set; } = null!;
 
-    public int PageCount { get; set; } = 0;
+    public int PageCount { get; set; }
 
-    public int PublicationYear { get; set; } = 0;
+    public int PublicationYear { get; set; }
 
     public string? Description { get; set; }
 
-    public string? CoverImage { get; set; }
+    public string? CoverImageUrl { get; set; }
 
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; set; }
+    // --------------------------------------------------------
+    // --------------------------------------------------------
+    [ForeignKey("BookTypeId")] // <--
+    public string BookTypeId { get; set; } = null!;
+    public BookType BookType { get; set; } = null!;
     // --------------------------------------------------------
     // --------------------------------------------------------
     public ICollection<BookAuthor> BookAuthors { get; set; } = [];
@@ -43,6 +48,7 @@ public class Book : IModel
     {
         if (source is BookCreateDTO creationData)
         {
+            BookTypeId = creationData.BookTypeId;
             Title = creationData.Title;
             OriginalLanguage = creationData.OriginalLanguage;
             PageCount = creationData.PageCount;
@@ -61,45 +67,30 @@ public class Book : IModel
             response.PageCount = PageCount;
             response.PublicationYear = PublicationYear;
             response.Description = Description;
-            response.CoverImage = CoverImage;
+            response.CoverImageUrl = CoverImageUrl;
 
-            if (BookAuthors != null)
+            response.BookType = new BookTypeResponseDTO
             {
-                response.Authors ??= [];
+                Id = BookType.Id,
+                Name = BookType.Name
+            };
 
-                foreach (var bookAuthor in BookAuthors)
+            foreach (var bookAuthor in BookAuthors)
+            {
+                response.Authors.Add(new BookAuthorResponseDTO
                 {
-                    var author = bookAuthor.Author;
-                    if (author != null)
-                    {
-                        response.Authors.Add(new BookAuthorResponseDTO
-                        {
-                            Id = author.Id,
-                            Name = author.Name,
-                            RoleId = bookAuthor.Role
-                        });
-                    }
-                    else throw new InvalidDataException($"Retrieved a BookAuthor entry with a null Author. This may indicate corrupt or incomplete data.");
-                }
+                    Id = bookAuthor.Author.Id,
+                    Name = bookAuthor.Author.Name,
+                });
             }
 
-            if (BookGenres != null)
+            foreach (var bookGenre in BookGenres)
             {
-                response.Genres ??= [];
-
-                foreach (var bookGenre in BookGenres)
+                response.Genres.Add(new BookGenreResponseDTO
                 {
-                    var genre = bookGenre.Genre;
-                    if (genre != null)
-                    {
-                        response.Genres.Add(new BookGenreResponseDTO
-                        {
-                            Id = genre.Id,
-                            Name = genre.Name
-                        });
-                    }
-                    else throw new InvalidDataException($"Retrieved a BookGenre entry with a null Genre. This may indicate corrupt or incomplete data.");
-                }
+                    Id = bookGenre.Genre.Id,
+                    Name = bookGenre.Genre.Name
+                });
             }
         }
     }

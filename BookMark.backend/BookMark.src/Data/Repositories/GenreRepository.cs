@@ -1,4 +1,5 @@
 using BookMark.Models.Domain;
+using BookMark.Models.Relationships;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookMark.Data.Repositories;

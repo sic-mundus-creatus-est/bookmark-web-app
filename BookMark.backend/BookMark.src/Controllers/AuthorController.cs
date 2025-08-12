@@ -21,18 +21,13 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
                             detail: $"No Author with ID '{id}' was found.",
                             statusCode: StatusCodes.Status404NotFound);
 
-        var response = new List<BookGenreResponseDTO>();
-
-        if (_repository is AuthorRepository authorRepo)
-            response = await authorRepo.GetAuthorBookGenresAsync(id);
+        List<BookGenreResponseDTO>? response = await ((AuthorRepository)_repository).GetAuthorBookGenresAsync(id);
 
         return Ok(response);
     }
 
     [HttpGet("{id}/books")]
-    public async Task<ActionResult<List<BookResponseDTO>>> GetBooksByAuthor(
-        [FromRoute] string id,
-        [FromQuery] int count = 10)
+    public async Task<ActionResult<List<BookResponseDTO>>> GetAuthorBooks([FromRoute] string id, [FromQuery] int count = 10)
     {
         var author = await _repository.GetByIdAsync(id);
         if (author == null)
@@ -42,17 +37,14 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
 
         var response = new List<BookResponseDTO>();
 
-        if (_repository is AuthorRepository authorRepo)
-        {
-            var books = await authorRepo.GetBooksByAuthorAsync(id, count);
+        var books = await ((AuthorRepository)_repository).GetAuthorBooksAsync(id, count);
 
-            response = books.Select(entity =>
-            {
-                var dto = Activator.CreateInstance<BookResponseDTO>();
-                entity.MapTo(dto!);
-                return dto;
-            }).ToList();
-        }
+        response = books.Select(entity =>
+        {
+            var dto = Activator.CreateInstance<BookResponseDTO>();
+            entity.MapTo(dto!);
+            return dto;
+        }).ToList();
 
         return Ok(response);
     }

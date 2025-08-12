@@ -27,7 +27,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
         var response = Activator.CreateInstance<TResponseDTO>();
         createdEntity.MapTo(response!);
 
-        return CreatedAtAction(nameof(Get), new { id = entityToCreate.Id }, response); // 201
+        return CreatedAtAction(nameof(Get), new { id = entityToCreate.Id }, response);
     }
 
 
@@ -43,7 +43,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
         var response = Activator.CreateInstance<TResponseDTO>();
         entity.MapTo(response!);
 
-        return Ok(response); // 200
+        return Ok(response);
     }
 
 
@@ -57,12 +57,12 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
                                             entity.MapTo(dto!);
                                             return dto;
                                         } );
-        return Ok(response); // 200
+        return Ok(response);
     }
 
 
     [HttpGet("get-constrained")]
-    public async Task<IActionResult> GetConstrained(
+    public async Task<ActionResult<Page<TResponseDTO>>> GetConstrained(
         [FromQuery] int pageIndex = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] bool sortDescending = false,
@@ -95,9 +95,14 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
                             detail: $"No {nameof(TModel)} with ID '{id}' was found. Nothing to update.",
                             statusCode: StatusCodes.Status404NotFound );
 
-        var updatedEntity = await _repository.UpdateAsync(entityToUpdate, updateData!);
+        if (updateData == null)
+            return Problem( title: "No Changes Sent",
+                            detail: $"Nothing to update.",
+                            statusCode: StatusCodes.Status400BadRequest );
 
-        return Ok(); // 200
+        await _repository.UpdateAsync(entityToUpdate, updateData);
+
+        return Ok();
     }
 
 
@@ -111,7 +116,8 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
                             statusCode: StatusCodes.Status404NotFound );
 
         await _repository.DeleteAsync(entityToDelete);
-        return NoContent(); // 204
+        
+        return NoContent();
     }
 
 }

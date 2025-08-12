@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using BookMark.Models.Domain;
 
+namespace BookMark.Models.Relationships;
+
 public class BookGenre
 {
     [Required]

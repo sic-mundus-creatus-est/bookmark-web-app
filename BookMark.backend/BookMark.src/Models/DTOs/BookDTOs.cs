@@ -1,12 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
 
-using BookMark.Models.Relationships;
-
 namespace BookMark.Models.DTOs;
 
 public class BookCreateDTO
 {
+    [Required]
+    public string BookTypeId { get; set; } = null!;
+
     [Required]
     [MaxLength(256)]
     public string Title { get; set; } = null!;
@@ -14,15 +15,15 @@ public class BookCreateDTO
     [Required]
     [Length(1, Controllers.BookController.MAX_BOOK_AUTHORS)]
     [SwaggerSchema("Array input with [FromForm] doesn't work in Swagger, test with Postman.")]
-    public List<BookAuthorDTO> AuthorsWithRoles { get; set; } = null!;
+    public List<string> AuthorIds { get; set; } = null!;
 
     [Required]
-    [Length(1, Controllers.BookController.MAX_GENRES)]
+    [Length(1, Controllers.BookController.MAX_BOOK_GENRES)]
     public List<string> GenreIds { get; set; } = null!;
 
     [Required]
     [MaxLength(64)]
-    public string OriginalLanguage {get; set; } = null!;
+    public string OriginalLanguage { get; set; } = null!;
 
     [Required]
     [Range(0, int.MaxValue)]
@@ -39,11 +40,13 @@ public class BookCreateDTO
 
 public class BookUpdateDTO
 {
+    public string? BookTypeId { get; set; }
+
     [MaxLength(256)]
     public string? Title { get; set; }
 
     [MaxLength(64)]
-    public string? OriginalLanguage {get; set; }
+    public string? OriginalLanguage { get; set; }
 
     [Range(0, int.MaxValue)]
     public int? PublicationYear { get; set; }
@@ -55,12 +58,16 @@ public class BookUpdateDTO
     public string? Description { get; set; }
 }
 
-public class BookAuthorDTO
+public class BookTypeDTO
 {
     [Required]
+    public string Name { get; set; } = null!;
+}
+
+public class BookTypeResponseDTO
+{
     public string Id { get; set; } = null!;
-    [Required]
-    public BookAuthorRole RoleId { get; set; }
+    public string Name { get; set; } = null!;
 }
 
 public class BookGenreResponseDTO
@@ -73,7 +80,6 @@ public class BookAuthorResponseDTO
 {
     public string Id { get; set; } = null!;
     public string Name { get; set; } = null!;
-    public BookAuthorRole RoleId { get; set; }
 }
 
 public class BookResponseDTO
@@ -84,7 +90,8 @@ public class BookResponseDTO
     public int PageCount { get; set; }
     public int PublicationYear { get; set; }
     public string? Description { get; set; }
-    public string? CoverImage { get; set; }
-    public List<BookAuthorResponseDTO> Authors { get; set; } = null!;
-    public List<BookGenreResponseDTO> Genres { get; set; } = null!;
+    public string? CoverImageUrl { get; set; }
+    public BookTypeResponseDTO BookType { get; set; } = null!;
+    public List<BookAuthorResponseDTO> Authors { get; set; } = [];
+    public List<BookGenreResponseDTO> Genres { get; set; } = [];
 }

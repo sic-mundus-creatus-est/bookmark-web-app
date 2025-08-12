@@ -6,11 +6,12 @@ public interface IModel
     DateTime CreatedAt { get; }
     DateTime UpdatedAt { get; set; }
 
+
     #region MAPPING
 
-    void MapFrom(object source);
-    void MapTo(object dest);
+    void MapFrom(object source) { }
+    void MapTo(object dest) { }
 
-#endregion
+    #endregion
 
 }

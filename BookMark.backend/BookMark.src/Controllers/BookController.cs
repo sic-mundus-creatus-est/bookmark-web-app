@@ -5,6 +5,8 @@ using BookMark.Services.Core;
 using BookMark.Models.Domain;
 using BookMark.Services.Domain;
 using BookMark.Data.Repositories;
+using BookMark.Models;
+using BookMark.Models.Relationships;
 
 namespace BookMark.Controllers;
 
@@ -18,7 +20,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     private const int COVER_IMAGE_MAX_SIZE_MB = 10;
     private static readonly string[] AllowedCoverImageExtensions = { ".jpg", ".jpeg", ".png" };
     public const int MAX_BOOK_AUTHORS = 16;
-    public const int MAX_GENRES = 16;
+    public const int MAX_BOOK_GENRES = 16;
 
     public BookController(BookRepository repository, BookService bookService, IFileService fileService) : base(repository)
     {
@@ -32,25 +34,51 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     {
         var bookToCreate = new Book();
         bookToCreate.MapFrom(creationData);
-
-        bookToCreate.BookAuthors = await _bookService.AssembleBookAuthors(bookToCreate, creationData.AuthorsWithRoles);
+        
+        bookToCreate.BookAuthors = await _bookService.AssembleBookAuthors(bookToCreate, creationData.AuthorIds);
         bookToCreate.BookGenres = await _bookService.AssembleBookGenres(bookToCreate, creationData.GenreIds);
 
         if (creationData.CoverImageFile != null)
-            bookToCreate.CoverImage = await _fileService.SaveFileAsync(creationData.CoverImageFile,
+            bookToCreate.CoverImageUrl = await _fileService.SaveFileAsync(creationData.CoverImageFile,
                                             AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB);
 
-        var createdBook = await _repository.CreateAsync(bookToCreate);
+        var createdBook = await ((BookRepository)_repository).CreateAsync(bookToCreate);
 
         var response = new BookResponseDTO();
-        createdBook!.MapTo(response);
+        createdBook.MapTo(response);
 
         return CreatedAtAction(nameof(Get), new { id = createdBook.Id }, response);
     }
 
 
+    [HttpGet("get-constrained-books")]
+    public async Task<ActionResult<Page<BookResponseDTO>>> GetConstrainedBooks([FromQuery] int pageIndex = 1,
+                                                                                [FromQuery] int pageSize = 10,
+                                                                                [FromQuery] bool sortDescending = false,
+                                                                                [FromQuery] string? sortBy = null,
+                                                                                [FromQuery(Name = "filters")] Dictionary<string, string>? filters = null,
+                                                                                [FromQuery] List<string>? bookTypes = null,
+                                                                                [FromQuery] List<string>? bookAuthors = null,
+                                                                                [FromQuery] List<string>? bookGenres = null) {
+        var page = await ((BookRepository)_repository).GetConstrainedBooksAsync(
+            pageIndex, pageSize, sortDescending, sortBy, filters, bookTypes, bookAuthors, bookGenres);
+
+        var itemDtos = page.Items!.Select(entity =>
+        {
+            var dto = Activator.CreateInstance<BookResponseDTO>();
+            entity.MapTo(dto!);
+            return dto;
+        }).ToList();
+
+        var response = new Page<BookResponseDTO>(
+            itemDtos, page.PageIndex, page.TotalPages);
+
+        return Ok(response);
+    }
+
+
     [HttpPut("{id}/replace-authors")]
-    public async Task<IActionResult> ReplaceAuthors([FromRoute] string id, [FromBody] List<BookAuthorDTO> authorsWithRoles)
+    public async Task<ActionResult> ReplaceAuthors([FromRoute] string id, [FromBody] List<string> authorIds)
     {
         var book = await _repository.GetTrackedByIdAsync(id);
         if (book == null)
@@ -58,69 +86,27 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
                             detail: $"No Book with ID '{id}' was found.",
                             statusCode: StatusCodes.Status404NotFound);
 
-        if (authorsWithRoles.Count == 0)
+        if (authorIds.Count == 0)
             return Problem(title: "Bad Request",
-                            detail: "At least one author ID with a role must be provided.",
+                            detail: "At least one author ID must be provided.",
+                            statusCode: StatusCodes.Status400BadRequest);
+        
+        if (authorIds.Count > 16)
+             return Problem(title: "Bad Request",
+                            detail: $"A book cannot have more than {MAX_BOOK_AUTHORS} authors.",
                             statusCode: StatusCodes.Status400BadRequest);
 
-        var bookAuthors = await _bookService.AssembleBookAuthors(book, authorsWithRoles);
 
-        if (_repository is BookRepository bookRepo)
-            await bookRepo.ReplaceBookAuthorsAsync(book.Id, bookAuthors);
+        var bookAuthors = await _bookService.AssembleBookAuthors(book, authorIds);
 
-        return Ok();
-    }
-
-
-    [HttpPost("{id}/add-authors")]
-    public async Task<IActionResult> AddAuthors([FromRoute] string id, [FromBody] List<BookAuthorDTO> authorsWithRoles)
-    {
-        var book = await _repository.GetTrackedByIdAsync(id);
-        if (book == null)
-            return Problem( title: "Book Not Found",
-                            detail: $"No Book with ID '{id}' was found.",
-                            statusCode: StatusCodes.Status404NotFound );
-        
-        if (authorsWithRoles.Count == 0)
-            return Problem( title: "Bad Request",
-                            detail: "At least one author ID with a role must be provided.",
-                            statusCode: StatusCodes.Status400BadRequest );
-
-        var bookAuthors = await _bookService.AssembleBookAuthors(book, authorsWithRoles);
-
-        if (_repository is BookRepository bookRepo)
-            await bookRepo.AddBookAuthorsAsync(bookAuthors);
+        await ((BookRepository)_repository).ReplaceBookAuthorsAsync(book.Id, bookAuthors);
 
         return Ok();
-
-    }
-
-
-    [HttpDelete("{id}/remove-authors")]
-    public async Task<IActionResult> RemoveAuthors([FromRoute] string id, [FromBody] List<string> authorIds)
-    {
-        var book = await _repository.GetByIdAsync(id);
-        if (book == null)
-            return Problem( title: "Book Not Found",
-                            detail: $"No Book with ID '{id}' was found.",
-                            statusCode: StatusCodes.Status404NotFound );
-
-        if (authorIds.Count == 0)
-            return Problem( title: "Bad Request",
-                            detail: "At least one author ID is required for removal.",
-                            statusCode: StatusCodes.Status400BadRequest );
-
-        authorIds = [.. authorIds.Distinct()];
-
-        if(_repository is BookRepository bookRepo)
-            await bookRepo.RemoveBookAuthorsAsync(id, authorIds);
-
-        return NoContent();
     }
 
 
     [HttpPut("{id}/replace-genres")]
-    public async Task<IActionResult> ReplaceGenres([FromRoute] string id, [FromBody] List<string> genreIds)
+    public async Task<ActionResult> ReplaceGenres([FromRoute] string id, [FromBody] List<string> genreIds)
     {
         var book = await _repository.GetTrackedByIdAsync(id);
         if (book == null)
@@ -132,19 +118,23 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
             return Problem(title: "Bad Request",
                             detail: "At least one genre ID must be provided.",
                             statusCode: StatusCodes.Status400BadRequest);
+        
+        if (genreIds.Count > 16)
+             return Problem(title: "Bad Request",
+                            detail: $"A book cannot have more than {MAX_BOOK_GENRES} genres.",
+                            statusCode: StatusCodes.Status400BadRequest);
+
 
         var bookGenres = await _bookService.AssembleBookGenres(book, genreIds);
 
-
-        if (_repository is BookRepository bookRepo)
-            await bookRepo.ReplaceBookGenresAsync(book.Id, bookGenres);
+        await ((BookRepository)_repository).ReplaceBookGenresAsync(book.Id, bookGenres);
 
         return Ok();
     }
 
 
     [HttpPatch("{id}/update-cover-image")]
-    public async Task<IActionResult> UpdateCoverImage([FromRoute] string id, IFormFile newCover)
+    public async Task<ActionResult> UpdateCoverImage([FromRoute] string id, IFormFile? newCover)
     {
         Book? bookToUpdate = await _repository.GetTrackedByIdAsync(id);
         if (bookToUpdate == null)
@@ -152,8 +142,19 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
                             detail: $"No Book with ID '{id}' was found.",
                             statusCode: StatusCodes.Status404NotFound );
 
-        string? oldCover = bookToUpdate.CoverImage;
-        
+        string? oldCover = bookToUpdate.CoverImageUrl;
+
+        if (newCover == null)
+        {// => [ remove cover ]
+            await _repository.UpdateAsync(bookToUpdate, new { CoverImageUrl = "" });
+
+            if (!string.IsNullOrEmpty(oldCover))
+                _fileService.DeleteFile(oldCover);
+
+            return NoContent();
+        }
+
+        // => [ add/replace cover ]
         var newCoverProp = new { CoverImage = await _fileService.SaveFileAsync(newCover!, AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB) };
 
         await _repository.UpdateAsync(bookToUpdate, newCoverProp);
@@ -162,25 +163,6 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
             _fileService.DeleteFile(oldCover);
 
         return Ok();
-    }
-
-
-    [HttpDelete("{id}/remove-cover-image")]
-    public async Task<IActionResult> RemoveCoverImage([FromRoute] string id)
-    {
-        var bookToUpdate = await _repository.GetTrackedByIdAsync(id);
-        if (bookToUpdate == null)
-            return Problem( title: "Book Not Found",
-                            detail: $"No Book with ID '{id}' was found.",
-                            statusCode: StatusCodes.Status404NotFound );
-        
-        if (bookToUpdate.CoverImage != null)
-            _fileService.DeleteFile(bookToUpdate.CoverImage);
-        
-        var noCoverProp = new { CoverImage = "" };
-
-        await _repository.UpdateAsync(bookToUpdate, noCoverProp);
-        return NoContent();
     }
 
 
@@ -194,8 +176,8 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
                             detail: $"No Book with ID '{id}' was found. It may have already been deleted or never existed.",
                             statusCode: StatusCodes.Status404NotFound );
 
-        if (!string.IsNullOrEmpty(bookToDelete.CoverImage))
-            _fileService.DeleteFile(bookToDelete.CoverImage);
+        if (!string.IsNullOrEmpty(bookToDelete.CoverImageUrl))
+            _fileService.DeleteFile(bookToDelete.CoverImageUrl);
 
         await _repository.DeleteAsync(bookToDelete);
         return NoContent(); // 204

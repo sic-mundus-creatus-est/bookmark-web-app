@@ -57,27 +57,19 @@ public class AppDbContext : IdentityDbContext<User>
         modelBuilder.Entity<BookGenre>().ToTable("BookGenres");
 
         modelBuilder.Entity<Book>()
+                    .Navigation(b => b.BookType)
+                    .AutoInclude();
+
+        modelBuilder.Entity<Book>()
                     .Navigation(b => b.BookGenres)
                     .AutoInclude();
 
         modelBuilder.Entity<BookGenre>()
                     .Navigation(bg => bg.Genre)
                     .AutoInclude();
+        
         // --------------------------------------------------------
 
-    }
-
-    public override int SaveChanges()
-    {
-        foreach (var entry in ChangeTracker.Entries<IModel>())
-        {
-            if (entry.State == EntityState.Modified)
-            {
-                entry.Entity.UpdatedAt = DateTime.Now;
-            }
-        }
-
-        return base.SaveChanges();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -93,11 +85,33 @@ public class AppDbContext : IdentityDbContext<User>
         return await base.SaveChangesAsync(cancellationToken);
     }
 
+    public void ApplyChangesForUpdate(DbContext context, object entityToUpdate, object updateData)
+    {
+        var entry = context.Entry(entityToUpdate);
+        var entityProps = entry.Metadata.GetProperties().Select(p => p.Name)
+                                                        .ToHashSet();
+
+        foreach (var updateProp in updateData.GetType().GetProperties())
+        {
+            if (!entityProps.Contains(updateProp.Name))
+                continue;
+
+            var newValue = updateProp.GetValue(updateData);
+            if (newValue != null)
+            {
+                var propEntry = entry.Property(updateProp.Name);
+                propEntry.CurrentValue = newValue;
+                propEntry.IsModified = true;
+            }
+        }
+    }
+
 
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
-    public DbSet<BookAuthor> BookAuthors { get; set; }
     public DbSet<Genre> Genres { get; set; }
+    public DbSet<BookType> BookTypes { get; set; }
+    public DbSet<BookAuthor> BookAuthors { get; set; }
     public DbSet<BookGenre> BookGenres { get; set; }
 
 }

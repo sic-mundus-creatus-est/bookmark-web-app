@@ -21,21 +21,17 @@ public class BookService
     }
 
 
-    public async Task<ICollection<BookAuthor>> AssembleBookAuthors(Book book, List<BookAuthorDTO> authorsWithRoles)
+    public async Task<ICollection<BookAuthor>> AssembleBookAuthors(Book book, List<string> authorIds)
     {
         var bookAuthors = new Collection<BookAuthor>();
 
-        authorsWithRoles = [.. authorsWithRoles.DistinctBy(x => x.Id)];
-        foreach (var aWr in authorsWithRoles)
+        authorIds = [.. authorIds.Distinct()];
+        foreach (var a in authorIds)
         {
-            var author = await _authorRepository.GetTrackedByIdAsync(aWr.Id);
+            var author = await _authorRepository.GetTrackedByIdAsync(a);
             if (author == null)
-                throw new ArgumentException($"Author with ID '{aWr.Id}' not found!" +
+                throw new ArgumentException($"Author with ID '{a}' not found!" +
                     " Cannot proceed with the operation unless all specified authors exist.");
-
-            if (!Enum.IsDefined(typeof(BookAuthorRole), aWr.RoleId))
-                throw new ArgumentOutOfRangeException(nameof(aWr.RoleId), aWr.RoleId, $"Invalid role '{aWr.RoleId}' for author ID '{aWr.Id}'." +
-                                                                                                    " All authors must have an existing role.");
 
             bookAuthors.Add(new BookAuthor
             {
@@ -43,7 +39,6 @@ public class BookService
                 BookId = book.Id,
                 Author = author,
                 AuthorId = author.Id,
-                Role = aWr.RoleId
             });
         }
 
@@ -52,6 +47,7 @@ public class BookService
 
         return bookAuthors;
     }
+
 
     public async Task<ICollection<BookGenre>> AssembleBookGenres(Book book, List<string> genreIds)
     {
@@ -76,7 +72,7 @@ public class BookService
         }
 
         if (bookGenres.Count == 0)
-                throw new FormatException("No valid genres found. Unable to continue.");
+            throw new FormatException("No valid genres found. Unable to continue.");
 
         return bookGenres;
     }

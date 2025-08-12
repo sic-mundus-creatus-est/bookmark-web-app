@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using BookMark.Models.DTOs;
+using BookMark.Models.Relationships;
 
 namespace BookMark.Models.Domain;
 

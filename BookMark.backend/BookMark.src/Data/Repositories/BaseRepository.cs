@@ -14,6 +14,7 @@ namespace BookMark.Data.Repositories;
 public interface IBaseRepository<TModel>
 {
     Task<TModel> CreateAsync(TModel entityToCreate);
+    Task<bool> ExistsAsync(string id);
     Task<TModel?> GetByIdAsync(string id);
     Task<TModel?> GetTrackedByIdAsync(string id);
     Task<IEnumerable<TModel>> GetAllAsync();
@@ -21,7 +22,8 @@ public interface IBaseRepository<TModel>
                                             int pageSize,
                                             bool sortDescending = false,
                                             string? sortBy = null,
-                                            Dictionary<string, string>? filters = null );
+                                            Dictionary<string, string>? filters = null,
+                                            IQueryable<TModel>? query = null );
     Task<TModel?> UpdateAsync(TModel entityToUpdate, object updateData);
     Task DeleteAsync(TModel entity);
 }
@@ -43,7 +45,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     protected IReadOnlyDictionary<string, Type> FilterPropTypes => _allTModelProps.Where(kv => AllowedFilterProps.Contains(kv.Key))
                                                                                   .ToDictionary(kv => kv.Key, kv => kv.Value);
 
-        
+
 
     public BaseRepository(AppDbContext context)
     {
@@ -55,20 +57,29 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     public virtual async Task<TModel> CreateAsync(TModel entityToCreate)
     {
         await _dbSet.AddAsync(entityToCreate);
-        await SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         return entityToCreate;
     }
+
+
+    public virtual async Task<bool> ExistsAsync(string id)
+    {
+        return await _dbSet.AsNoTracking().AnyAsync(b => b.Id == id);
+    }
+
 
     public virtual async Task<TModel?> GetByIdAsync(string id)
     {
         return await _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
     }
 
+
     public virtual async Task<TModel?> GetTrackedByIdAsync(string id)
     {
         return await _dbSet.FirstOrDefaultAsync(b => b.Id == id);
     }
+
 
     public virtual async Task<IEnumerable<TModel>> GetAllAsync()
     {
@@ -80,13 +91,14 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
                                                         int pageSize,
                                                         bool sortDescending = false,
                                                         string? sortBy = null,
-                                                        Dictionary<string, string>? filters = null) {
+                                                        Dictionary<string, string>? filters = null,
+                                                        IQueryable<TModel>? customQuery = null) {
         if (pageIndex < 1)
-            throw new ArgumentOutOfRangeException(nameof(pageIndex), "PageIndex must be greater than 0.");
+            throw new ArgumentOutOfRangeException(nameof(pageIndex), "PageIndex must be greater than zero.");
         if (pageSize < 1)
-                throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than zero.");
 
-        var query = _dbSet.AsNoTracking().AsQueryable();
+        var query = customQuery ?? _dbSet.AsNoTracking().AsQueryable();
 
         if (!filters.IsNullOrEmpty())
         foreach (var filter in filters!)
@@ -160,42 +172,17 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
     public virtual async Task<TModel?> UpdateAsync(TModel entityToUpdate, object updateData)
     {
-        var entry = _context.Entry(entityToUpdate);
-        var keyProperty = _context.Model.FindEntityType(typeof(TModel))?.FindPrimaryKey()?.Properties.FirstOrDefault()?.Name;
+        _context.ApplyChangesForUpdate(_context, entityToUpdate, updateData);
 
-        foreach (var property in updateData.GetType().GetProperties())
-        {
-            if (property.Name == keyProperty) continue; // Skips the primary key (Id)
-
-            var newValue = property.GetValue(updateData);
-            if (newValue != null)
-            {
-                entry.Property(property.Name).CurrentValue = newValue;
-                entry.Property(property.Name).IsModified = true;
-            }
-        }
-
-        await SaveChangesAsync();
+        await _context.SaveChangesAsync();
         return entityToUpdate;
     }
+
 
     public virtual async Task DeleteAsync(TModel entity)
     {
         _dbSet.Remove(entity);
-        await SaveChangesAsync();
-    }
-
-    protected async Task SaveChangesAsync()
-    {
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
+        await _context.SaveChangesAsync();
     }
 
 }

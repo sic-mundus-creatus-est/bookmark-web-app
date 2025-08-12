@@ -35,7 +35,7 @@ public class AuthorRepository : BaseRepository<Author>
         return genres;
     }
 
-    public async Task<List<Book>> GetBooksByAuthorAsync(string authorId, int count)
+    public async Task<List<Book>> GetAuthorBooksAsync(string authorId, int count)
     {
         var books = await _bookAuthorDbSet
             .Where(ba => ba.AuthorId == authorId)
