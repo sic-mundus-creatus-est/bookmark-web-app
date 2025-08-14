@@ -33,6 +33,7 @@ builder.Services.AddTransient<IFileService, FileService>();
 builder.Services.AddScoped<BookService>();
 
 builder.Services.AddScoped<BookRepository>();
+builder.Services.AddScoped<BookTypeRepository>();
 builder.Services.AddScoped<AuthorRepository>();
 builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<UserRepository>();

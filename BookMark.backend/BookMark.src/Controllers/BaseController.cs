@@ -33,7 +33,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
 
     [HttpGet("get/{id}")]
     public virtual async Task<ActionResult<TResponseDTO>> Get([FromRoute] string id)
-    {           
+    {
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null)
             return Problem( title: "Not Found",
@@ -70,7 +70,8 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
         [FromQuery(Name="filters")] Dictionary<string, string>? filters = null)
     {
         var page = await _repository.GetConstrainedAsync(
-            pageIndex, pageSize, sortDescending, sortBy, filters);
+            pageIndex, pageSize, sortDescending, sortBy, filters
+        );
 
         var itemDtos = page.Items!.Select(entity =>
         {
@@ -109,7 +110,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
     [HttpDelete("delete/{id}")]
     public virtual async Task<ActionResult> Delete([FromRoute] string id)
     {           
-        var entityToDelete = await _repository.GetTrackedByIdAsync(id);
+        var entityToDelete = await _repository.GetByIdAsync(id, changeTracking: true);
         if (entityToDelete == null)
             return Problem( title: "Not Found",
                             detail: $"No {nameof(TModel)} with ID '{id}' was found. It may have been previously deleted or never existed.",

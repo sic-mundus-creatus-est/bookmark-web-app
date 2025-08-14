@@ -28,7 +28,7 @@ public class BookRepository : BaseRepository<Book>
 
 
     public override async Task<Book> CreateAsync(Book newBook)
-    {
+    {        
         await _dbSet.AddAsync(newBook);
 
         await _bookAuthorDbSet.AddRangeAsync(newBook.BookAuthors);
@@ -39,7 +39,30 @@ public class BookRepository : BaseRepository<Book>
 
         return newBook;
     }
-    
+
+
+    public override async Task<Book?> GetByIdAsync(string id, bool changeTracking = false)
+    {
+        IQueryable<Book> query = _dbSet;
+
+        if (!changeTracking)
+            query = query.AsNoTracking();
+
+        return await query.Include(b => b.BookType)
+                          .Include(b => b.BookAuthors).ThenInclude(b => b.Author)
+                          .Include(b => b.BookGenres).ThenInclude(b => b.Genre)
+                          .FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+
+    public override async Task<List<Book>> GetAllAsync()
+    {
+        return await _dbSet.AsNoTracking().Include(b => b.BookType)
+                                          .Include(b => b.BookAuthors).ThenInclude(b => b.Author)
+                                          .Include(b => b.BookGenres).ThenInclude(b => b.Genre)
+                                          .ToListAsync();
+    }
+
 
     public async Task<Page<Book>> GetConstrainedBooksAsync(int pageIndex,
                                                             int pageSize,
@@ -49,7 +72,11 @@ public class BookRepository : BaseRepository<Book>
                                                             List<string>? bookTypes = null,
                                                             List<string>? bookAuthors = null,
                                                             List<string>? bookGenres = null) {
-        var query = _dbSet.AsNoTracking().AsQueryable();
+        var query = _dbSet.AsNoTracking()
+                          .Include(b => b.BookType)
+                          .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                          .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                          .AsQueryable();
 
         if (bookTypes?.Count > 0)
             query = query.Where(b => bookTypes.Any(bt => b.BookType.Name.Contains(bt)));
@@ -76,7 +103,7 @@ public class BookRepository : BaseRepository<Book>
 
         await _context.SaveChangesAsync();
     }
-    
+
 
     public async Task ReplaceBookGenresAsync(string bookId, ICollection<BookGenre> updatedGenres)
     {
@@ -91,5 +118,28 @@ public class BookRepository : BaseRepository<Book>
         await _context.SaveChangesAsync();
     }
 
+
+    public async Task<List<Book>> GetBooksByAuthorAsync(string authorId, int count)
+    {
+        return await _dbSet.Include(b => b.BookType)
+                           .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                           .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                           .Where(b => b.BookAuthors.Any(ba => ba.AuthorId == authorId))
+                           .AsNoTracking()
+                           .Take(count)
+                           .ToListAsync();
+    }
+    
+
+    public async Task<List<Book>> GetBooksInGenreAsync(string genreId, int count)
+    {
+        return await _dbSet.Include(b => b.BookType)
+                           .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                           .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                           .Where(b => b.BookGenres.Any(bg => bg.GenreId == genreId))
+                           .AsNoTracking()
+                           .Take(count)
+                           .ToListAsync();
+    }
 
 }

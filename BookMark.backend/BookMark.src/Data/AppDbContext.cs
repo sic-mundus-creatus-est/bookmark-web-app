@@ -30,14 +30,6 @@ public class AppDbContext : IdentityDbContext<User>
             .HasForeignKey(ba => ba.AuthorId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<BookAuthor>().ToTable("BookAuthors");
-
-        modelBuilder.Entity<Book>()
-                    .Navigation(b => b.BookAuthors)
-                    .AutoInclude();
-
-        modelBuilder.Entity<BookAuthor>()
-                    .Navigation(ba => ba.Author)
-                    .AutoInclude();
         // --------------------------------------------------------
 
         // --------------------------------------------------------
@@ -55,19 +47,6 @@ public class AppDbContext : IdentityDbContext<User>
             .HasForeignKey(bg => bg.GenreId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<BookGenre>().ToTable("BookGenres");
-
-        modelBuilder.Entity<Book>()
-                    .Navigation(b => b.BookType)
-                    .AutoInclude();
-
-        modelBuilder.Entity<Book>()
-                    .Navigation(b => b.BookGenres)
-                    .AutoInclude();
-
-        modelBuilder.Entity<BookGenre>()
-                    .Navigation(bg => bg.Genre)
-                    .AutoInclude();
-        
         // --------------------------------------------------------
 
     }

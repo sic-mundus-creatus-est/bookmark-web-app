@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookMark.Controllers;
 
 [ApiController]
-[Route("api/genres")]
+[Route("api/book-types")]
 public class BookTypeController : BaseController<BookType, BookTypeDTO, BookTypeDTO, BookTypeResponseDTO>
 {
     public BookTypeController(BookTypeRepository repository) : base(repository) { }

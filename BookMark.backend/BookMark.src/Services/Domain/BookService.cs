@@ -9,41 +9,53 @@ namespace BookMark.Services.Domain;
 public class BookService
 {
     protected readonly IBaseRepository<Book> _repository;
+    protected readonly IBaseRepository<BookType> _bookTypeRepository;
     protected readonly IBaseRepository<Author> _authorRepository;
     protected readonly IBaseRepository<Genre> _genreRepository;
 
 
-    public BookService(BookRepository repository, AuthorRepository authorRepository, GenreRepository genreRepository)
+    public BookService(BookRepository repository, AuthorRepository authorRepository, GenreRepository genreRepository, BookTypeRepository btRepository)
     {
         _repository = repository;
         _authorRepository = authorRepository;
         _genreRepository = genreRepository;
+        _bookTypeRepository = btRepository;
+    }
+
+
+    public async Task<BookType> RetrieveBookType(string bookTypeId)
+    {
+        var bookType = await _bookTypeRepository.GetByIdAsync(bookTypeId, changeTracking: true);
+
+        if (bookType == null)
+            throw new ArgumentException($"BookType not found.");
+
+        return bookType;
     }
 
 
     public async Task<ICollection<BookAuthor>> AssembleBookAuthors(Book book, List<string> authorIds)
     {
-        var bookAuthors = new Collection<BookAuthor>();
 
         authorIds = [.. authorIds.Distinct()];
-        foreach (var a in authorIds)
-        {
-            var author = await _authorRepository.GetTrackedByIdAsync(a);
-            if (author == null)
-                throw new ArgumentException($"Author with ID '{a}' not found!" +
-                    " Cannot proceed with the operation unless all specified authors exist.");
 
-            bookAuthors.Add(new BookAuthor
-            {
-                Book = book,
-                BookId = book.Id,
-                Author = author,
-                AuthorId = author.Id,
-            });
-        }
+        var authors = await _authorRepository.GetMultipleByIdsAsync(authorIds, changeTracking: true);
+
+        var missingIds = authorIds.Except(authors.Select(a => a.Id)).ToList();
+
+        if (missingIds.Any())
+            throw new ArgumentException($"Not all authors found: {string.Join(", ", missingIds)}");
+
+        var bookAuthors = authors.Select(author => new BookAuthor
+        {
+            Book = book,
+            BookId = book.Id,
+            Author = author,
+            AuthorId = author.Id
+        }).ToList();
 
         if (bookAuthors.Count == 0)
-            throw new FormatException("No valid authors found. Please ensure the authors are being submitted in the correct format.");
+            throw new FormatException("No valid authors found.");
 
         return bookAuthors;
     }
@@ -51,28 +63,25 @@ public class BookService
 
     public async Task<ICollection<BookGenre>> AssembleBookGenres(Book book, List<string> genreIds)
     {
-        var bookGenres = new Collection<BookGenre>();
-
         genreIds = [.. genreIds.Distinct()];
 
-        foreach (var g in genreIds)
-        {
-            var genre = await _genreRepository.GetTrackedByIdAsync(g);
-            if (genre == null)
-                throw new ArgumentException($"Genre with ID '{g}' not found!" +
-                    " Cannot proceed with the operation unless all specified genres exist.");
+        var genres = await _genreRepository.GetMultipleByIdsAsync(genreIds, changeTracking: true);
 
-            bookGenres.Add(new BookGenre
-            {
-                Book = book,
-                BookId = book.Id,
-                Genre = genre,
-                GenreId = genre.Id
-            });
-        }
+        var missingIds = genreIds.Except(genres.Select(a => a.Id)).ToList();
+
+        if (missingIds.Any())
+            throw new ArgumentException($"Not all genres found: {string.Join(", ", missingIds)}");
+
+        var bookGenres = genres.Select(genre => new BookGenre
+        {
+            Book = book,
+            BookId = book.Id,
+            Genre = genre,
+            GenreId = genre.Id
+        }).ToList();
 
         if (bookGenres.Count == 0)
-            throw new FormatException("No valid genres found. Unable to continue.");
+            throw new FormatException("No valid genres found.");
 
         return bookGenres;
     }

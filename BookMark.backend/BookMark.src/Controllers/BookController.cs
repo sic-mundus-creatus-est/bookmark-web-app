@@ -34,7 +34,9 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     {
         var bookToCreate = new Book();
         bookToCreate.MapFrom(creationData);
-        
+
+        bookToCreate.BookType = await _bookService.RetrieveBookType(creationData.BookTypeId);
+
         bookToCreate.BookAuthors = await _bookService.AssembleBookAuthors(bookToCreate, creationData.AuthorIds);
         bookToCreate.BookGenres = await _bookService.AssembleBookGenres(bookToCreate, creationData.GenreIds);
 
@@ -59,7 +61,8 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
                                                                                 [FromQuery(Name = "filters")] Dictionary<string, string>? filters = null,
                                                                                 [FromQuery] List<string>? bookTypes = null,
                                                                                 [FromQuery] List<string>? bookAuthors = null,
-                                                                                [FromQuery] List<string>? bookGenres = null) {
+                                                                                [FromQuery] List<string>? bookGenres = null)
+    {
         var page = await ((BookRepository)_repository).GetConstrainedBooksAsync(
             pageIndex, pageSize, sortDescending, sortBy, filters, bookTypes, bookAuthors, bookGenres);
 
@@ -80,7 +83,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     [HttpPut("{id}/replace-authors")]
     public async Task<ActionResult> ReplaceAuthors([FromRoute] string id, [FromBody] List<string> authorIds)
     {
-        var book = await _repository.GetTrackedByIdAsync(id);
+        var book = await _repository.GetByIdAsync(id, changeTracking: true);
         if (book == null)
             return Problem(title: "Book Not Found",
                             detail: $"No Book with ID '{id}' was found.",
@@ -90,11 +93,11 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
             return Problem(title: "Bad Request",
                             detail: "At least one author ID must be provided.",
                             statusCode: StatusCodes.Status400BadRequest);
-        
+
         if (authorIds.Count > 16)
-             return Problem(title: "Bad Request",
-                            detail: $"A book cannot have more than {MAX_BOOK_AUTHORS} authors.",
-                            statusCode: StatusCodes.Status400BadRequest);
+            return Problem(title: "Bad Request",
+                           detail: $"A book cannot have more than {MAX_BOOK_AUTHORS} authors.",
+                           statusCode: StatusCodes.Status400BadRequest);
 
 
         var bookAuthors = await _bookService.AssembleBookAuthors(book, authorIds);
@@ -108,7 +111,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     [HttpPut("{id}/replace-genres")]
     public async Task<ActionResult> ReplaceGenres([FromRoute] string id, [FromBody] List<string> genreIds)
     {
-        var book = await _repository.GetTrackedByIdAsync(id);
+        var book = await _repository.GetByIdAsync(id, changeTracking: true);
         if (book == null)
             return Problem(title: "Book Not Found",
                             detail: $"No Book with ID '{id}' was found.",
@@ -118,11 +121,11 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
             return Problem(title: "Bad Request",
                             detail: "At least one genre ID must be provided.",
                             statusCode: StatusCodes.Status400BadRequest);
-        
+
         if (genreIds.Count > 16)
-             return Problem(title: "Bad Request",
-                            detail: $"A book cannot have more than {MAX_BOOK_GENRES} genres.",
-                            statusCode: StatusCodes.Status400BadRequest);
+            return Problem(title: "Bad Request",
+                           detail: $"A book cannot have more than {MAX_BOOK_GENRES} genres.",
+                           statusCode: StatusCodes.Status400BadRequest);
 
 
         var bookGenres = await _bookService.AssembleBookGenres(book, genreIds);
@@ -136,11 +139,11 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     [HttpPatch("{id}/update-cover-image")]
     public async Task<ActionResult> UpdateCoverImage([FromRoute] string id, IFormFile? newCover)
     {
-        Book? bookToUpdate = await _repository.GetTrackedByIdAsync(id);
+        Book? bookToUpdate = await _repository.GetByIdAsync(id, changeTracking: true);
         if (bookToUpdate == null)
-            return Problem( title: "Book Not Found",
+            return Problem(title: "Book Not Found",
                             detail: $"No Book with ID '{id}' was found.",
-                            statusCode: StatusCodes.Status404NotFound );
+                            statusCode: StatusCodes.Status404NotFound);
 
         string? oldCover = bookToUpdate.CoverImageUrl;
 
@@ -172,15 +175,47 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
         var bookToDelete = await _repository.GetByIdAsync(id);
 
         if (bookToDelete == null)
-            return Problem( title: "Book Not Found",
+            return Problem(title: "Book Not Found",
                             detail: $"No Book with ID '{id}' was found. It may have already been deleted or never existed.",
-                            statusCode: StatusCodes.Status404NotFound );
+                            statusCode: StatusCodes.Status404NotFound);
 
         if (!string.IsNullOrEmpty(bookToDelete.CoverImageUrl))
             _fileService.DeleteFile(bookToDelete.CoverImageUrl);
 
         await _repository.DeleteAsync(bookToDelete);
-        return NoContent(); // 204
+        return NoContent();
+    }
+
+
+    [HttpGet("by/{authorId}")]
+    public async Task<ActionResult<List<BookResponseDTO>>> GetBooksByAuthor([FromRoute] string authorId, [FromQuery] int count = 10)
+    {
+        var books = await ((BookRepository)_repository).GetBooksByAuthorAsync(authorId, count);
+
+        var response = books.Select(entity =>
+        {
+            var dto = Activator.CreateInstance<BookResponseDTO>();
+            entity.MapTo(dto!);
+            return dto;
+        }).ToList();
+
+        return Ok(response);
+    }
+    
+
+    [HttpGet("genre/{genreId}")]
+    public async Task<ActionResult<List<BookResponseDTO>>> GetBooksInGenre([FromRoute] string genreId, [FromQuery] int count = 10)
+    {
+        var books = await ((BookRepository)_repository).GetBooksInGenreAsync(genreId, count);
+
+        var response = books.Select(entity =>
+        {
+            var dto = Activator.CreateInstance<BookResponseDTO>();
+            entity.MapTo(dto!);
+            return dto;
+        }).ToList();
+
+        return Ok(response);
     }
 
 }

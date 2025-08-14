@@ -6,8 +6,11 @@ namespace BookMark.Data.Repositories;
 
 public class GenreRepository : BaseRepository<Genre>
 {
-    protected DbSet<BookGenre> _bookGenreDbSet { get; set; }
-    public GenreRepository(AppDbContext context) : base(context) { _bookGenreDbSet = context.Set<BookGenre>(); }
+    protected DbSet<BookAuthor> _bookAuthorDbSet { get; set; }
+    public GenreRepository(AppDbContext context) : base(context)
+    {
+        _bookAuthorDbSet = context.Set<BookAuthor>();
+    }
 
     protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
                                                                         {
@@ -16,13 +19,11 @@ public class GenreRepository : BaseRepository<Genre>
                                                                         };
 
 
-    public async Task<List<Book>> GetBooksWithGenreAsync(string genreId, int count)
+    public async Task<List<Genre>> GetGenresByAuthorAsync(string authorId)
     {
-        return await _bookGenreDbSet
-            .Where(bg => bg.GenreId == genreId)
-            .Select(bg => bg.Book)
-            .Distinct()
-            .Take(count)
-            .ToListAsync();
+        return await _bookAuthorDbSet.Where(ba => ba.AuthorId == authorId)
+                                     .SelectMany(ba => ba.Book.BookGenres.Select(bg => bg.Genre))
+                                     .ToListAsync();
     }
+    
 }

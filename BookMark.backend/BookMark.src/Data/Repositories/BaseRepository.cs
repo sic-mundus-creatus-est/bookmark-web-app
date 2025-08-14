@@ -15,9 +15,9 @@ public interface IBaseRepository<TModel>
 {
     Task<TModel> CreateAsync(TModel entityToCreate);
     Task<bool> ExistsAsync(string id);
-    Task<TModel?> GetByIdAsync(string id);
-    Task<TModel?> GetTrackedByIdAsync(string id);
-    Task<IEnumerable<TModel>> GetAllAsync();
+    Task<TModel?> GetByIdAsync(string id, bool changeTracking = false);
+    Task<List<TModel>> GetMultipleByIdsAsync(IEnumerable<string> ids, bool changeTracking = false);
+    Task<List<TModel>> GetAllAsync();
     Task<Page<TModel>> GetConstrainedAsync( int pageIndex,
                                             int pageSize,
                                             bool sortDescending = false,
@@ -65,29 +65,40 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
     public virtual async Task<bool> ExistsAsync(string id)
     {
-        return await _dbSet.AsNoTracking().AnyAsync(b => b.Id == id);
+        return await _dbSet.IgnoreAutoIncludes().AsNoTracking().AnyAsync(b => b.Id == id);
     }
 
 
-    public virtual async Task<TModel?> GetByIdAsync(string id)
+    public virtual async Task<TModel?> GetByIdAsync(string id, bool changeTracking = false)
     {
-        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
+        IQueryable<TModel> query = _dbSet;
+
+        if (!changeTracking)
+            query = query.AsNoTracking();
+
+        return await query.FirstOrDefaultAsync(b => b.Id == id);
     }
 
 
-    public virtual async Task<TModel?> GetTrackedByIdAsync(string id)
+    public virtual async Task<List<TModel>> GetMultipleByIdsAsync(IEnumerable<string> ids, bool changeTracking = false)
     {
-        return await _dbSet.FirstOrDefaultAsync(b => b.Id == id);
+        IQueryable<TModel> query = _dbSet;
+
+        if (!changeTracking)
+            query = query.AsNoTracking();
+            
+        return await query.Where(b => ids.Contains(b.Id))
+                          .ToListAsync();
     }
 
 
-    public virtual async Task<IEnumerable<TModel>> GetAllAsync()
+    public virtual async Task<List<TModel>> GetAllAsync()
     {
         return await _dbSet.AsNoTracking().ToListAsync();
     }
 
 
-    public async Task<Page<TModel>> GetConstrainedAsync(int pageIndex,
+    public virtual async Task<Page<TModel>> GetConstrainedAsync(int pageIndex,
                                                         int pageSize,
                                                         bool sortDescending = false,
                                                         string? sortBy = null,
