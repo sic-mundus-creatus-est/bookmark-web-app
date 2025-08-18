@@ -1,26 +1,22 @@
 import { z } from "zod";
-import { Book, CreateBookParams, EditedBookData } from "../types/book";
+import { Book, EditedBook } from "../types/book";
 import {
   createBook,
-  removeBookCoverImage,
-  updateBook,
+  updateBookMetadata,
   updateBookAuthors,
   updateBookCoverImage,
   updateBookGenres,
-} from "./api-calls/bookService";
+  CreateBookParams,
+} from "./api-calls/bookApi";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 const MAX_FILE_SIZE = 10000000; // 10MB
 
 const validateBook = z.object({
   title: z.string().min(1, "Title is required!").max(128),
-  authorsWithRoles: z
-    .array(
-      z.object({
-        id: z.string(),
-        roleId: z.number(),
-      })
-    )
+  bookTypeId: z.string().nonempty("Book Type is required!"),
+  authorIds: z
+    .array(z.string())
     .min(1, "At least one author required!")
     .max(16),
   genreIds: z.array(z.string()).min(1, "At least one genre required!").max(16),
@@ -97,18 +93,39 @@ const updateValidation = z.object({
   coverImageFile: z
     .instanceof(File)
     .optional()
-    .refine((file) => {
-      if (!file) return true;
-      return ACCEPTED_IMAGE_TYPES.includes(file.type);
-    }, "Invalid file. Choose either JPEG, JPG or PNG image.")
-    .refine((file) => {
-      if (!file) return true;
-      return file.size > 0 && file.size <= MAX_FILE_SIZE;
-    }, "File must not be empty and must be under 10MB."),
+    .nullable()
+    .refine(
+      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
+      "Invalid file. Choose either JPEG, JPG or PNG image."
+    )
+    .refine(
+      (file) => !file || (file.size > 0 && file.size <= MAX_FILE_SIZE),
+      "File must not be empty and must be under 10MB"
+    ),
+  authors: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      })
+    )
+    .min(1, "At least one Author required!")
+    .max(16)
+    .optional(),
+  genres: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      })
+    )
+    .min(1, "At least one Genre required!")
+    .max(16)
+    .optional(),
 });
 
-export async function validateAndUpdateBook(data: EditedBookData) {
-  const validationResult = updateValidation.safeParse(data);
+export async function validateAndUpdateBook(id: string, updates: EditedBook) {
+  const validationResult = updateValidation.safeParse(updates);
   if (!validationResult.success) {
     return {
       success: false,
@@ -118,66 +135,58 @@ export async function validateAndUpdateBook(data: EditedBookData) {
     };
   }
 
-  try {
-    const tasks: Promise<unknown>[] = [];
+  const tasks: { name: string; task: Promise<unknown> }[] = [];
 
-    tasks.push(updateBook(data));
+  if (updates.metadata) {
+    tasks.push({
+      name: "Book metadata",
+      task: updateBookMetadata(id, updates.metadata),
+    });
+  }
 
-    if (data.authors) {
-      const simplifiedAuthors = data.authors.map((author) => ({
-        id: author.id,
-        roleId: author.roleId,
-      }));
-      tasks.push(updateBookAuthors(data.id, simplifiedAuthors));
-    }
+  if (updates.authors) {
+    tasks.push({
+      name: "Authors",
+      task: updateBookAuthors(
+        id,
+        updates.authors.map((author) => author.id)
+      ),
+    });
+  }
 
-    if (data.genres) {
-      tasks.push(
-        updateBookGenres(
-          data.id,
-          data.genres.map((genre) => genre.id)
-        )
-      );
-    }
+  if (updates.genres) {
+    tasks.push({
+      name: "Genres",
+      task: updateBookGenres(
+        id,
+        updates.genres.map((genre) => genre.id)
+      ),
+    });
+  }
 
-    if (data.coverImageFile != undefined) {
-      const imageTask = data.coverImageFile
-        ? updateBookCoverImage(data.id, data.coverImageFile)
-        : removeBookCoverImage(data.id);
-      tasks.push(imageTask);
-    }
+  if (updates.coverImageFile !== undefined) {
+    tasks.push({
+      name: "Cover",
+      task: updateBookCoverImage(id, updates.coverImageFile),
+    });
+  }
 
-    const results = await Promise.allSettled(tasks);
+  const results = await Promise.allSettled(tasks.map((t) => t.task));
 
-    const anyFailed = results.some((r) => r.status === "rejected");
+  const failedTasks = tasks.filter(
+    (_, index) => results[index].status === "rejected"
+  );
 
-    if (anyFailed) {
-      console.error("One or more update steps failed:", results);
-      return {
-        success: false,
-        error:
-          "Update incomplete. Some parts of the book were not saved. Reload to see which...",
-      };
-    }
-
-    return { success: true };
-  } catch (err: any) {
-    console.error(
-      `ERROR WHILE UPDATING BOOK:`,
-      `\n----------------------------------`,
-      `\n[${err.instance}]`,
-      `\nError: ${err.status}`,
-      `\n----------------------------------`,
-      `\nType: ${err.type}`,
-      `\nTitle: ${err.title}`,
-      `\nDetail: ${err.detail}`,
-      `\nTrace ID: ${err.traceId}`
-    );
+  if (failedTasks.length > 0) {
+    const errorMessage = `Failed to update: ${failedTasks
+      .map((t) => t.name)
+      .join(", ")}`;
 
     return {
       success: false,
-      error:
-        "Failed to create the book. Please try again or check your connection.",
+      error: errorMessage,
     };
   }
+
+  return { success: true };
 }

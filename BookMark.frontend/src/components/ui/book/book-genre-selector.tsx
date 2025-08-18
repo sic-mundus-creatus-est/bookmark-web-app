@@ -1,12 +1,12 @@
-import { Genre } from "@/lib/types/genre";
+import { GenreLinkProps } from "@/lib/types/genre";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface BookGenreSelectorProps {
-  genre: Genre;
-  allGenres: Genre[];
-  selectedGenres: Genre[];
-  onChange: (genre: Genre) => void;
+  genre: GenreLinkProps;
+  allGenres: GenreLinkProps[];
+  selectedGenres: GenreLinkProps[];
+  onChange: (genre: GenreLinkProps) => void;
 }
 export function BookGenreSelector({
   genre,

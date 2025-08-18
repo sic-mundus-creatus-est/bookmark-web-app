@@ -23,6 +23,7 @@ public class GenreRepository : BaseRepository<Genre>
     {
         return await _bookAuthorDbSet.Where(ba => ba.AuthorId == authorId)
                                      .SelectMany(ba => ba.Book.BookGenres.Select(bg => bg.Genre))
+                                     .Distinct()
                                      .ToListAsync();
     }
     

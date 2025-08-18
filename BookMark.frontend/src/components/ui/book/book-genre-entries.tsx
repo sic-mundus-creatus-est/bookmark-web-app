@@ -2,28 +2,28 @@ import { useEffect, useState } from "react";
 
 import { X, Plus } from "lucide-react";
 
-import { Genre } from "@/lib/types/genre";
+import { GenreLinkProps } from "@/lib/types/genre";
 import { BookGenreSelector } from "@/components/ui/book/book-genre-selector";
 
 interface BookGenreEntriesProps {
-  initialGenres?: Genre[];
-  fetchAllGenres: () => Promise<Genre[]>;
-  onChange?: (genres: Genre[]) => void;
+  initialGenres?: GenreLinkProps[];
+  fetchAllGenres: () => Promise<GenreLinkProps[]>;
+  onChange?: (genres: GenreLinkProps[]) => void;
 }
 export function BookGenreEntries({
   initialGenres,
   fetchAllGenres,
   onChange,
 }: BookGenreEntriesProps) {
-  const [allGenres, setAllGenres] = useState<Genre[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<Genre[]>(
+  const [allGenres, setAllGenres] = useState<GenreLinkProps[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<GenreLinkProps[]>(
     initialGenres ?? []
   );
 
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const genresResponse: Genre[] = await fetchAllGenres();
+        const genresResponse: GenreLinkProps[] = await fetchAllGenres();
 
         setAllGenres(genresResponse);
       } catch (error: any) {
@@ -56,7 +56,7 @@ export function BookGenreEntries({
     }
   };
 
-  const handleChangeGenre = (index: number, newGenre: Genre) => {
+  const handleChangeGenre = (index: number, newGenre: GenreLinkProps) => {
     if (selectedGenres.some((g) => g.id === newGenre.id)) return;
     const updated = [...selectedGenres];
     updated[index] = newGenre;
@@ -99,7 +99,7 @@ export function BookGenreEntries({
         ))}
       </div>
 
-      {selectedGenres.length !== allGenres.length && (
+      {allGenres?.length > 0 && selectedGenres.length !== allGenres.length && (
         <div className="flex justify-end w-full">
           <button
             onClick={handleAddGenre}

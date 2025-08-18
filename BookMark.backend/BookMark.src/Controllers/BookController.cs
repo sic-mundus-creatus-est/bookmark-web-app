@@ -158,7 +158,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
         }
 
         // => [ add/replace cover ]
-        var newCoverProp = new { CoverImage = await _fileService.SaveFileAsync(newCover!, AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB) };
+        var newCoverProp = new { CoverImageUrl = await _fileService.SaveFileAsync(newCover!, AllowedCoverImageExtensions, COVER_IMAGE_MAX_SIZE_MB) };
 
         await _repository.UpdateAsync(bookToUpdate, newCoverProp);
 

@@ -3,7 +3,7 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import { PrivateRoute } from "./PrivateRoute";
 import { HomePage } from "../pages/HomePage";
 import { LoginPage } from "../pages/LoginPage";
-import { AppLayout } from "@/components/layouts/app-layout";
+import { AppLayout } from "@/AppLayout";
 import { BooksPage } from "@/pages/BooksPage";
 import { BookPage } from "@/pages/BookPage";
 import { AddBookPage } from "@/pages/AddBookPage";

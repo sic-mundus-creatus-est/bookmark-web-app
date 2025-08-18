@@ -1,5 +1,5 @@
 import { Book } from "./book";
-import { Genre } from "./genre";
+import { GenreLinkProps } from "./genre";
 
 export interface Author {
   id: string;
@@ -7,17 +7,11 @@ export interface Author {
   biography?: string;
   birthDate?: string;
   deathDate?: string;
-  genres?: Genre[];
+  genres?: GenreLinkProps[];
   books?: Book[];
 }
 
-export interface AuthorWithRole {
-  id: string;
-  roleId: number;
-}
-
-export interface AuthorWithNameAndRole {
+export interface AuthorLinkProps {
   id: string;
   name: string;
-  roleId: number;
 }

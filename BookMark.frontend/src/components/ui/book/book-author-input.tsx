@@ -1,12 +1,12 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 
-import { Author, AuthorWithNameAndRole } from "@/lib/types/author";
+import { Author, AuthorLinkProps } from "@/lib/types/author";
 
 interface BookAuthorInputProps {
   placeholder?: string;
-  entries?: AuthorWithNameAndRole[];
+  entries?: AuthorLinkProps[];
   fetchSuggestions: (searchTerm: string) => Promise<Author[]>;
-  onChange?: (entries: AuthorWithNameAndRole[]) => void;
+  onChange?: (entries: AuthorLinkProps[]) => void;
 }
 export function BookAuthorInput({
   placeholder = "Search authors...",
@@ -15,7 +15,7 @@ export function BookAuthorInput({
   onChange,
 }: BookAuthorInputProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState<Author[]>([]);
+  const [suggestions, setSuggestions] = useState<AuthorLinkProps[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedSuggestion, setFocusedSuggestion] = useState<number | null>(
     null
@@ -99,12 +99,10 @@ export function BookAuthorInput({
   }, []);
 
   const handleSelectAuthor = (selectedAuthor: Author) => {
-    const bookAuthor: AuthorWithNameAndRole = {
+    const bookAuthor: AuthorLinkProps = {
       id: selectedAuthor.id,
       name: selectedAuthor.name,
-      roleId: 0,
     };
-    bookAuthor.roleId = 0;
 
     const updatedAuthors = [...entries, bookAuthor];
 

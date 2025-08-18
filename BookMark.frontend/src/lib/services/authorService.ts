@@ -1,4 +1,4 @@
-import { getConstrainedAuthors } from "./api-calls/authorService";
+import { getConstrainedAuthors } from "./api-calls/authorApi";
 
 export async function authorInputSuggestions(searchTerm: string) {
   const result = await getConstrainedAuthors({

@@ -2,27 +2,16 @@ import { Link } from "react-router-dom";
 
 import { X } from "lucide-react";
 
-import { BookAuthorRoleSelector } from "@/components/ui/book/book-author-role-selector";
-import { AuthorWithNameAndRole } from "@/lib/types/author";
-import { bookAuthorRoles } from "@/config/roles";
+import { AuthorLinkProps } from "@/lib/types/author";
 
 interface BookAuthorEntriesProps {
-  entries?: AuthorWithNameAndRole[];
-  onChange?: (updatedAuthors: AuthorWithNameAndRole[]) => void;
+  entries?: AuthorLinkProps[];
+  onChange?: (updatedAuthors: AuthorLinkProps[]) => void;
 }
 export function BookAuthorEntries({
   entries = [],
   onChange,
 }: BookAuthorEntriesProps) {
-  const handleAuthorRoleChange = (authorIndex: number, newRoleId: number) => {
-    const updatedAuthors = [...entries];
-    updatedAuthors[authorIndex] = {
-      ...updatedAuthors[authorIndex],
-      roleId: newRoleId,
-    };
-    onChange?.(updatedAuthors);
-  };
-
   const handleRemoveAuthor = (index: number) => {
     // skips the removed author
     const updatedAuthors = [
@@ -39,20 +28,10 @@ export function BookAuthorEntries({
         <div key={author.id} className="inline-flex items-center gap-2 mr-3">
           <div className="inline-flex gap-1">
             <Link to={`/author/${author.id}`}>
-              <span
-                className="text-accent hover:text-popover"
-                title={`${
-                  bookAuthorRoles[author.roleId as keyof typeof bookAuthorRoles]
-                    .label
-                }`}
-              >
+              <span className="text-accent hover:text-popover">
                 {author.name}
               </span>
             </Link>
-            <BookAuthorRoleSelector
-              author={author}
-              onChange={(newRoleId) => handleAuthorRoleChange(i, newRoleId)}
-            />
           </div>
 
           <button

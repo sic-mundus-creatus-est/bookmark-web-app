@@ -6,3 +6,8 @@ export interface Genre {
   description?: string;
   books?: Book[];
 }
+
+export interface GenreLinkProps {
+  id: string;
+  name: string;
+}

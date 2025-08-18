@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { BookShowcase } from "@/components/layouts/book-showcase";
-import {
-  getBooksWithGenre,
-  getGenreById,
-} from "@/lib/services/api-calls/genreService";
+import { getGenreById } from "@/lib/services/api-calls/genreApi";
 import { Genre } from "@/lib/types/genre";
 import { Book } from "@/lib/types/book";
+import { getBooksInGenre } from "@/lib/services/api-calls/bookApi";
 
 export function GenrePage() {
   //-------------------------------------------------------
@@ -30,7 +28,7 @@ export function GenrePage() {
 
         const [data, books] = await Promise.all([
           await getGenreById(id),
-          await getBooksWithGenre(id, 10),
+          await getBooksInGenre(id, 10),
         ]);
 
         setGenre({ ...data, books });
@@ -63,7 +61,10 @@ export function GenrePage() {
   //==============================================================================
 
   return (
-    <div className="px-6 my-2 font-sans text-accent">
+    <div
+      className="px-6 my-2 font-sans text-accent"
+      style={{ minWidth: "clamp(23rem, 23vw, 100%)" }}
+    >
       <h1 className="text-3xl leading-tight font-bold mx-4 font-[Verdana]">
         {genre.name}
       </h1>
@@ -79,7 +80,7 @@ export function GenrePage() {
         <GenreDescription description={genre.description} maxLength={400} />
       </section>
 
-      <section id="genre-catalogs" className="">
+      <section id="genre-catalogs">
         <GenreCatalogSection
           genreName={genre.name}
           sectionType="Books"

@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 
-import { loginUser, registerUser } from "@/lib/services/api-calls/authService";
+import { loginUser, registerUser } from "@/lib/services/api-calls/authApi";
 
 interface User {
   username: string;

@@ -6,12 +6,10 @@ import { CircleUserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
 import { Author } from "@/lib/types/author";
-import {
-  getAuthorBookGenres,
-  getAuthorById,
-  getBooksByAuthor,
-} from "@/lib/services/api-calls/authorService";
+import { getAuthorById } from "@/lib/services/api-calls/authorApi";
 import { GenreDescription } from "@/pages/GenrePage";
+import { getGenresByAuthor } from "@/lib/services/api-calls/genreApi";
+import { getBooksByAuthor } from "@/lib/services/api-calls/bookApi";
 
 export function AuthorPage() {
   //-------------------------------------------------------
@@ -31,9 +29,11 @@ export function AuthorPage() {
 
         const [data, genres, books] = await Promise.all([
           getAuthorById(id),
-          getAuthorBookGenres(id),
+          getGenresByAuthor(id),
           getBooksByAuthor(id, 10),
         ]);
+
+        console.log(genres);
 
         setAuthor({
           ...data,

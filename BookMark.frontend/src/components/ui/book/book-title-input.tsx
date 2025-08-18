@@ -41,7 +41,7 @@ export function BookTitleInput({
   };
 
   return (
-    <div>
+    <>
       <textarea
         ref={textareaRef}
         title="Book's Title"
@@ -57,6 +57,6 @@ export function BookTitleInput({
       <div className="px-1 text-sm text-accent/60 -mt-1 font-mono">
         {charCount ?? 0}/{maxLength} characters
       </div>
-    </div>
+    </>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CircleUserRound, Plus, UserRoundPen, X } from "lucide-react";
 
-import { createAuthor } from "@/lib/services/api-calls/authorService";
+import { createAuthor } from "@/lib/services/api-calls/authorApi";
 
 export function AddAuthorModal() {
   //-----------------------------------------------------------

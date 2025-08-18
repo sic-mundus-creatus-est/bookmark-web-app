@@ -10,17 +10,14 @@ import { BookRatingStars } from "./book-rating-stars";
 export function BookCard({ book }: { book: Book }) {
   const navigate = useNavigate();
   return (
-    <Link to={`/book/${book.id}`}>
+    <Link to={`/book/${book.id}`} className="block w-full">
       <Card className="rounded-lg flex flex-col relative">
-        <div
-          className="relative group w-full overflow-hidden"
-          style={{ aspectRatio: "2/3" }}
-        >
+        <div className="relative group w-full overflow-hidden aspect-[2/3] ">
           {/* BookCover */}
           <img
             src={
-              book.coverImage
-                ? `${API_FILE_RESOURCES_URL}${book.coverImage}`
+              book.coverImageUrl
+                ? `${API_FILE_RESOURCES_URL}${book.coverImageUrl}`
                 : "/cover_placeholder.jpg"
             }
             alt={`Cover of ${book.title}`}

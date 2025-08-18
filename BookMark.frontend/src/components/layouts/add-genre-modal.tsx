@@ -4,7 +4,7 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, Tag, Tags, X } from "lucide-react";
 
-import { createGenre } from "@/lib/services/api-calls/genreService";
+import { createGenre } from "@/lib/services/api-calls/genreApi";
 
 export function AddGenreModal() {
   //-----------------------------------------------------------

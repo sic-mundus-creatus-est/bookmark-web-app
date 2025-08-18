@@ -55,7 +55,7 @@ export function BookDescriptionInput({
       <textarea
         ref={textareaRef}
         title={title}
-        value={value}
+        value={value ?? ""}
         onChange={handleChange}
         onPaste={handlePaste}
         placeholder={placeholder}

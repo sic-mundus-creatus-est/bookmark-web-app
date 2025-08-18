@@ -6,17 +6,24 @@ import {
   ConstrainedQueryParams,
   PATCH,
   PUT,
-  DELETE,
 } from "@/lib/services/api-calls/api";
-import { AuthorWithRole } from "@/lib/types/author";
-import { CreateBookParams, UpdateBookMetadataParams } from "@/lib/types/book";
+import { BookMetadata } from "@/lib/types/book";
 
-export function getBookById(id: string) {
-  return apiCall({ method: GET, endpoint: `/api/books/get/${id}` });
+export interface CreateBookParams {
+  bookTypeId: string;
+  title: string;
+  authorIds: string[];
+  genreIds: string[];
+  originalLanguage: string;
+  pageCount: number;
+  publicationYear?: number;
+  description?: string;
+  coverImageFile?: File | null;
 }
-
 export async function createBook(params: CreateBookParams) {
   const formData = new FormData();
+
+  formData.append("BookTypeId", params.bookTypeId);
 
   formData.append("Title", params.title);
   formData.append("OriginalLanguage", params.originalLanguage);
@@ -34,12 +41,8 @@ export async function createBook(params: CreateBookParams) {
     formData.append("CoverImageFile", params.coverImageFile);
   }
 
-  params.authorsWithRoles.forEach((author, index) => {
-    formData.append(`AuthorsWithRoles[${index}].AuthorId`, author.id);
-    formData.append(
-      `AuthorsWithRoles[${index}].RoleId`,
-      author.roleId.toString()
-    );
+  params.authorIds.forEach((id, index) => {
+    formData.append(`AuthorIds[${index}]`, id);
   });
 
   params.genreIds.forEach((id, index) => {
@@ -53,27 +56,30 @@ export async function createBook(params: CreateBookParams) {
   });
 }
 
+export function getBookById(id: string) {
+  return apiCall({ method: GET, endpoint: `/api/books/get/${id}` });
+}
+
 export function getConstrainedBooks(params: ConstrainedQueryParams) {
   const query = buildConstrainedQueryParams(params);
   return apiCall({
     method: GET,
-    endpoint: `/api/books/get-constrained?${query}`,
+    endpoint: `/api/books/get-constrained-books?${query}`,
   });
 }
 
-export function updateBook(params: UpdateBookMetadataParams) {
-  console.log(params);
+export function updateBookMetadata(id: string, metadata: BookMetadata) {
   return apiCall({
     method: PATCH,
-    endpoint: `/api/books/update/${params.id}`,
-    body: params,
+    endpoint: `/api/books/update/${id}`,
+    body: metadata,
   });
 }
 
-export function updateBookCoverImage(id: string, newCover: File) {
+export function updateBookCoverImage(id: string, newCover: File | null) {
   const formData = new FormData();
 
-  formData.append("NewCover", newCover);
+  formData.append("newCover", newCover ?? "");
 
   return apiCall({
     method: PATCH,
@@ -82,21 +88,11 @@ export function updateBookCoverImage(id: string, newCover: File) {
   });
 }
 
-export function removeBookCoverImage(id: string) {
-  return apiCall({
-    method: DELETE,
-    endpoint: `/api/books/${id}/remove-cover-image`,
-  });
-}
-
-export function updateBookAuthors(
-  id: string,
-  authorsWithRoles: AuthorWithRole[]
-) {
+export function updateBookAuthors(id: string, authorIds: string[]) {
   return apiCall({
     method: PUT,
     endpoint: `/api/books/${id}/replace-authors`,
-    body: authorsWithRoles,
+    body: authorIds,
   });
 }
 
@@ -105,5 +101,26 @@ export function updateBookGenres(id: string, genreIds: string[]) {
     method: PUT,
     endpoint: `/api/books/${id}/replace-genres`,
     body: genreIds,
+  });
+}
+
+export function getBooksByAuthor(authorId: string, count: number) {
+  return apiCall({
+    method: GET,
+    endpoint: `/api/books/by/${authorId}?count=${count}`,
+  });
+}
+
+export function getBooksInGenre(genreId: string, count: number) {
+  return apiCall({
+    method: GET,
+    endpoint: `/api/books/genre/${genreId}?count=${count}`,
+  });
+}
+
+export function getAllBookTypes() {
+  return apiCall({
+    method: GET,
+    endpoint: "/api/book-types/get-all",
   });
 }

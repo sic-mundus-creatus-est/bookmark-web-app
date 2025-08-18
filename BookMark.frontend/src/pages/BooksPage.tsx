@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { Pagination } from "@/components/pagination";
 import { BookCard, BookCardPlaceholder } from "@/components/ui/book/book-card";
-import { getConstrainedBooks } from "@/lib/services/api-calls/bookService";
+import { getConstrainedBooks } from "@/lib/services/api-calls/bookApi";
 import { Book } from "@/lib/types/book";
 
 export function BooksPage() {
