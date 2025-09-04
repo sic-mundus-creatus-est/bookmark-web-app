@@ -66,7 +66,7 @@ export function BookCard({ book }: { book: Book }) {
               >
                 <span key={a.id} className="font-semibold hover:text-popover">
                   {a.name}
-                  {i < book.authors.length - 1 ? ", " : ""}
+                  {i < book.authors.length - 1 && <span>,&nbsp;</span>}
                 </span>
               </button>
             ))}

@@ -39,10 +39,7 @@ export function MobileNavbar() {
     <>
       <div className="w-full items-center lg:hidden">
         {/* static */}
-        <div
-          className="flex justify-between pb-2 px-2"
-          style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
-        >
+        <div className="flex justify-between pb-2 -mx-2">
           <Logo />
 
           <Hamburger
@@ -61,11 +58,10 @@ export function MobileNavbar() {
               ? "max-h-screen opacity-100 transform scale-100"
               : "max-h-0 opacity-0 transform scale-95"
           }`}
-          style={{ minWidth: "clamp(20rem, 20vw, 100%)" }}
         >
           {shouldRender && (
-            <div className="flex flex-col items-stretch space-y-1 pb-4 pt-2 px-4 text-background">
-              <div className="w-full flex flex-col rounded-lg pb-3 pt-1 px-2 bg-accent border-b-4 border-popover">
+            <div className="flex flex-col items-stretch space-y-1 pb-4 pt-2 text-background mx-2">
+              <div className="w-full flex flex-col rounded-lg pb-3 pt-1 bg-accent border-b-4 border-popover">
                 {navConfig.Categories.items!.map((item, index) => {
                   return (
                     <div
@@ -87,15 +83,12 @@ export function MobileNavbar() {
           )}
         </div>
 
-        <div
-          className="relative pb-2 px-6"
-          style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
-        >
+        <div className="relative pb-2">
           <Input
             placeholder="Search..."
             className="w-full rounded-lg bg-muted text-accent border-b-2 border-accent"
           />
-          <span className="absolute right-0 mr-6 p-2 rounded-r-lg bg-accent text-background transform -translate-y-9">
+          <span className="absolute right-0 p-2 rounded-r-lg bg-accent text-background transform -translate-y-9">
             <SearchIcon size={20} strokeWidth={3} />
           </span>
         </div>

@@ -2,9 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { CircleUserRound, Plus, UserRoundPen, X } from "lucide-react";
+import { UserRoundPen, X } from "lucide-react";
 
 import { createAuthor } from "@/lib/services/api-calls/authorApi";
+import { SubmitButton } from "../ui/submit-button";
+import { CommonNameTitleInput } from "../ui/common/common-name-title-input";
+import { CommonDescriptionInput } from "../ui/common/common-description-input";
 
 export function AddAuthorModal() {
   //-----------------------------------------------------------
@@ -65,7 +68,7 @@ export function AddAuthorModal() {
           </button>
         </Dialog.Close>
 
-        <div className="py-b font-sans text-muted">
+        <div className="font-sans text-muted">
           <Dialog.Title>
             <div className="mb-4 bg-accent border-b-8 border-popover p-2 rounded-t-2xl rounded-b-sm">
               <h1 className="text-3xl font-bold font-[Verdana] px-2">
@@ -76,128 +79,45 @@ export function AddAuthorModal() {
 
           <Dialog.Description />
 
-          <div className="my-2 sm:mt-10 flex flex-col items-center sm:flex-row sm:items-start gap-6 text-accent justify-center">
-            <div className="flex-shrink-0 flex flex-col items-center">
-              <CircleUserRound
-                size={100}
-                strokeWidth={1}
-                className="text-accent w-20 h-20 sm:w-auto sm:h-auto"
+          <div className="mx-6">
+            <CommonNameTitleInput
+              value={name}
+              maxLength={64}
+              title="Name"
+              placeholder="Name"
+              onChange={setName}
+            />
+
+            <div className="font-[Georgia] text-muted-foreground flex items-center mb-2">
+              (
+              <input
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                className="cursor-pointer focus:outline-none bg-transparent border-transparent border text-md rounded w-37 focus-within:text-popover"
               />
-              <span className="font-extrabold font-mono text-xl -mt-2">
-                Author
-              </span>
+              –
+              <input
+                type="date"
+                value={deathDate}
+                onChange={(e) => setDeathDate(e.target.value)}
+                className="cursor-pointer focus:outline-none bg-transparent border-transparent border text-md rounded w-37 focus-within:text-popover"
+              />
+              )
             </div>
 
-            <div className="max-w-3xl">
-              <div className="flex-shrink-0 flex justify-center sm:block -mt-4 sm:mt-0 mx-2 mb-1">
-                <textarea
-                  value={name}
-                  onChange={(e) => handleResizeableTextArea(e, setName, 64)}
-                  placeholder="Author's Name"
-                  rows={1}
-                  style={{ overflow: "hidden" }}
-                  spellCheck={false}
-                  className="w-full bg-muted resize-none border-l-2 border-accent rounded-lg focus:outline-none text-accent text-4xl font-semibold font-[Verdana] px-2"
-                />
-              </div>
-              <div className="flex-shrink-0 flex justify-center sm:block">
-                <div className="font-[Georgia] text-muted-foreground flex items-center mb-4 mx-2">
-                  (
-                  <input
-                    type="date"
-                    value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
-                    className="cursor-pointer focus:outline-none bg-transparent border-transparent border text-lg rounded w-36 mx-1"
-                  />
-                  –
-                  <input
-                    type="date"
-                    value={deathDate}
-                    onChange={(e) => setDeathDate(e.target.value)}
-                    className="cursor-pointer focus:outline-none bg-transparent border-transparent border text-lg rounded w-36 mx-1"
-                  />
-                  )
-                </div>
-              </div>
+            <CommonDescriptionInput
+              value={biography}
+              onChange={setBiography}
+              placeholder="Write a concise biography of the author..."
+            />
 
-              <AuthorDescriptionInput
-                description={biography}
-                setDescription={setBiography}
-              />
+            <div className="flex justify-end my-2">
+              <SubmitButton label="Add" onSubmit={handleCreate} />
             </div>
-          </div>
-
-          <div className="flex justify-end px-8 my-2">
-            <button
-              onClick={handleCreate}
-              className="flex items-center gap-1 bg-accent text-background font-bold px-3 py-2 rounded-lg transition border-b-4 border-popover hover:text-popover"
-              type="button"
-            >
-              <Plus className="text-popover" strokeWidth={3} />
-              Add
-            </button>
           </div>
         </div>
       </Dialog.Content>
     </Dialog.Root>
   );
 }
-
-//==================================================================
-function handleResizeableTextArea(
-  e: React.ChangeEvent<HTMLTextAreaElement>,
-  setValue: React.Dispatch<React.SetStateAction<string>>,
-  maxLength: number
-) {
-  const textarea = e.target;
-  const maxHeight = 250;
-
-  if (textarea.value.length > maxLength) return;
-
-  textarea.style.height = "auto";
-
-  if (textarea.scrollHeight <= maxHeight) {
-    textarea.style.overflowY = "hidden";
-    textarea.style.height = textarea.scrollHeight + "px";
-  } else {
-    textarea.style.overflowY = "auto";
-    textarea.style.height = maxHeight + "px";
-  }
-
-  setValue(textarea.value);
-}
-
-//---------------------------------------------------------------
-
-interface AuthorDescriptionInputProps {
-  description?: string;
-  setDescription: React.Dispatch<React.SetStateAction<string>>;
-  maxLength?: number;
-}
-
-function AuthorDescriptionInput({
-  description,
-  setDescription,
-  maxLength = 4000,
-}: AuthorDescriptionInputProps) {
-  return (
-    <div className="px-2">
-      <textarea
-        value={description}
-        onChange={(e) => handleResizeableTextArea(e, setDescription, maxLength)}
-        placeholder="Write a concise biography of the author..."
-        rows={6}
-        maxLength={maxLength}
-        spellCheck={false}
-        style={{ overflow: "hidden" }}
-        className="w-full bg-background/50 text-accent resize-none focus:outline-none placeholder:text-accent/70 empty:before:content-[attr(data-placeholder)]
-        before:text-accent/50 indent-4 text-base font-[Georgia] leading-tight rounded-lg p-2 px-3 border-2 border-b-4 border-accent break-words"
-      />
-
-      <div className="text-right text-sm text-accent/60 -mt-1 font-mono leading-tight">
-        {description?.length || 0}/{maxLength} characters
-      </div>
-    </div>
-  );
-}
-//==================================================================

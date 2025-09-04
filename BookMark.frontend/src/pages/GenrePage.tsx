@@ -1,4 +1,4 @@
-import { Tag } from "lucide-react";
+import { SquarePen, Tag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -7,12 +7,14 @@ import { getGenreById } from "@/lib/services/api-calls/genreApi";
 import { Genre } from "@/lib/types/genre";
 import { Book } from "@/lib/types/book";
 import { getBooksInGenre } from "@/lib/services/api-calls/bookApi";
+import { CommonDescription } from "@/components/ui/common/common-description";
 
 export function GenrePage() {
   //-------------------------------------------------------
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(false);
 
   const [genre, setGenre] = useState<Genre | null>(null);
   //-------------------------------------------------------
@@ -61,48 +63,56 @@ export function GenrePage() {
   //==============================================================================
 
   return (
-    <div
-      className="px-6 my-2 font-sans text-accent"
-      style={{ minWidth: "clamp(23rem, 23vw, 100%)" }}
-    >
-      <h1 className="text-3xl leading-tight font-bold mx-4 font-[Verdana]">
-        {genre.name}
-      </h1>
+    <div className="my-2 font-sans text-accent">
+      <div className="flex justify-end mx-0 md:mx-2 pt-2 -mb-6">
+        <button
+          title={editMode ? "Cancel Editing" : "Edit"}
+          onClick={() => setEditMode((prev) => !prev)}
+          className="text-accent hover:text-popover"
+        >
+          {editMode ? (
+            <X size={24} strokeWidth={5} />
+          ) : (
+            <SquarePen size={24} strokeWidth={3} />
+          )}
+        </button>
+      </div>
 
       <section id="genre-metadata">
-        <div className="flex items-center text-sm px-4 text-accent/50 leading-tight mb-2">
+        <div className="flex items-center text-sm text-accent/50 leading-tight mb-2">
           <Tag className="mr-1 w-4 h-4 text-accent" />
           <span className="hover:underline cursor-pointer">Genres</span>
           <span className="mx-1">›</span>
           <span className="text-popover font-semibold">{genre.name}</span>
         </div>
-
-        <GenreDescription description={genre.description} maxLength={400} />
+        <CommonDescription description={genre.description} />
       </section>
 
-      <section id="genre-catalogs">
-        <GenreCatalogSection
-          genreName={genre.name}
-          sectionType="Books"
-          books={genre.books}
-          message="Random featured review or message..."
-        />
+      {editMode ? null : (
+        <section id="genre-catalogs">
+          <GenreCatalogSection
+            genreName={genre.name}
+            sectionType="Books"
+            books={genre.books}
+            message="Random featured review or message..."
+          />
 
-        <GenreCatalogSection
-          genreName={genre.name}
-          sectionType="Comics"
-          books={genre.books}
-          message="Another cool review or message..."
-          reverse
-        />
+          <GenreCatalogSection
+            genreName={genre.name}
+            sectionType="Comics"
+            books={genre.books}
+            message="Another cool review or message..."
+            reverse
+          />
 
-        <GenreCatalogSection
-          genreName={genre.name}
-          sectionType="Manga"
-          books={genre.books}
-          message="Reviews or insights text here."
-        />
-      </section>
+          <GenreCatalogSection
+            genreName={genre.name}
+            sectionType="Manga"
+            books={genre.books}
+            message="Reviews or insights text here."
+          />
+        </section>
+      )}
     </div>
   );
 }
@@ -124,10 +134,7 @@ export const GenreCatalogSection: React.FC<GenreCatalogSectionProps> = ({
   books = [],
 }) => {
   return (
-    <section
-      id={`genre-${genreName}-catalog`}
-      className="flex justify-center lg:mx-5 xl:mx-10"
-    >
+    <section id={`genre-${genreName}-catalog`} className="flex justify-center">
       <div className="flex flex-col items-center gap-1 w-full">
         <div>
           <h2 className="mt-2 text-3xl font-extrabold text-accent text-center">
@@ -152,38 +159,4 @@ export const GenreCatalogSection: React.FC<GenreCatalogSectionProps> = ({
     </section>
   );
 };
-
-interface GenreDescriptionProps {
-  description?: string;
-  maxLength?: number;
-}
-export function GenreDescription({
-  description,
-  maxLength = 400,
-}: GenreDescriptionProps) {
-  const [expanded, setExpanded] = useState(false);
-
-  const safeDescription = description?.trim()
-    ? description
-    : "No description...";
-
-  const isLong = safeDescription.length > maxLength;
-  const displayText =
-    expanded || !isLong ? safeDescription : safeDescription.slice(0, maxLength);
-
-  return (
-    <p
-      className="w-full indent-4 text-base font-[Georgia] leading-tight rounded-lg bg-muted p-2 px-3 border-2 border-b-4 border-accent break-words"
-      style={{ cursor: isLong ? "pointer" : "default" }}
-      onClick={() => isLong && setExpanded(!expanded)}
-    >
-      {displayText}
-      {isLong && (
-        <span className="text-accent font-bold ml-1 underline">
-          {expanded ? "(less)" : "...more"}
-        </span>
-      )}
-    </p>
-  );
-}
 //==============================================================================

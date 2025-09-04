@@ -6,13 +6,12 @@ import {
   UploadLabel,
 } from "@/components/ui/book/book-cover-image-upload";
 import { getAllGenres } from "@/lib/services/api-calls/genreApi";
-import { BookTitleInput } from "@/components/ui/book/book-title-input";
+import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
 import { BookLanguageInput } from "@/components/ui/book/book-language-input";
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
-import { BookDescriptionInput } from "@/components/ui/book/book-description-input";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { validateAndCreateBook } from "@/lib/services/bookService";
@@ -22,6 +21,7 @@ import { authorInputSuggestions } from "@/lib/services/authorService";
 import { AuthorLinkProps } from "@/lib/types/author";
 import { CreateBookParams } from "@/lib/services/api-calls/bookApi";
 import { BookTypePicker } from "@/components/ui/book/book-type-selector";
+import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 
 export function AddBookPage() {
   //------------------------------------------------------------------------------
@@ -71,8 +71,8 @@ export function AddBookPage() {
   //==============================================================================
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 md:px-4 lg:px-2 xl:px-10 2xl:px-24 flex-grow">
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4">
+    <div className="container mx-auto flex-grow">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start pt-4">
         <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
           <CardContent
             className="p-0 bg-background rounded-t-lg"
@@ -87,8 +87,8 @@ export function AddBookPage() {
 
         {/* Book Info */}
         <div className="flex flex-col gap-5">
-          <div>
-            <BookTitleInput value={title} onChange={setTitle} />
+          <div className="w-full">
+            <CommonNameTitleInput value={title} onChange={setTitle} />
             <BookTypePicker
               value={bookTypeId}
               onChange={(bt) => {
@@ -141,7 +141,11 @@ export function AddBookPage() {
             </div>
           </div>
 
-          <BookDescriptionInput value={description} onChange={setDescription} />
+          <CommonDescriptionInput
+            value={description}
+            onChange={setDescription}
+            placeholder="Description..."
+          />
 
           <div className="flex justify-end">
             <SubmitButton

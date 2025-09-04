@@ -6,23 +6,18 @@ import { navConfig } from "@/config/navConfig";
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 bottom-0 w-full bg-background z-50">
+    <nav className="sticky w-full bg-background z-50">
       <AuthRow />
-
-      <div className="container mx-auto flex items-center justify-between px-4">
-        <DesktopNavbar />
-        <MobileNavbar />
+      <div className="flex items-center justify-between">
+        <DesktopNavbar /> <MobileNavbar />
       </div>
     </nav>
   );
 }
 
-function AuthRow() {
+export function AuthRow() {
   return (
-    <div
-      className=" pt-2 container mx-auto flex justify-end pr-9 sm:pr-10 md:pr-9 lg:pr-48 space-x-4 flex-wrap text-popover"
-      style={{ minWidth: "clamp(23rem, 23vw, 100%)" }}
-    >
+    <div className="pt-2 flex justify-end space-x-4 flex-wrap text-popover">
       {navConfig.Auth.items?.map((item) => {
         const Icon = item.icon === "log-in" ? LogIn : UserPlus;
         return (

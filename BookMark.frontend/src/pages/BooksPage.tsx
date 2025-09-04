@@ -80,12 +80,9 @@ export function BooksPage() {
   }, [searchParams, getValidPageFromUrl, setSearchParams]);
 
   return (
-    <div
-      className="px-7 pt-4 pb-2"
-      style={{ minWidth: "clamp(23rem, 23vw, 100%)" }}
-    >
+    <div className="pt-4">
       <div className="w-full">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4 justify-items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
           {loading
             ? Array.from({ length: 12 }).map((_, i) => (
                 <BookCardPlaceholder key={`loading-placeholder-${i}`} />

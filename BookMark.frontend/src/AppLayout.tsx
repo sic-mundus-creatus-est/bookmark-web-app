@@ -12,8 +12,11 @@ import { AddAuthorModal } from "@/components/layouts/add-author-modal";
 export function AppLayout() {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <main className="container mx-auto lg:px-40 flex-grow">
+      <main
+        className="flex-grow max-w-full container mx-auto px-8 sm:px-6 md:px-20 lg:px-44 2xl:px-80"
+        style={{ minWidth: "clamp(24rem, 24vw, 100%)" }}
+      >
+        <Navbar />
         <Outlet />
       </main>
       <Footer />

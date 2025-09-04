@@ -125,7 +125,7 @@ export function BookAuthorInput({
           setShowSuggestions(true);
         }}
         placeholder={placeholder}
-        className="w-full bg-muted outline-none border-2 border-b-4 border-accent px-2 rounded-lg"
+        className="w-full bg-muted outline-none border-2 border-b-4 border-accent px-2 rounded-lg focus-within:border-popover caret-popover"
         onKeyDown={(e) => {
           if (showSuggestions && e.key === "ArrowDown") {
             e.preventDefault();

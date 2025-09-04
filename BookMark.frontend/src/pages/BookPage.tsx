@@ -11,7 +11,7 @@ import {
   BookCoverImageUpload,
   UploadLabel,
 } from "@/components/ui/book/book-cover-image-upload";
-import { BookTitleInput } from "@/components/ui/book/book-title-input";
+import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
@@ -19,13 +19,13 @@ import { getAllGenres } from "@/lib/services/api-calls/genreApi";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { BookLanguageInput } from "@/components/ui/book/book-language-input";
-import { BookDescriptionInput } from "@/components/ui/book/book-description-input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { validateAndUpdateBook } from "@/lib/services/bookService";
 
 import { useForm } from "react-hook-form";
 import { authorInputSuggestions } from "@/lib/services/authorService";
 import { BookTypePicker } from "@/components/ui/book/book-type-selector";
+import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -148,11 +148,8 @@ export function BookPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 md:px-4 lg:px-2 xl:px-10 2xl:px-24 flex-grow">
-      <div
-        className="flex justify-center md:justify-end mr-0 md:mr-6 md:-mb-2 mt-2"
-        style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
-      >
+    <div className="flex-grow">
+      <div className="flex justify-center md:justify-end mx-0 md:mx-2 mt-2 pt-2">
         <button
           title={editMode ? "Cancel Editing" : "Edit"}
           onClick={() => setEditMode((prev) => !prev)}
@@ -165,12 +162,9 @@ export function BookPage() {
           )}
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start p-4 pt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start pt-2 pb-10">
         {/* Cover */}
-        <Card
-          className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg"
-          style={{ minWidth: "clamp(19rem, 19vw, 100%)" }}
-        >
+        <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
           <CardContent
             className="p-0 bg-background rounded-t-lg"
             style={{ aspectRatio: "2 / 3" }}
@@ -229,14 +223,11 @@ export function BookPage() {
         </Card>
 
         {/* Book Info */}
-        <div
-          className="flex flex-col gap-5 min-w-0"
-          style={{ minWidth: "clamp(19rem, 19vw, 100%)" }}
-        >
+        <div className="flex flex-col gap-5 min-w-0">
           <div className="w-full">
             {editMode ? (
               <>
-                <BookTitleInput
+                <CommonNameTitleInput
                   value={watch("metadata.title")}
                   onChange={(newTitle) => {
                     setValue("metadata.title", newTitle, { shouldDirty: true });
@@ -252,7 +243,7 @@ export function BookPage() {
                 />
               </>
             ) : (
-              <h1 className="text-2xl sm:text-2xl md:text-4xl lg:text-4xl xl:text-4xl w-full font-[Verdana] font-bold text-accent leading-tight">
+              <h1 className="text-2xl sm:text-2xl md:text-4xl lg:text-4xl w-full font-[Verdana] font-bold text-accent leading-tight overflow-hidden">
                 {book.title}
               </h1>
             )}
@@ -303,7 +294,7 @@ export function BookPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border-2 border-b-4 border-accent bg-muted px-5 py-6 space-y-6">
+          <div className="rounded-lg border-2 border-b-4 border-accent bg-muted px-2 sm:px-4 py-6 space-y-6">
             {/* Genres */}
             {editMode ? (
               <BookGenreEntries
@@ -386,9 +377,9 @@ export function BookPage() {
                       <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
                         Written in:
                       </div>
-                      <div className="text-md uppercase text-accent">
+                      <span className="text-md uppercase text-accent overflow-hidden">
                         {book.originalLanguage}
-                      </div>
+                      </span>
                     </div>
                   </div>
                 </>
@@ -397,12 +388,17 @@ export function BookPage() {
           </div>
 
           {editMode ? (
-            <BookDescriptionInput
-              value={watch("metadata.description")}
-              onChange={(newDesc) =>
-                setValue("metadata.description", newDesc, { shouldDirty: true })
-              }
-            />
+            <div>
+              <CommonDescriptionInput
+                value={watch("metadata.description")}
+                rows={8}
+                onChange={(newDesc) =>
+                  setValue("metadata.description", newDesc, {
+                    shouldDirty: true,
+                  })
+                }
+              />
+            </div>
           ) : (
             <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 whitespace-pre-line overflow-hidden w-full">
               {book.description}
