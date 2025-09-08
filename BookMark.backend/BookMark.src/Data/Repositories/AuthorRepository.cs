@@ -12,8 +12,8 @@ public class AuthorRepository : BaseRepository<Author>
                                                                         {
                                                                             nameof(Author.Name),
                                                                             nameof(Author.Biography),
-                                                                            nameof(Author.BirthDate),
-                                                                            nameof(Author.DeathDate)
+                                                                            nameof(Author.BirthYear),
+                                                                            nameof(Author.DeathYear)
                                                                         };
 
     public AuthorRepository(AppDbContext context) : base(context) { _bookAuthorDbSet = context.Set<BookAuthor>(); }

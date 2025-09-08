@@ -14,7 +14,7 @@ export function AppLayout() {
     <div className="flex flex-col min-h-screen">
       <main
         className="flex-grow max-w-full container mx-auto px-8 sm:px-6 md:px-20 lg:px-44 2xl:px-80"
-        style={{ minWidth: "clamp(24rem, 24vw, 100%)" }}
+        style={{ minWidth: "clamp(22.5rem, 22.5vw, 100%)" }}
       >
         <Navbar />
         <Outlet />

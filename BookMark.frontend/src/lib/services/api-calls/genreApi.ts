@@ -1,4 +1,5 @@
-import { apiCall, GET, POST } from "./api";
+import { EditedGenre } from "@/lib/types/genre";
+import { apiCall, GET, PATCH, POST } from "./api";
 
 export function createGenre(data: { name: string; description?: string }) {
   return apiCall({
@@ -20,5 +21,13 @@ export function getGenresByAuthor(authorId: string) {
   return apiCall({
     method: GET,
     endpoint: `/api/genres/by/${authorId}`,
+  });
+}
+
+export function updateGenre(id: string, editedData: EditedGenre) {
+  return apiCall({
+    method: PATCH,
+    endpoint: `/api/genres/update/${id}`,
+    body: editedData,
   });
 }

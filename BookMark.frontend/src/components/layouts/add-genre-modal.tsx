@@ -54,9 +54,12 @@ export function AddGenreModal() {
 
       <Dialog.Overlay className="fixed inset-0 bg-accent-foreground/90 z-40" />
 
-      <Dialog.Content className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4">
+      <Dialog.Content
+        className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4"
+        style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+      >
         <Dialog.Close asChild>
-          <button className="focus:outline-none absolute top-4 right-4 text-4xl text-muted hover:text-popover font-bold">
+          <button className="focus:outline-none absolute top-4 right-4 text-4xl text-popover hover:text-red-500 font-bold">
             <X strokeWidth={4} />
           </button>
         </Dialog.Close>

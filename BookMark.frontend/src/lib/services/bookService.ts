@@ -72,7 +72,7 @@ export async function validateAndCreateBook(data: CreateBookParams) {
   }
 }
 
-const updateValidation = z.object({
+const validateEdits = z.object({
   title: z
     .string()
     .min(1, "Title is required!")
@@ -124,8 +124,11 @@ const updateValidation = z.object({
     .optional(),
 });
 
-export async function validateAndUpdateBook(id: string, updates: EditedBook) {
-  const validationResult = updateValidation.safeParse(updates);
+export async function validateEditsAndUpdateBook(
+  id: string,
+  edits: EditedBook
+) {
+  const validationResult = validateEdits.safeParse(edits);
   if (!validationResult.success) {
     return {
       success: false,
@@ -137,37 +140,37 @@ export async function validateAndUpdateBook(id: string, updates: EditedBook) {
 
   const tasks: { name: string; task: Promise<unknown> }[] = [];
 
-  if (updates.metadata) {
+  if (edits.metadata) {
     tasks.push({
       name: "Book metadata",
-      task: updateBookMetadata(id, updates.metadata),
+      task: updateBookMetadata(id, edits.metadata),
     });
   }
 
-  if (updates.authors) {
+  if (edits.authors) {
     tasks.push({
       name: "Authors",
       task: updateBookAuthors(
         id,
-        updates.authors.map((author) => author.id)
+        edits.authors.map((author) => author.id)
       ),
     });
   }
 
-  if (updates.genres) {
+  if (edits.genres) {
     tasks.push({
       name: "Genres",
       task: updateBookGenres(
         id,
-        updates.genres.map((genre) => genre.id)
+        edits.genres.map((genre) => genre.id)
       ),
     });
   }
 
-  if (updates.coverImageFile !== undefined) {
+  if (edits.coverImageFile !== undefined) {
     tasks.push({
       name: "Cover",
-      task: updateBookCoverImage(id, updates.coverImageFile),
+      task: updateBookCoverImage(id, edits.coverImageFile),
     });
   }
 

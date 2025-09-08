@@ -11,3 +11,8 @@ export interface GenreLinkProps {
   id: string;
   name: string;
 }
+
+export interface EditedGenre {
+  name?: string;
+  description?: string;
+}

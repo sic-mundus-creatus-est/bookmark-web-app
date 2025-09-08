@@ -20,12 +20,13 @@ import { PublicationYearSelector } from "@/components/ui/book/book-publication-y
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { BookLanguageInput } from "@/components/ui/book/book-language-input";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { validateAndUpdateBook } from "@/lib/services/bookService";
+import { validateEditsAndUpdateBook } from "@/lib/services/bookService";
 
 import { useForm } from "react-hook-form";
 import { authorInputSuggestions } from "@/lib/services/authorService";
 import { BookTypePicker } from "@/components/ui/book/book-type-selector";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
+import { getDirtyValues } from "@/lib/utils";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -37,7 +38,7 @@ export function BookPage() {
   const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
 
-  const [globalFormError, setGlobalFormError] = useState<string | null>(null);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
   //------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------
@@ -105,41 +106,19 @@ export function BookPage() {
     );
   }
 
-  const handleUpdateBook = async (data: EditedBook) => {
+  const handleUpdateBook = async (allFields: EditedBook) => {
     if (!book) return;
 
-    function getChangedValues<T extends object>(
-      dirty: any,
-      allValues: T
-    ): Partial<T> {
-      return Object.keys(dirty).reduce((acc, key) => {
-        if (dirty[key] === true) {
-          // Field is dirty -> take its current value
-          (acc as any)[key] = (allValues as any)[key];
-        } else if (typeof dirty[key] === "object" && dirty[key] !== null) {
-          // Nested object -> recurse
-          const nested = getChangedValues(dirty[key], (allValues as any)[key]);
-          if (Object.keys(nested).length > 0) {
-            (acc as any)[key] = nested;
-          }
-        }
-        return acc;
-      }, {} as Partial<T>);
-    }
+    const edits = getDirtyValues(allFields, dirtyFields);
 
-    const changedData = getChangedValues(dirtyFields, data);
+    console.log(edits);
 
-    console.log(changedData);
+    if (Object.keys(edits).length <= 0)
+      return setEditFormError("You haven’t made any changes.");
 
-    if (Object.keys(changedData).length <= 0)
-      return setGlobalFormError("You haven’t made any changes.");
+    const { success, error } = await validateEditsAndUpdateBook(book.id, edits);
 
-    const { success, error } = await validateAndUpdateBook(
-      book.id,
-      changedData
-    );
-
-    if (!success) return setGlobalFormError(error!);
+    if (!success) return setEditFormError(error!);
 
     const updatedBook = await getBookById(id!);
     setBook(updatedBook);
@@ -359,7 +338,7 @@ export function BookPage() {
                       <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
                         Published in:
                       </div>
-                      <div className="text-md text-accent">
+                      <div className="text-lg text-accent font-[Georgia]">
                         {book.publicationYear}.
                       </div>
                     </div>
@@ -369,7 +348,9 @@ export function BookPage() {
                     <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
                       Pages:
                     </div>
-                    <div className="text-md text-accent">{book.pageCount}</div>
+                    <div className="text-lg text-accent font-[Georgia]">
+                      {book.pageCount}
+                    </div>
                   </div>
 
                   <div className="col-span-2 bg-background px-2 py-2 rounded">
@@ -377,7 +358,7 @@ export function BookPage() {
                       <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
                         Written in:
                       </div>
-                      <span className="text-md uppercase text-accent overflow-hidden">
+                      <span className="uppercase text-accent overflow-hidden font-sans font-semibold">
                         {book.originalLanguage}
                       </span>
                     </div>
@@ -408,7 +389,7 @@ export function BookPage() {
             <div className="flex justify-end">
               <SubmitButton
                 label="Update"
-                errorLabel={globalFormError}
+                errorLabel={editFormError}
                 onSubmit={handleSubmit(handleUpdateBook)}
                 showCancel
                 onCancel={() => setEditMode((prev) => !prev)}

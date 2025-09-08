@@ -1,13 +1,19 @@
-import { SquarePen, Tag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { BookShowcase } from "@/components/layouts/book-showcase";
+import { SquarePen, Tag, X } from "lucide-react";
+
 import { getGenreById } from "@/lib/services/api-calls/genreApi";
-import { Genre } from "@/lib/types/genre";
-import { Book } from "@/lib/types/book";
+import { EditedGenre, Genre } from "@/lib/types/genre";
 import { getBooksInGenre } from "@/lib/services/api-calls/bookApi";
 import { CommonDescription } from "@/components/ui/common/common-description";
+import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
+import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
+import { useForm } from "react-hook-form";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { getDirtyValues } from "@/lib/utils";
+import { validateEditsAndUpdateGenre } from "@/lib/services/genreService";
+import { GenreCatalogSection } from "@/components/ui/genre/genre-catalog-section";
 
 export function GenrePage() {
   //-------------------------------------------------------
@@ -15,8 +21,29 @@ export function GenrePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
 
+  //-------------------------------------------------------
   const [genre, setGenre] = useState<Genre | null>(null);
+  //-------------------------------------------------------
+
+  //-------------------------------------------------------
+  const {
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { dirtyFields },
+  } = useForm<EditedGenre>();
+
+  useEffect(() => {
+    if (editMode && genre) {
+      reset(genre);
+    } else if (!editMode) {
+      reset();
+      setEditFormError(null);
+    }
+  }, [editMode, genre, reset]);
   //-------------------------------------------------------
 
   //==============================================================================
@@ -44,7 +71,32 @@ export function GenrePage() {
 
     fetchGenre();
   }, [id]);
-  //-----------------------------------------------------
+
+  const handleUpdateGenre = async (allFields: EditedGenre) => {
+    if (!genre) return;
+
+    const edits = getDirtyValues(allFields, dirtyFields);
+
+    console.log(edits);
+
+    if (Object.keys(edits).length <= 0)
+      return setEditFormError("You haven’t made any changes.");
+
+    const { success, error } = await validateEditsAndUpdateGenre(
+      genre.id,
+      edits
+    );
+
+    if (!success) return setEditFormError(error!);
+
+    const updatedGenre = await getGenreById(id!);
+    setGenre({ ...genre, ...updatedGenre });
+
+    setEditMode(false);
+  };
+  //==============================================================================
+
+  //==============================================================================
   if (loading) {
     return (
       <div className="text-center p-10 text-lg font-mono text-muted-foreground">
@@ -64,7 +116,7 @@ export function GenrePage() {
 
   return (
     <div className="my-2 font-sans text-accent">
-      <div className="flex justify-end mx-0 md:mx-2 pt-2 -mb-6">
+      <div className="flex justify-end mx-0 md:mx-2 pt-2">
         <button
           title={editMode ? "Cancel Editing" : "Edit"}
           onClick={() => setEditMode((prev) => !prev)}
@@ -79,84 +131,71 @@ export function GenrePage() {
       </div>
 
       <section id="genre-metadata">
+        {editMode ? (
+          <CommonNameTitleInput
+            value={watch("name")}
+            onChange={(newName) => {
+              setValue("name", newName, { shouldDirty: true });
+            }}
+          />
+        ) : null}
         <div className="flex items-center text-sm text-accent/50 leading-tight mb-2">
           <Tag className="mr-1 w-4 h-4 text-accent" />
           <span className="hover:underline cursor-pointer">Genres</span>
           <span className="mx-1">›</span>
-          <span className="text-popover font-semibold">{genre.name}</span>
+          <span className="text-popover font-semibold">
+            {editMode ? watch("name") : genre.name}
+          </span>
         </div>
-        <CommonDescription description={genre.description} />
+        {editMode ? (
+          <CommonDescriptionInput
+            value={watch("description")}
+            onChange={(newDesc) => {
+              setValue("description", newDesc, { shouldDirty: true });
+            }}
+          />
+        ) : (
+          <CommonDescription value={genre.description} />
+        )}
       </section>
 
       {editMode ? null : (
         <section id="genre-catalogs">
           <GenreCatalogSection
-            genreName={genre.name}
-            sectionType="Books"
+            name={genre.name}
+            type="Books"
             books={genre.books}
-            message="Random featured review or message..."
+            review="Random featured review or message..."
           />
 
           <GenreCatalogSection
-            genreName={genre.name}
-            sectionType="Comics"
+            name={genre.name}
+            type="Comics"
             books={genre.books}
-            message="Another cool review or message..."
+            review="Another cool review or message..."
             reverse
           />
 
           <GenreCatalogSection
-            genreName={genre.name}
-            sectionType="Manga"
+            name={genre.name}
+            type="Manga"
             books={genre.books}
-            message="Reviews or insights text here."
+            review="Reviews or insights text here."
           />
         </section>
       )}
+
+      {editMode ? (
+        <div className="flex justify-end mt-2">
+          <SubmitButton
+            label="Update"
+            onSubmit={handleSubmit(handleUpdateGenre)}
+            showCancel
+            onCancel={() => setEditMode((prev) => !prev)}
+            errorLabel={editFormError}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
-
-//==============================================================================
-interface GenreCatalogSectionProps {
-  genreName: string;
-  sectionType: string;
-  message: string;
-  reverse?: boolean;
-  books?: Book[];
-}
-
-export const GenreCatalogSection: React.FC<GenreCatalogSectionProps> = ({
-  genreName,
-  sectionType,
-  message,
-  reverse = false,
-  books = [],
-}) => {
-  return (
-    <section id={`genre-${genreName}-catalog`} className="flex justify-center">
-      <div className="flex flex-col items-center gap-1 w-full">
-        <div>
-          <h2 className="mt-2 text-3xl font-extrabold text-accent text-center">
-            {genreName} {sectionType}
-          </h2>
-          <div className="w-full rounded-b-lg border-b-4 border-popover mb-1" />
-        </div>
-        <div
-          className={`flex flex-col lg:flex-row gap-4 w-full mb-4 ${
-            reverse ? "lg:flex-row-reverse" : ""
-          }`}
-        >
-          <div className="flex-1 min-w-0">
-            <BookShowcase books={books} />
-          </div>
-
-          <div className="w-full lg:w-[300px] h-full bg-muted rounded-lg p-4 border-accent border-2 border-b-8">
-            <p className="text-center text-sm">{message}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-//==============================================================================

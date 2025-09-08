@@ -8,14 +8,15 @@ import { createAuthor } from "@/lib/services/api-calls/authorApi";
 import { SubmitButton } from "../ui/submit-button";
 import { CommonNameTitleInput } from "../ui/common/common-name-title-input";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
+import { AuthorLifeRangeInput } from "../ui/author/author-life-range-input";
 
 export function AddAuthorModal() {
   //-----------------------------------------------------------
   const [open, setOpen] = useState<boolean>(false);
 
   const [name, setName] = useState<string>("");
-  const [birthDate, setBirthDate] = useState<string>("");
-  const [deathDate, setDeathDate] = useState<string>("");
+  const [birthYear, setBirthYear] = useState<number>();
+  const [deathYear, setDeathYear] = useState<number>();
   const [biography, setBiography] = useState<string>("");
 
   const navigate = useNavigate();
@@ -23,17 +24,11 @@ export function AddAuthorModal() {
 
   //==================================================
   const handleCreate = async () => {
-    console.log({
-      name,
-      birthDate,
-      deathDate,
-      biography,
-    });
     try {
       const result = await createAuthor({
         name: name,
-        birthDate: birthDate,
-        deathDate: deathDate,
+        birthYear: birthYear,
+        deathYear: deathYear,
         biography: biography,
       });
 
@@ -61,9 +56,12 @@ export function AddAuthorModal() {
 
       <Dialog.Overlay className="fixed inset-0 bg-accent-foreground/90 z-40" />
 
-      <Dialog.Content className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4">
+      <Dialog.Content
+        className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4"
+        style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+      >
         <Dialog.Close asChild>
-          <button className="focus:outline-none absolute top-4 right-4 text-4xl text-muted hover:text-popover font-bold">
+          <button className="focus:outline-none absolute top-4 right-4 text-4xl text-popover hover:text-red-500 font-bold">
             <X strokeWidth={4} />
           </button>
         </Dialog.Close>
@@ -88,23 +86,14 @@ export function AddAuthorModal() {
               onChange={setName}
             />
 
-            <div className="font-[Georgia] text-muted-foreground flex items-center mb-2">
-              (
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className="cursor-pointer focus:outline-none bg-transparent border-transparent border text-md rounded w-37 focus-within:text-popover"
-              />
-              –
-              <input
-                type="date"
-                value={deathDate}
-                onChange={(e) => setDeathDate(e.target.value)}
-                className="cursor-pointer focus:outline-none bg-transparent border-transparent border text-md rounded w-37 focus-within:text-popover"
-              />
-              )
-            </div>
+            <AuthorLifeRangeInput
+              birthYear={birthYear}
+              deathYear={deathYear}
+              onChange={({ birthYear, deathYear }) => {
+                setBirthYear(birthYear);
+                setDeathYear(deathYear);
+              }}
+            />
 
             <CommonDescriptionInput
               value={biography}

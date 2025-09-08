@@ -29,7 +29,7 @@ export function CommonDescriptionInput({
   return (
     <>
       <textarea
-        value={value}
+        value={value ?? undefined}
         title={title}
         onChange={handleResizeableChange}
         placeholder={placeholder}

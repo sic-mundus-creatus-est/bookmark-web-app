@@ -4,13 +4,15 @@ import {
   POST,
   ConstrainedQueryParams,
   buildConstrainedQueryParams,
+  PATCH,
 } from "@/lib/services/api-calls/api";
+import { EditedAuthor } from "@/lib/types/author";
 
 export function createAuthor(data: {
   name: string;
   biography?: string;
-  birthDate?: string;
-  deathDate?: string;
+  birthYear?: number;
+  deathYear?: number;
 }) {
   return apiCall({
     method: POST,
@@ -28,5 +30,13 @@ export function getConstrainedAuthors(params: ConstrainedQueryParams) {
   return apiCall({
     method: GET,
     endpoint: `/api/authors/get-constrained?${query}`,
+  });
+}
+
+export function updateAuthor(id: string, editedData: EditedAuthor) {
+  return apiCall({
+    method: PATCH,
+    endpoint: `/api/authors/update/${id}`,
+    body: editedData,
   });
 }

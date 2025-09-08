@@ -14,8 +14,8 @@ public class Author : IModel
 
     public string? Biography { get; set; }
 
-    public DateOnly? BirthDate { get; set; }
-    public DateOnly? DeathDate { get; set; }
+    public int? BirthYear { get; set; }
+    public int? DeathYear { get; set; }
 
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
@@ -39,8 +39,8 @@ public class Author : IModel
         {
             Name = creationData.Name;
             Biography = creationData.Biography;
-            BirthDate = creationData.BirthDate;
-            DeathDate = creationData.DeathDate;
+            BirthYear = creationData.BirthYear;
+            DeathYear = creationData.DeathYear;
         }
     }
 
@@ -51,8 +51,8 @@ public class Author : IModel
             response.Id = Id;
             response.Name = Name;
             response.Biography = Biography;
-            response.BirthDate = BirthDate;
-            response.DeathDate = DeathDate;
+            response.BirthYear = BirthYear;
+            response.DeathYear = DeathYear;
         }
     }
 

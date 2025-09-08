@@ -5,12 +5,18 @@ import { CircleUserRound, SquarePen, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
-import { Author } from "@/lib/types/author";
+import { Author, EditedAuthor } from "@/lib/types/author";
 import { getAuthorById } from "@/lib/services/api-calls/authorApi";
 import { getGenresByAuthor } from "@/lib/services/api-calls/genreApi";
 import { getBooksByAuthor } from "@/lib/services/api-calls/bookApi";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
+import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
+import { AuthorLifeRangeInput } from "@/components/ui/author/author-life-range-input";
+import { useForm } from "react-hook-form";
+import { getDirtyValues } from "@/lib/utils";
+import { validateEditsAndUpdateAuthor } from "@/lib/services/authorService";
 
 export function AuthorPage() {
   //-------------------------------------------------------
@@ -18,10 +24,32 @@ export function AuthorPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
 
+  //-------------------------------------------------------
   const [author, setAuthor] = useState<Author | null>(null);
   //-------------------------------------------------------
 
+  //-------------------------------------------------------
+  const {
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { dirtyFields },
+  } = useForm<EditedAuthor>();
+
+  useEffect(() => {
+    if (editMode && author) {
+      reset(author);
+    } else if (!editMode) {
+      reset();
+      setEditFormError(null);
+    }
+  }, [editMode, author, reset]);
+  //-------------------------------------------------------
+
+  //==============================================================================
   useEffect(() => {
     async function fetchAuthor() {
       try {
@@ -35,8 +63,6 @@ export function AuthorPage() {
           getGenresByAuthor(id),
           getBooksByAuthor(id, 10),
         ]);
-
-        console.log(genres);
 
         setAuthor({
           ...data,
@@ -53,10 +79,43 @@ export function AuthorPage() {
 
     fetchAuthor();
   }, [id]);
-  //-----------------------------------------------------
+
+  const handleUpdateAuthor = async (allFields: EditedAuthor) => {
+    if (!author) return;
+
+    let edits = getDirtyValues(allFields, dirtyFields);
+
+    if (dirtyFields.birthYear || dirtyFields.deathYear) {
+      edits = {
+        ...edits,
+        birthYear: allFields.birthYear,
+        deathYear: allFields.deathYear,
+      };
+    }
+
+    console.log(edits);
+
+    if (Object.keys(edits).length <= 0)
+      return setEditFormError("You haven’t made any changes.");
+
+    const { success, error } = await validateEditsAndUpdateAuthor(
+      author.id,
+      edits
+    );
+
+    if (!success) return setEditFormError(error!);
+
+    const updatedAuthor = await getAuthorById(id!);
+    setAuthor({ ...author, ...updatedAuthor });
+
+    setEditMode(false);
+  };
+  //==============================================================================
+
+  //==============================================================================
   if (loading) {
     return (
-      <div className="text-center p-10 text-lg font-mono text-muted-foreground">
+      <div className="text-center p-10 text-lg font-mono text-popover">
         Loading author...
       </div>
     );
@@ -64,12 +123,12 @@ export function AuthorPage() {
   //-----------------------------------------------------
   if (error || !author) {
     return (
-      <div className="text-center p-10 text-lg font-mono text-destructive">
+      <div className="text-center p-10 text-lg font-mono text-popover">
         Author not found.
       </div>
     );
   }
-  //-----------------------------------------------------
+  //==============================================================================
 
   return (
     <div className="flex-grow max-w-full container mx-auto sm:px-16 lg:px-24 xl:px-32 my-4 sm:mt-10">
@@ -96,25 +155,37 @@ export function AuthorPage() {
           <span className="font-extrabold font-mono text-xl -mt-2">Author</span>
         </div>
         <div className="w-full">
-          <div className="flex-shrink-0 flex justify-center sm:block -mt-4 sm:mt-0">
-            <h2 className="text-4xl font-semibold font-[Verdana]">
-              {author.name}
-            </h2>
-          </div>
+          {editMode ? (
+            <CommonNameTitleInput
+              placeholder="Name"
+              value={watch("name")}
+              onChange={(newName) => {
+                setValue("name", newName, { shouldDirty: true });
+              }}
+            />
+          ) : (
+            <div className="flex-shrink-0 flex justify-center sm:block -mt-4 sm:mt-0">
+              <h2 className="text-4xl font-semibold font-[Verdana]">
+                {author.name}
+              </h2>
+            </div>
+          )}
           <div className="flex-shrink-0 flex justify-center sm:block">
-            <p className="text-muted-foreground mb-2 ml-2 font-[Georgia] text-xl">
-              (
-              {author.birthDate && (
-                <time>{new Date(author.birthDate).getFullYear()}</time>
-              )}{" "}
-              –{" "}
-              {author.deathDate ? (
-                <time>{new Date(author.deathDate).getFullYear()}</time>
-              ) : (
-                ""
-              )}
-              )
-            </p>
+            {editMode ? (
+              <AuthorLifeRangeInput
+                birthYear={watch("birthYear")}
+                deathYear={watch("deathYear")}
+                onChange={({ birthYear, deathYear }) => {
+                  setValue("birthYear", birthYear, { shouldDirty: true });
+                  setValue("deathYear", deathYear, { shouldDirty: true });
+                }}
+              />
+            ) : (
+              <p className="text-muted-foreground mb-2 ml-2 font-[Georgia] text-xl">
+                ({author.birthYear != 0 && <time>{author.birthYear}</time>} –{" "}
+                {author.deathYear != 0 && <time>{author.deathYear}</time>})
+              </p>
+            )}
           </div>
 
           {editMode ? null : (
@@ -132,7 +203,17 @@ export function AuthorPage() {
             </div>
           )}
 
-          <CommonDescription description={author.biography} />
+          {editMode ? (
+            <CommonDescriptionInput
+              placeholder="Biography..."
+              value={watch("biography")}
+              onChange={(newBiography) => {
+                setValue("biography", newBiography, { shouldDirty: true });
+              }}
+            />
+          ) : (
+            <CommonDescription value={author.biography} />
+          )}
         </div>
       </div>
 
@@ -151,9 +232,10 @@ export function AuthorPage() {
         <div className="flex justify-end mt-2">
           <SubmitButton
             label="Update"
-            onSubmit={() => console.log("I know what I know")}
+            onSubmit={handleSubmit(handleUpdateAuthor)}
             showCancel
             onCancel={() => setEditMode((prev) => !prev)}
+            errorLabel={editFormError}
           />
         </div>
       ) : null}
