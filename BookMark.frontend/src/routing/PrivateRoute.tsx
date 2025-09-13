@@ -1,19 +1,21 @@
-import { Navigate } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "@/lib/contexts/authContext";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/lib/contexts/useAuth";
 
 export function PrivateRoute({
   component: Component,
 }: {
   component: React.FC;
 }) {
-  const auth = useContext(AuthContext);
+  const auth = useAuth();
+  const location = useLocation();
 
-  if (!auth || auth.loading) {
-    return <p>Loading...</p>;
+  if (auth.loading) {
+    return <p className="text-accent text-center text-xl">Loading...</p>;
   }
 
-  console.log("Auth Context: ", auth);
+  if (!auth.user) {
+    return <Navigate to="/signin" state={{ from: location }} replace />;
+  }
 
-  return auth.user ? <Component /> : <Navigate to="/login" />;
+  return <Component />;
 }

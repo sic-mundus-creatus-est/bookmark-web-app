@@ -8,9 +8,9 @@ import { EditedGenre, Genre } from "@/lib/types/genre";
 import { getBooksInGenre } from "@/lib/services/api-calls/bookApi";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
-import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
+import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
 import { useForm } from "react-hook-form";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { getDirtyValues } from "@/lib/utils";
 import { validateEditsAndUpdateGenre } from "@/lib/services/genreService";
 import { GenreCatalogSection } from "@/components/ui/genre/genre-catalog-section";
@@ -132,7 +132,7 @@ export function GenrePage() {
 
       <section id="genre-metadata">
         {editMode ? (
-          <CommonNameTitleInput
+          <CommonTextInputField
             value={watch("name")}
             onChange={(newName) => {
               setValue("name", newName, { shouldDirty: true });
@@ -187,9 +187,9 @@ export function GenrePage() {
 
       {editMode ? (
         <div className="flex justify-end mt-2">
-          <SubmitButton
+          <CommonSubmitButton
             label="Update"
-            onSubmit={handleSubmit(handleUpdateGenre)}
+            onClick={handleSubmit(handleUpdateGenre)}
             showCancel
             onCancel={() => setEditMode((prev) => !prev)}
             errorLabel={editFormError}

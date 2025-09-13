@@ -6,7 +6,7 @@ import {
   UploadLabel,
 } from "@/components/ui/book/book-cover-image-upload";
 import { getAllGenres } from "@/lib/services/api-calls/genreApi";
-import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
+import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
@@ -15,7 +15,7 @@ import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { validateAndCreateBook } from "@/lib/services/bookService";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { GenreLinkProps } from "@/lib/types/genre";
 import { authorInputSuggestions } from "@/lib/services/authorService";
 import { AuthorLinkProps } from "@/lib/types/author";
@@ -88,7 +88,13 @@ export function AddBookPage() {
         {/* Book Info */}
         <div className="flex flex-col gap-5">
           <div className="w-full">
-            <CommonNameTitleInput value={title} onChange={setTitle} />
+            <CommonTextInputField
+              placeholder="Title"
+              value={title}
+              maxLength={128}
+              showCharCount
+              onChange={setTitle}
+            />
             <BookTypePicker
               value={bookTypeId}
               onChange={(bt) => {
@@ -148,10 +154,10 @@ export function AddBookPage() {
           />
 
           <div className="flex justify-end">
-            <SubmitButton
+            <CommonSubmitButton
               label="Add"
               errorLabel={globalFormError}
-              onSubmit={handleCreateBook}
+              onClick={handleCreateBook}
             />
           </div>
         </div>

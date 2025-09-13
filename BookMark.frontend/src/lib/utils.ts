@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { UserAuth } from "./types/user";
+import { jwtDecode } from "jwt-decode";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -27,3 +29,15 @@ export function getDirtyValues<T extends object>(
     return acc;
   }, {} as Partial<T>);
 }
+
+// ================================================
+
+export const decodeToken = (token: string): UserAuth | null => {
+  try {
+    const decoded = jwtDecode<UserAuth>(token);
+    if (decoded.exp * 1000 < Date.now()) return null; // token expired if null
+    return { username: decoded.username, role: decoded.role, exp: decoded.exp };
+  } catch {
+    return null;
+  }
+};

@@ -8,9 +8,8 @@ public class User : IdentityUser, IModel
 {
     [PersonalData]
     public string DisplayName { get; set; } = null!;
-
     [PersonalData]
-    public string? Country { get; set; }
+    public string? AboutMe { get; set; }
 
 // --------------------------------------------------------
     public DateTime CreatedAt { get; private set; }
@@ -31,7 +30,6 @@ public class User : IdentityUser, IModel
             UserName = creationData.Username;
             Email = creationData.Email;
             DisplayName = creationData.DisplayName;
-            Country = creationData.Country;
             SecurityStamp = Guid.NewGuid().ToString();
         }
     }
@@ -44,7 +42,6 @@ public class User : IdentityUser, IModel
             response.Username = UserName!;
             response.Email = Email!;
             response.DisplayName = DisplayName;
-            response.Country = Country;
         }
     }
 

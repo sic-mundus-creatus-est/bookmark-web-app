@@ -23,12 +23,9 @@ public class UserCreateDTO
     [Required]
     [MaxLength(64)]
     public string DisplayName { get; set; } = null!;
-
-    [MaxLength(64)]
-    public string? Country { get; set; }
 }
 
-public class UserLoginDTO
+public class UserCredentialsDTO
 {
     [Required]
     public string UsernameOrEmail { get; set; } = null!;
@@ -41,9 +38,8 @@ public class UserUpdateDTO
 {
     [MaxLength(64)]
     public string? DisplayName { get; set; }
-
-    [MaxLength(64)]
-    public string? Country { get; set; }
+    [MaxLength(4000)]
+    public string? AboutMe { get; set; }
 }
 
 public class UserResponseDTO
@@ -52,5 +48,5 @@ public class UserResponseDTO
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string DisplayName { get; set; } = null!;
-    public string? Country { get; set; }
+    public string? AboutMe { get; set; }
 }

@@ -1,8 +1,10 @@
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, LogOut, UserPlus } from "lucide-react";
 
 import { DesktopNavbar } from "@/components/layouts/navbar-desktop";
 import { MobileNavbar } from "@/components/layouts/navbar-mobile";
 import { navConfig } from "@/config/navConfig";
+import { useAuth } from "@/lib/contexts/useAuth";
+import { Link, useNavigate } from "react-router-dom";
 
 export function Navbar() {
   return (
@@ -16,23 +18,44 @@ export function Navbar() {
 }
 
 export function AuthRow() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    auth.signOut();
+    navigate("/signin");
+  };
+
   return (
-    <div className="pt-2 flex justify-end space-x-4 flex-wrap text-popover">
-      {navConfig.Auth.items?.map((item) => {
-        const Icon = item.icon === "log-in" ? LogIn : UserPlus;
-        return (
-          <a
-            href={item.to}
-            className="flex items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
-            key={item.title}
-          >
-            <span className="mr-1">
-              <Icon size={17} strokeWidth={2} />
-            </span>
-            {item.title}
-          </a>
-        );
-      })}
+    <div className="pt-2 flex justify-end space-x-4 flex-wrap text-popover mr-0.5">
+      {auth.user ? (
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="flex flex-row items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
+        >
+          <span className="mr-1">
+            <LogOut size={17} strokeWidth={2} />
+          </span>
+          Sign Out
+        </button>
+      ) : (
+        navConfig.Auth.items?.map((item) => {
+          const Icon = item.icon === "log-in" ? LogIn : UserPlus;
+          return (
+            <Link
+              to={item.to!}
+              className="flex flex-row items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
+              key={item.title}
+            >
+              <span className="mr-1">
+                <Icon size={17} strokeWidth={2} />
+              </span>
+              {item.title}
+            </Link>
+          );
+        })
+      )}
     </div>
   );
 }

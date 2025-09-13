@@ -10,8 +10,8 @@ import { getAuthorById } from "@/lib/services/api-calls/authorApi";
 import { getGenresByAuthor } from "@/lib/services/api-calls/genreApi";
 import { getBooksByAuthor } from "@/lib/services/api-calls/bookApi";
 import { CommonDescription } from "@/components/ui/common/common-description";
-import { SubmitButton } from "@/components/ui/submit-button";
-import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
+import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "@/components/ui/author/author-life-range-input";
 import { useForm } from "react-hook-form";
@@ -156,7 +156,7 @@ export function AuthorPage() {
         </div>
         <div className="w-full">
           {editMode ? (
-            <CommonNameTitleInput
+            <CommonTextInputField
               placeholder="Name"
               value={watch("name")}
               onChange={(newName) => {
@@ -230,9 +230,9 @@ export function AuthorPage() {
 
       {editMode ? (
         <div className="flex justify-end mt-2">
-          <SubmitButton
+          <CommonSubmitButton
             label="Update"
-            onSubmit={handleSubmit(handleUpdateAuthor)}
+            onClick={handleSubmit(handleUpdateAuthor)}
             showCancel
             onCancel={() => setEditMode((prev) => !prev)}
             errorLabel={editFormError}

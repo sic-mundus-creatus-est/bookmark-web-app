@@ -11,7 +11,7 @@ import {
   BookCoverImageUpload,
   UploadLabel,
 } from "@/components/ui/book/book-cover-image-upload";
-import { CommonNameTitleInput } from "@/components/ui/common/common-name-title-input";
+import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
@@ -19,7 +19,7 @@ import { getAllGenres } from "@/lib/services/api-calls/genreApi";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { BookLanguageInput } from "@/components/ui/book/book-language-input";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { validateEditsAndUpdateBook } from "@/lib/services/bookService";
 
 import { useForm } from "react-hook-form";
@@ -131,7 +131,10 @@ export function BookPage() {
       <div className="flex justify-center md:justify-end mx-0 md:mx-2 mt-2 pt-2">
         <button
           title={editMode ? "Cancel Editing" : "Edit"}
-          onClick={() => setEditMode((prev) => !prev)}
+          onClick={(e) => {
+            setEditMode((prev) => !prev);
+            e.currentTarget.blur();
+          }}
           className="text-accent hover:text-popover"
         >
           {editMode ? (
@@ -206,11 +209,13 @@ export function BookPage() {
           <div className="w-full">
             {editMode ? (
               <>
-                <CommonNameTitleInput
+                <CommonTextInputField
                   value={watch("metadata.title")}
                   onChange={(newTitle) => {
                     setValue("metadata.title", newTitle, { shouldDirty: true });
                   }}
+                  maxLength={128}
+                  showCharCount
                 />
                 <BookTypePicker
                   value={watch("metadata.bookTypeId")}
@@ -369,17 +374,15 @@ export function BookPage() {
           </div>
 
           {editMode ? (
-            <div>
-              <CommonDescriptionInput
-                value={watch("metadata.description")}
-                rows={8}
-                onChange={(newDesc) =>
-                  setValue("metadata.description", newDesc, {
-                    shouldDirty: true,
-                  })
-                }
-              />
-            </div>
+            <CommonDescriptionInput
+              value={watch("metadata.description")}
+              rows={8}
+              onChange={(newDesc) =>
+                setValue("metadata.description", newDesc, {
+                  shouldDirty: true,
+                })
+              }
+            />
           ) : (
             <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 whitespace-pre-line overflow-hidden w-full">
               {book.description}
@@ -387,10 +390,10 @@ export function BookPage() {
           )}
           {editMode ? (
             <div className="flex justify-end">
-              <SubmitButton
+              <CommonSubmitButton
                 label="Update"
                 errorLabel={editFormError}
-                onSubmit={handleSubmit(handleUpdateBook)}
+                onClick={handleSubmit(handleUpdateBook)}
                 showCancel
                 onCancel={() => setEditMode((prev) => !prev)}
               />

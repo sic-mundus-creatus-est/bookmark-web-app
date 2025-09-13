@@ -27,7 +27,7 @@ export function CommonDescriptionInput({
   };
 
   return (
-    <>
+    <div className="flex flex-col">
       <textarea
         value={value ?? undefined}
         title={title}
@@ -44,6 +44,6 @@ export function CommonDescriptionInput({
       <div className="text-right text-sm text-accent/60 font-mono leading-tight mr-1">
         {charCount}/{maxLength} characters
       </div>
-    </>
+    </div>
   );
 }

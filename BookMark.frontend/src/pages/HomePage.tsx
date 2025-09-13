@@ -26,12 +26,8 @@ export function HomePage() {
     }
   };
 
-  const handleLogout = () => {
-    auth?.logout();
-  };
-
   return (
-    <div className="flex flex-col place-items-center p-4 space-y-4">
+    <div className="flex flex-col place-items-center p-4 space-y-2 text-accent">
       <h1 className="text-4xl font-semibold">
         Welcome back,{" "}
         <b>
@@ -39,15 +35,15 @@ export function HomePage() {
         </b>
         !
       </h1>
-      <Button onClick={fetchRoleMessage} variant="outline" className="mt-4">
+      <Button
+        onClick={fetchRoleMessage}
+        className="text-lg font-bold bg-accent"
+      >
         Test Role Access
       </Button>
       {loading && <p>Loading response...</p>}
       {error && <p className="text-red-600">{error}</p>}
-      {message && <p className="text-green-600">{message}</p>}
-      <Button onClick={handleLogout} variant="outline" className="mt-4">
-        Logout
-      </Button>
+      {message && <p className="text-green-600 font-bold text-lg">{message}</p>}
     </div>
   );
 }

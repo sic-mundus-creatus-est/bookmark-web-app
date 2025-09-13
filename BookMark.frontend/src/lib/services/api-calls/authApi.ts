@@ -1,16 +1,17 @@
 import { apiCall, POST } from "@/lib/services/api-calls/api";
+import { UserCreate } from "@/lib/types/user";
 
-export function loginUser(credentials: {
+export function signInUser(credentials: {
   usernameOrEmail: string;
   password: string;
 }) {
   return apiCall({
     method: POST,
-    endpoint: "/user/login",
+    endpoint: "/api/users/signin",
     body: credentials,
   });
 }
 
-export function registerUser(data: Record<string, unknown>) {
-  return apiCall({ method: POST, endpoint: "/user/create", body: data });
+export function createUser(data: UserCreate) {
+  return apiCall({ method: POST, endpoint: "/api/users/create", body: data });
 }

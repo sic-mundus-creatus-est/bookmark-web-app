@@ -5,8 +5,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { UserRoundPen, X } from "lucide-react";
 
 import { createAuthor } from "@/lib/services/api-calls/authorApi";
-import { SubmitButton } from "../ui/submit-button";
-import { CommonNameTitleInput } from "../ui/common/common-name-title-input";
+import { CommonSubmitButton } from "../ui/common/common-submit-button";
+import { CommonTextInputField } from "../ui/common/common-text-input-field";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "../ui/author/author-life-range-input";
 
@@ -58,7 +58,7 @@ export function AddAuthorModal() {
 
       <Dialog.Content
         className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4"
-        style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+        style={{ minWidth: "clamp(21.5rem, 50vw, 100%)" }}
       >
         <Dialog.Close asChild>
           <button className="focus:outline-none absolute top-4 right-4 text-4xl text-popover hover:text-red-500 font-bold">
@@ -78,11 +78,12 @@ export function AddAuthorModal() {
           <Dialog.Description />
 
           <div className="mx-6">
-            <CommonNameTitleInput
+            <CommonTextInputField
               value={name}
               maxLength={64}
               title="Name"
               placeholder="Name"
+              showCharCount
               onChange={setName}
             />
 
@@ -102,7 +103,7 @@ export function AddAuthorModal() {
             />
 
             <div className="flex justify-end my-2">
-              <SubmitButton label="Add" onSubmit={handleCreate} />
+              <CommonSubmitButton label="Add" onClick={handleCreate} />
             </div>
           </div>
         </div>

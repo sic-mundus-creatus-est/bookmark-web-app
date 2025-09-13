@@ -2,13 +2,14 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 
 import { PrivateRoute } from "./PrivateRoute";
 import { HomePage } from "../pages/HomePage";
-import { LoginPage } from "../pages/LoginPage";
+import { SignInPage } from "@/pages/SignInPage";
 import { AppLayout } from "@/AppLayout";
 import { BooksPage } from "@/pages/BooksPage";
 import { BookPage } from "@/pages/BookPage";
 import { AddBookPage } from "@/pages/AddBookPage";
 import { GenrePage } from "@/pages/GenrePage";
 import { AuthorPage } from "@/pages/AuthorPage";
+import { SignUpPage } from "@/pages/SignUpPage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -46,8 +47,12 @@ export const AppRouter = createBrowserRouter([
     ],
   },
   {
-    path: "/login",
-    element: <LoginPage />,
+    path: "/signin",
+    element: <SignInPage />,
+  },
+  {
+    path: "/signup",
+    element: <SignUpPage />,
   },
   {
     path: "*",

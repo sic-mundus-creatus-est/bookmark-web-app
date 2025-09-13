@@ -17,13 +17,13 @@ export const navConfig: { [key: string]: INavItem } = {
     title: "Auth",
     items: [
       {
-        title: "Login",
-        to: "/login",
+        title: "Sign In",
+        to: "/signin",
         icon: "log-in",
       },
       {
-        title: "Register",
-        to: "/register",
+        title: "Sign Up",
+        to: "/signup",
         icon: "user-plus",
       },
     ],

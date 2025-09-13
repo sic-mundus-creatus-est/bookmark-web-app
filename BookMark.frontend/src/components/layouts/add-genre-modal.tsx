@@ -6,7 +6,7 @@ import { Plus, Tag, Tags, X } from "lucide-react";
 
 import { createGenre } from "@/lib/services/api-calls/genreApi";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
-import { CommonNameTitleInput } from "../ui/common/common-name-title-input";
+import { CommonTextInputField } from "../ui/common/common-text-input-field";
 
 export function AddGenreModal() {
   //-----------------------------------------------------------
@@ -56,7 +56,7 @@ export function AddGenreModal() {
 
       <Dialog.Content
         className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4"
-        style={{ minWidth: "clamp(21rem, 21vw, 100%)" }}
+        style={{ minWidth: "clamp(21rem, 50vw, 100%)" }}
       >
         <Dialog.Close asChild>
           <button className="focus:outline-none absolute top-4 right-4 text-4xl text-popover hover:text-red-500 font-bold">
@@ -76,13 +76,21 @@ export function AddGenreModal() {
           <Dialog.Description />
 
           <div className="mx-6">
-            <CommonNameTitleInput value={name} onChange={setName} />
+            <CommonTextInputField
+              placeholder="Name"
+              value={name}
+              onChange={setName}
+              maxLength={128}
+              showCharCount
+            />
 
             <div className="flex items-center text-sm text-accent/50 leading-tight pb-2">
               <Tag className="mr-1 w-4 h-4 text-accent" />
               <span className="hover:underline cursor-pointer">Genres</span>
               <span className="px-1">›</span>
-              <span className="text-popover font-semibold">{name}</span>
+              <span className="text-popover font-semibold overflow-hidden">
+                {name}
+              </span>
             </div>
 
             <CommonDescriptionInput

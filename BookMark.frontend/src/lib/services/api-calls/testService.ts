@@ -2,12 +2,12 @@ import { user_roles } from "@/config/roles";
 import { apiCall, GET } from "./api";
 
 export const getRoleTestMessage = async (userRoles: string[]) => {
-  let endpoint = "/test/guest-user-test"; // Defaults to guest
+  let endpoint = "/api/test/guest-user-test"; // Defaults to guest
 
   if (userRoles.includes(user_roles.admin)) {
-    endpoint = "/test/admin-test";
+    endpoint = "/api/test/admin-test";
   } else if (userRoles.includes(user_roles.regular_user)) {
-    endpoint = "/test/regular-user-test";
+    endpoint = "/api/test/regular-user-test";
   }
 
   return await apiCall({ method: GET, endpoint: endpoint });

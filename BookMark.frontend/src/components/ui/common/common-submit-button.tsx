@@ -1,21 +1,21 @@
 import { Plus } from "lucide-react";
 
-interface SubmitButtonProps {
+interface CommonSubmitButtonProps {
   label: string;
   errorLabel?: string | null;
   showCancel?: boolean;
-  onSubmit: () => void;
+  onClick?: () => void;
   onCancel?: () => void;
 }
-export function SubmitButton({
+export function CommonSubmitButton({
   label = "Submit",
   errorLabel,
   showCancel = false,
-  onSubmit,
+  onClick,
   onCancel,
-}: SubmitButtonProps) {
+}: CommonSubmitButtonProps) {
   return (
-    <div className="flex flex-col items-end">
+    <div className="flex flex-col">
       {errorLabel && (
         <div className="-mt-2 mb-1 text-right text-sm font-mono font-bold italic text-red-500">
           {errorLabel}
@@ -24,6 +24,7 @@ export function SubmitButton({
       <div className="flex items-center gap-7">
         {showCancel ? (
           <button
+            type="button"
             onClick={onCancel}
             className="text-lg italic font-extrabold text-popover hover:text-red-500 transition border-b-2 border-accent hover:border-red-500"
           >
@@ -32,9 +33,10 @@ export function SubmitButton({
         ) : null}
 
         <button
+          type="submit"
           title={label}
-          onClick={onSubmit}
-          className="flex items-center gap-1 px-3 py-2 bg-accent text-background font-bold rounded-lg transition border-b-4 border-popover hover:text-popover"
+          onClick={onClick}
+          className="flex justify-center w-full gap-1 px-3 py-2 bg-accent text-background font-bold rounded-lg transition border-b-4 border-popover hover:text-popover"
         >
           <Plus className="text-popover" strokeWidth={3} />
           {label}

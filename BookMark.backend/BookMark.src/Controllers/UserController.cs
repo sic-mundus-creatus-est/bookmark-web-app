@@ -15,7 +15,7 @@ using BookMark.Data.Repositories;
 namespace BookMark.Controllers;
 
 [ApiController]
-[Route("api/user")]
+[Route("api/users")]
 public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO, UserResponseDTO>
 {
     private readonly UserManager<User> _userManager;
@@ -66,14 +66,14 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     }
 
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserLoginDTO loginData)
+    [HttpPost("signin")]
+    public async Task<IActionResult> SignIn([FromBody] UserCredentialsDTO credentials)
     {
 
-        var user = await _userManager.FindByNameAsync(loginData.UsernameOrEmail) ??
-                    await _userManager.FindByEmailAsync(loginData.UsernameOrEmail);
+        var user = await _userManager.FindByNameAsync(credentials.UsernameOrEmail) ??
+                    await _userManager.FindByEmailAsync(credentials.UsernameOrEmail);
 
-        if (user == null || !await _userManager.CheckPasswordAsync(user, loginData.Password))
+        if (user == null || !await _userManager.CheckPasswordAsync(user, credentials.Password))
             return Problem( title: "Unauthorized",
                             detail: "Invalid username or password. Please check your credentials and try again.",
                             statusCode: StatusCodes.Status401Unauthorized );
