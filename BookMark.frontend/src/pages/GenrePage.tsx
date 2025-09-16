@@ -14,11 +14,14 @@ import { CommonSubmitButton } from "@/components/ui/common/common-submit-button"
 import { getDirtyValues } from "@/lib/utils";
 import { validateEditsAndUpdateGenre } from "@/lib/services/genreService";
 import { GenreCatalogSection } from "@/components/ui/genre/genre-catalog-section";
+import { useLoading } from "@/lib/contexts/useLoading";
 
 export function GenrePage() {
   //-------------------------------------------------------
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState<boolean>(true);
+  //-------------------------------------------------------
+
+  const { showLoadingScreen, hideLoadingScreen } = useLoading();
   const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editFormError, setEditFormError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export function GenrePage() {
   useEffect(() => {
     async function fetchGenre() {
       try {
-        setLoading(true);
+        showLoadingScreen();
         setError(false);
 
         if (!id) throw new Error("No author ID provided");
@@ -65,12 +68,12 @@ export function GenrePage() {
         console.error("Error fetching book:", e);
         setError(true);
       } finally {
-        setLoading(false);
+        hideLoadingScreen();
       }
     }
 
     fetchGenre();
-  }, [id]);
+  }, [hideLoadingScreen, id, showLoadingScreen]);
 
   const handleUpdateGenre = async (allFields: EditedGenre) => {
     if (!genre) return;
@@ -97,14 +100,6 @@ export function GenrePage() {
   //==============================================================================
 
   //==============================================================================
-  if (loading) {
-    return (
-      <div className="text-center p-10 text-lg font-mono text-muted-foreground">
-        Loading genre...
-      </div>
-    );
-  }
-  //-----------------------------------------------------
   if (error || !genre) {
     return (
       <div className="text-center p-10 text-lg font-mono text-destructive">

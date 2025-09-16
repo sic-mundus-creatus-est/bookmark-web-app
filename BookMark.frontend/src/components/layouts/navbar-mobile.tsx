@@ -39,7 +39,7 @@ export function MobileNavbar() {
     <>
       <div className="w-full items-center lg:hidden">
         {/* static */}
-        <div className="flex justify-between pb-2 -mx-2">
+        <div className="flex justify-between pb-2 -mx-1.5">
           <Logo />
 
           <Hamburger

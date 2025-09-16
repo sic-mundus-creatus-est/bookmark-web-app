@@ -9,10 +9,8 @@ export function DesktopNavbar() {
     <div className="hidden lg:flex flex-1 items-center justify-between">
       <div className="flex flex-col -ml-1.5">
         <Logo />
-        <div className="bg-background">
-          <div className="container mx-auto pl-14 -mt-1.5">
-            <ContentRow />
-          </div>
+        <div className="container mx-auto pl-14 -mt-1.5">
+          <ContentRow />
         </div>
       </div>
 

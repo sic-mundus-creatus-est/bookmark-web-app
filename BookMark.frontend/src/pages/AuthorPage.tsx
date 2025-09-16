@@ -17,11 +17,13 @@ import { AuthorLifeRangeInput } from "@/components/ui/author/author-life-range-i
 import { useForm } from "react-hook-form";
 import { getDirtyValues } from "@/lib/utils";
 import { validateEditsAndUpdateAuthor } from "@/lib/services/authorService";
+import { useLoading } from "@/lib/contexts/useLoading";
 
 export function AuthorPage() {
   //-------------------------------------------------------
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState<boolean>(true);
+  //-------------------------------------------------------
+  const { showLoadingScreen, hideLoadingScreen } = useLoading();
   const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editFormError, setEditFormError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export function AuthorPage() {
   useEffect(() => {
     async function fetchAuthor() {
       try {
-        setLoading(true);
+        showLoadingScreen();
         setError(false);
 
         if (!id) throw new Error("No author ID provided");
@@ -73,12 +75,12 @@ export function AuthorPage() {
         console.error("Error fetching book:", e);
         setError(true);
       } finally {
-        setLoading(false);
+        hideLoadingScreen();
       }
     }
 
     fetchAuthor();
-  }, [id]);
+  }, [hideLoadingScreen, id, showLoadingScreen]);
 
   const handleUpdateAuthor = async (allFields: EditedAuthor) => {
     if (!author) return;
@@ -113,14 +115,6 @@ export function AuthorPage() {
   //==============================================================================
 
   //==============================================================================
-  if (loading) {
-    return (
-      <div className="text-center p-10 text-lg font-mono text-popover">
-        Loading author...
-      </div>
-    );
-  }
-  //-----------------------------------------------------
   if (error || !author) {
     return (
       <div className="text-center p-10 text-lg font-mono text-popover">

@@ -27,6 +27,7 @@ import { authorInputSuggestions } from "@/lib/services/authorService";
 import { BookTypePicker } from "@/components/ui/book/book-type-selector";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { getDirtyValues } from "@/lib/utils";
+import { useLoading } from "@/lib/contexts/useLoading";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -34,7 +35,7 @@ export function BookPage() {
   //------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------
-  const [loading, setLoading] = useState<boolean>(true);
+  const { showLoadingScreen, hideLoadingScreen } = useLoading();
   const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
 
@@ -74,7 +75,7 @@ export function BookPage() {
   useEffect(() => {
     async function fetchBook() {
       try {
-        setLoading(true);
+        showLoadingScreen();
         setError(false);
 
         const data = await getBookById(id!);
@@ -83,20 +84,12 @@ export function BookPage() {
         console.error("Error fetching book:", e);
         setError(true);
       } finally {
-        setLoading(false);
+        hideLoadingScreen();
       }
     }
 
     fetchBook();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="text-center p-10 text-lg font-mono text-muted-foreground">
-        Loading book...
-      </div>
-    );
-  }
+  }, [hideLoadingScreen, id, showLoadingScreen]);
 
   if (error || !book) {
     return (

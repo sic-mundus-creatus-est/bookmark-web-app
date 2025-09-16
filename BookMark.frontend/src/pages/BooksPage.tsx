@@ -2,19 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { Pagination } from "@/components/pagination";
-import { BookCard, BookCardPlaceholder } from "@/components/ui/book/book-card";
+import { BookCard } from "@/components/ui/book/book-card";
 import { getConstrainedBooks } from "@/lib/services/api-calls/bookApi";
 import { Book } from "@/lib/types/book";
+import { useLoading } from "@/lib/contexts/useLoading";
 
 export function BooksPage() {
   //------------------------------------------------------------------------------
+  const { showLoadingScreen, hideLoadingScreen } = useLoading();
   const [searchParams, setSearchParams] = useSearchParams();
   //------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(true);
   //------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------
@@ -35,8 +36,8 @@ export function BooksPage() {
 
   useEffect(() => {
     const loadBooks = async () => {
-      setLoading(true);
       try {
+        showLoadingScreen();
         const pageToLoad = getValidPageFromUrl();
 
         if (pageToLoad !== parseInt(searchParams.get("page") || "1", 10)) {
@@ -72,29 +73,31 @@ export function BooksPage() {
         console.error("Failed to load books:", error);
         setSearchParams({ page: "1" });
       } finally {
-        setLoading(false);
+        hideLoadingScreen();
       }
     };
 
     loadBooks();
-  }, [searchParams, getValidPageFromUrl, setSearchParams]);
+  }, [
+    searchParams,
+    getValidPageFromUrl,
+    setSearchParams,
+    showLoadingScreen,
+    hideLoadingScreen,
+  ]);
 
   return (
     <div className="pt-4">
       <div className="w-full">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
-          {loading
-            ? Array.from({ length: 12 }).map((_, i) => (
-                <BookCardPlaceholder key={`loading-placeholder-${i}`} />
-              ))
-            : books.map((book) => (
-                <div key={book.id} className="aspect-[2/3] w-full max-w-xs">
-                  <BookCard book={book} />
-                </div>
-              ))}
+          {books.map((book) => (
+            <div key={book.id} className="aspect-[2/3] w-full max-w-xs">
+              <BookCard book={book} />
+            </div>
+          ))}
         </div>
 
-        {!loading && totalPages > 1 && (
+        {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
