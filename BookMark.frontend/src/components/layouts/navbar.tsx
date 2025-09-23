@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 export function Navbar() {
   return (
-    <nav className="sticky w-full bg-background z-50">
+    <nav className="sticky w-full bg-background z-40">
       <AuthRow />
       <div className="flex items-center justify-between">
         <DesktopNavbar /> <MobileNavbar />

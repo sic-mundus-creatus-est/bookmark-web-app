@@ -1,13 +1,26 @@
 import { AuthorLinkProps } from "@/lib/types/author";
 import { GenreLinkProps } from "@/lib/types//genre";
 
+export interface BookCreate {
+  bookType: BookType;
+  title: string;
+  authors: AuthorLinkProps[];
+  genres: GenreLinkProps[];
+  originalLanguage: string;
+  pageCount: number;
+  publicationYear: number;
+  description?: string;
+  coverImageFile?: File | null;
+}
+
 export interface Book {
   id: string;
   title: string;
+  publicationYear: number;
   pageCount: number;
   originalLanguage: string;
-  publicationYear?: number;
   description?: string;
+
   coverImageUrl?: string;
 
   bookType: BookType;
@@ -18,11 +31,18 @@ export interface Book {
   ratingCount?: number;
 }
 
-export interface EditedBook {
-  metadata?: BookMetadata;
+export interface BookUpdate {
+  title?: string;
+  publicationYear?: number;
+  pageCount?: number;
+  originalLanguage?: string;
+  description?: string;
+
+  coverImageFile?: File | null;
+
+  bookType?: BookType;
   authors?: AuthorLinkProps[];
   genres?: GenreLinkProps[];
-  coverImageFile?: File | null;
 }
 
 export interface BookMetadata {

@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { UserAuth } from "./types/user";
 import { jwtDecode } from "jwt-decode";
+import { useEffect, useState } from "react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,3 +42,51 @@ export const decodeToken = (token: string): UserAuth | null => {
     return null;
   }
 };
+
+// ================================================
+
+export interface ConstrainedQueryParams {
+  pageIndex: number;
+  pageSize: number;
+  sortBy?: string;
+  sortDescending?: boolean;
+  filters?: Record<string, string | number>;
+}
+export function buildConstrainedQueryParams({
+  pageIndex = 1,
+  pageSize = 10,
+  sortBy = "",
+  sortDescending = false,
+  filters = {},
+}: ConstrainedQueryParams): string {
+  const queryParams = new URLSearchParams();
+
+  queryParams.append("pageIndex", pageIndex.toString());
+  queryParams.append("pageSize", pageSize.toString());
+  queryParams.append("sortBy", sortBy);
+  queryParams.append("sortDescending", sortDescending.toString());
+
+  for (const [key, value] of Object.entries(filters)) {
+    queryParams.append(`filters[${key}]`, value.toString());
+  }
+
+  return queryParams.toString();
+}
+
+// ================================================
+
+export function useDebouncedValue(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    if (value === "") {
+      setDebouncedValue("");
+      return;
+    }
+
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}

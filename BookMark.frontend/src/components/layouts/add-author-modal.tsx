@@ -6,7 +6,7 @@ import { UserRoundPen, X } from "lucide-react";
 
 import { createAuthor } from "@/lib/services/api-calls/authorApi";
 import { CommonSubmitButton } from "../ui/common/common-submit-button";
-import { CommonTextInputField } from "../ui/common/common-text-input-field";
+import { CommonTextInput } from "../ui/common/common-text-input-field";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "../ui/author/author-life-range-input";
 
@@ -54,7 +54,7 @@ export function AddAuthorModal() {
         </button>
       </Dialog.Trigger>
 
-      <Dialog.Overlay className="fixed inset-0 bg-accent-foreground/90 z-40" />
+      <Dialog.Overlay className="fixed inset-0 bg-accent-foreground/90 z-50" />
 
       <Dialog.Content
         className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4"
@@ -78,7 +78,7 @@ export function AddAuthorModal() {
           <Dialog.Description />
 
           <div className="mx-6">
-            <CommonTextInputField
+            <CommonTextInput
               value={name}
               maxLength={64}
               title="Name"

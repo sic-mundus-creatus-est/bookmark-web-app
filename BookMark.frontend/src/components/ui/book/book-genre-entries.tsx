@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { X, Plus } from "lucide-react";
 
@@ -7,42 +7,17 @@ import { BookGenreSelector } from "@/components/ui/book/book-genre-selector";
 
 interface BookGenreEntriesProps {
   initialGenres?: GenreLinkProps[];
-  fetchAllGenres: () => Promise<GenreLinkProps[]>;
+  allGenres?: GenreLinkProps[];
   onChange?: (genres: GenreLinkProps[]) => void;
 }
 export function BookGenreEntries({
-  initialGenres,
-  fetchAllGenres,
+  initialGenres = [],
+  allGenres = [],
   onChange,
 }: BookGenreEntriesProps) {
-  const [allGenres, setAllGenres] = useState<GenreLinkProps[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<GenreLinkProps[]>(
     initialGenres ?? []
   );
-
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        const genresResponse: GenreLinkProps[] = await fetchAllGenres();
-
-        setAllGenres(genresResponse);
-      } catch (error: any) {
-        console.error(
-          `ERROR WHILE FETCHING GENRES:`,
-          `\n----------------------------------`,
-          `\n[${error.instance}]`,
-          `\nError: ${error.status}`,
-          `\n----------------------------------`,
-          `\nType: ${error.type}`,
-          `\nTitle: ${error.title}`,
-          `\nDetail: ${error.detail}`,
-          `\nTrace ID: ${error.traceId}`
-        );
-      }
-    };
-
-    fetchGenres();
-  }, [fetchAllGenres]);
 
   const handleAddGenre = () => {
     const firstUnselected = allGenres.find(

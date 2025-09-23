@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { Eye, EyeOff } from "lucide-react";
 
-interface CommonTextInputFieldProps {
+interface CommonTextInputProps {
   label?: string;
   value?: string;
   maxLength?: number;
@@ -15,7 +15,7 @@ interface CommonTextInputFieldProps {
   noBreaks?: boolean;
   onChange?: (newValue: string) => void;
 }
-export function CommonTextInputField({
+export function CommonTextInput({
   label,
   value = "",
   maxLength,
@@ -27,12 +27,34 @@ export function CommonTextInputField({
   isSecret = false,
   noBreaks = false,
   onChange,
-}: CommonTextInputFieldProps) {
+}: CommonTextInputProps) {
+  //---------------------------------------------------------------------
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  //---------------------------------------------------------------------
   const [charCount, setCharCount] = useState(value?.length ?? 0);
   const [showPassword, setShowPassword] = useState(false);
   const [displayValue, setDisplayValue] = useState(value);
+  //---------------------------------------------------------------------
+  const resizeTextarea = useCallback(() => {
+    if (!singleLine && textareaRef.current) {
+      const textarea = textareaRef.current;
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [singleLine]);
+  //---------------------------------------------------------------------
+  useEffect(() => {
+    if (value) setCharCount(value.length);
+  }, [value]);
+
+  useEffect(() => {
+    resizeTextarea();
+  }, [value, displayValue, resizeTextarea]);
+
+  useEffect(() => {
+    window.addEventListener("resize", resizeTextarea);
+    return () => window.removeEventListener("resize", resizeTextarea);
+  }, [resizeTextarea]);
 
   useEffect(() => {
     if (isSecret) {
@@ -41,28 +63,9 @@ export function CommonTextInputField({
       setDisplayValue(value);
     }
   }, [value, showPassword, isSecret]);
+  //---------------------------------------------------------------------
 
-  useEffect(() => {
-    if (value) setCharCount(value.length);
-  }, [value]);
-
-  useEffect(() => {
-    const handleWindowResize = () => {
-      if (!singleLine) resizeTextarea();
-    };
-
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, [value, singleLine]);
-
-  const resizeTextarea = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  };
-
+  //=====================================================================
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     let newValue = e.target.value;
 
@@ -73,7 +76,7 @@ export function CommonTextInputField({
       if (newValue.length < currentLength) {
         newValue = value.slice(0, newValue.length);
       } else {
-        // typing - append new characters to the actual value
+        // typing
         newValue = value + newValue.slice(currentLength);
       }
     }
@@ -84,13 +87,7 @@ export function CommonTextInputField({
 
     onChange?.(newValue);
     setCharCount(newValue.length);
-
-    if (!singleLine) resizeTextarea();
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  }; //=====================================================================
 
   return (
     <div className="flex flex-col">
@@ -108,14 +105,10 @@ export function CommonTextInputField({
             maxLength={maxLength ?? undefined}
             value={displayValue}
             onChange={handleChange}
-            className={`pl-2 py-2 bg-muted resize-none w-full
+            className={`pl-2 py-2 bg-muted resize-none w-full scrollbar-hide
                       font-[Verdana] font-bold text-accent leading-tight focus:outline-none
                       ${fontSize ? "" : "text-2xl md:text-4xl"}
-                      ${
-                        singleLine
-                          ? "overflow-x-auto whitespace-nowrap scrollbar-hide"
-                          : ""
-                      }
+                      ${singleLine ? "overflow-x-auto whitespace-nowrap" : ""}
                       ${isSecret ? "pr-10" : ""}`}
             style={fontSize ? { fontSize } : undefined}
             wrap={singleLine ? "off" : undefined}
@@ -129,7 +122,7 @@ export function CommonTextInputField({
         {isSecret && (
           <button
             type="button"
-            onClick={togglePasswordVisibility}
+            onClick={() => setShowPassword((prev) => !prev)}
             className="absolute right-1.5 top-1/2 transform -translate-y-1/2 text-accent/60 text-sm font-mono hover:text-popover"
             title={showPassword ? "Hide password" : "Show password"}
           >

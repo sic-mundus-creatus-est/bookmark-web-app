@@ -1,88 +1,54 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 
 import { Author, AuthorLinkProps } from "@/lib/types/author";
+import { useAuthorSuggestions } from "@/lib/services/api-calls/hooks/useAuthorApi";
+import { useDebouncedValue } from "@/lib/utils";
+import { UseQueryResult } from "@tanstack/react-query";
+import { ApiError } from "@/lib/services/api-calls/api";
 
 interface BookAuthorInputProps {
   placeholder?: string;
   entries?: AuthorLinkProps[];
-  fetchSuggestions: (searchTerm: string) => Promise<Author[]>;
+  fetchSuggestions?: (
+    searchTerm: string
+  ) => UseQueryResult<AuthorLinkProps[], ApiError>;
   onChange?: (entries: AuthorLinkProps[]) => void;
 }
 export function BookAuthorInput({
   placeholder = "Search authors...",
   entries = [],
-  fetchSuggestions,
+  fetchSuggestions = useAuthorSuggestions,
   onChange,
 }: BookAuthorInputProps) {
+  //-----------------------------------------------------------------------------
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState<AuthorLinkProps[]>([]);
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  //-----------------------------------------------------------------------------
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedSuggestion, setFocusedSuggestion] = useState<number | null>(
     null
   );
+  //-----------------------------------------------------------------------------
+  const { data: suggestions = [] } = fetchSuggestions(debouncedSearchTerm);
 
+  const availableSuggestions =
+    debouncedSearchTerm.trim() !== ""
+      ? suggestions.filter((s) => !entries.some((a) => a.id === s.id))
+      : [];
+  //-----------------------------------------------------------------------------
   const containerRef = useRef<HTMLDivElement>(null);
-  const cacheRef = useRef<Record<string, Author[]>>({});
-  const cacheKeysRef = useRef<string[]>([]);
+  //-----------------------------------------------------------------------------
 
-  const availableSuggestions = suggestions.filter(
-    (s) => !entries.some((a) => a.id === s.id)
-  );
-
+  //-----------------------------------------------------------------------------
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setShowSuggestions(false);
       setFocusedSuggestion(null);
-
-      setSuggestions([]);
-      return;
+    } else {
+      setShowSuggestions(true);
+      setFocusedSuggestion(0);
     }
-
-    if (cacheRef.current[searchTerm]) {
-      setSuggestions(cacheRef.current[searchTerm]);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      const fetch = async () => {
-        try {
-          const items = await fetchSuggestions(searchTerm);
-
-          cacheRef.current[searchTerm] = items;
-          cacheKeysRef.current.push(searchTerm);
-
-          if (cacheKeysRef.current.length > 20) {
-            const oldestKey = cacheKeysRef.current.shift()!;
-            delete cacheRef.current[oldestKey];
-          }
-
-          setSuggestions(items);
-          setFocusedSuggestion(0);
-        } catch (error: any) {
-          console.error(
-            `ERROR WHILE SEARCHING FOR AUTHORS:`,
-            `\n----------------------------------`,
-            `\n[${error.instance}]`,
-            `\nError: ${error.status}`,
-            `\n----------------------------------`,
-            `\nType: ${error.type}`,
-            `\nTitle: ${error.title}`,
-            `\nDetail: ${error.detail}`,
-            `\nTrace ID: ${error.traceId}`
-          );
-          setShowSuggestions(false);
-          setFocusedSuggestion(null);
-          setSuggestions([]);
-        }
-      };
-
-      fetch();
-    }, 300);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [fetchSuggestions, searchTerm]);
+  }, [searchTerm]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -97,7 +63,9 @@ export function BookAuthorInput({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+  //-----------------------------------------------------------------------------
 
+  //===========================================================
   const handleSelectAuthor = (selectedAuthor: Author) => {
     const bookAuthor: AuthorLinkProps = {
       id: selectedAuthor.id,
@@ -109,27 +77,19 @@ export function BookAuthorInput({
     onChange?.(updatedAuthors);
 
     setSearchTerm("");
-    setShowSuggestions(false);
-    setFocusedSuggestion(null);
-    setSuggestions([]);
-  };
+  }; //===========================================================
 
   return (
     <div className="relative" ref={containerRef}>
       <input
         type="text"
         value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setFocusedSuggestion(0);
-          setShowSuggestions(true);
-        }}
+        onChange={(e) => setSearchTerm(e.target.value)}
         placeholder={placeholder}
         className="w-full bg-muted outline-none border-2 border-b-4 border-accent px-2 rounded-lg focus-within:border-popover caret-popover"
         onKeyDown={(e) => {
           if (showSuggestions && e.key === "ArrowDown") {
             e.preventDefault();
-            setShowSuggestions(true);
             setFocusedSuggestion((prev) =>
               prev === null || prev === availableSuggestions.length - 1
                 ? 0
@@ -142,11 +102,7 @@ export function BookAuthorInput({
                 ? availableSuggestions.length - 1
                 : prev - 1
             );
-          } else if (
-            showSuggestions &&
-            e.key === "Enter" &&
-            searchTerm.trim()
-          ) {
+          } else if (showSuggestions && e.key === "Enter") {
             e.preventDefault();
             const selected =
               focusedSuggestion! >= 0
@@ -157,14 +113,13 @@ export function BookAuthorInput({
               handleSelectAuthor(selected);
             }
           } else if (showSuggestions && e.key === "Escape") {
-            setShowSuggestions(false);
-            setFocusedSuggestion(null);
+            setSearchTerm("");
           }
         }}
       />
 
       {showSuggestions && availableSuggestions.length > 0 && (
-        <ul className="absolute z-50 bg-accent-foreground text-muted rounded-lg shadow w-full overflow-y-auto max-h-60">
+        <ul className="absolute z-20 bg-accent-foreground text-muted rounded-lg shadow w-full overflow-y-auto max-h-60">
           {availableSuggestions.map((author, index) => (
             <Fragment key={author.id}>
               <li

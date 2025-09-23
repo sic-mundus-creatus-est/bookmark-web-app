@@ -1,51 +1,34 @@
+import { apiCall, GET, POST, PATCH, PUT } from "@/lib/services/api-calls/api";
+import { BookCreate, BookMetadata } from "@/lib/types/book";
 import {
-  apiCall,
-  GET,
-  POST,
   buildConstrainedQueryParams,
   ConstrainedQueryParams,
-  PATCH,
-  PUT,
-} from "@/lib/services/api-calls/api";
-import { BookMetadata } from "@/lib/types/book";
+} from "@/lib/utils";
 
-export interface CreateBookParams {
-  bookTypeId: string;
-  title: string;
-  authorIds: string[];
-  genreIds: string[];
-  originalLanguage: string;
-  pageCount: number;
-  publicationYear?: number;
-  description?: string;
-  coverImageFile?: File | null;
-}
-export async function createBook(params: CreateBookParams) {
+export async function createBook(data: BookCreate) {
   const formData = new FormData();
 
-  formData.append("BookTypeId", params.bookTypeId);
+  formData.append("BookTypeId", data.bookType.id);
 
-  formData.append("Title", params.title);
-  formData.append("OriginalLanguage", params.originalLanguage);
-  formData.append("PageCount", params.pageCount.toString());
+  formData.append("Title", data.title);
+  formData.append("OriginalLanguage", data.originalLanguage);
+  formData.append("PageCount", data.pageCount.toString());
 
-  if (params.publicationYear !== undefined) {
-    formData.append("PublicationYear", params.publicationYear.toString());
-  }
+  if (data.publicationYear !== undefined)
+    formData.append("PublicationYear", data.publicationYear.toString());
 
-  if (params.description) {
-    formData.append("Description", params.description);
-  }
+  if (data.description) formData.append("Description", data.description);
 
-  if (params.coverImageFile) {
-    formData.append("CoverImageFile", params.coverImageFile);
-  }
+  if (data.coverImageFile)
+    formData.append("CoverImageFile", data.coverImageFile);
 
-  params.authorIds.forEach((id, index) => {
+  const authorIds = data.authors.map((author) => author.id);
+  authorIds.forEach((id, index) => {
     formData.append(`AuthorIds[${index}]`, id);
   });
 
-  params.genreIds.forEach((id, index) => {
+  const genreIds = data.genres.map((genre) => genre.id);
+  genreIds.forEach((id, index) => {
     formData.append(`GenreIds[${index}]`, id);
   });
 
@@ -104,7 +87,7 @@ export function updateBookGenres(id: string, genreIds: string[]) {
   });
 }
 
-export function getBooksByAuthor(authorId: string, count: number) {
+export function getBooksByAuthor(authorId: string, count: number = 10) {
   return apiCall({
     method: GET,
     endpoint: `/api/books/by/${authorId}?count=${count}`,

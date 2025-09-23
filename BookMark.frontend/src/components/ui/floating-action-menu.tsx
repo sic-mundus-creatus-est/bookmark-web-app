@@ -28,7 +28,7 @@ export function FloatingActionMenu({ children }: FloatingActionMenuProps) {
   return (
     <div
       ref={wrapperRef}
-      className="z-49 fixed flex flex-col items-end bottom-4 right-4 gap-3"
+      className="z-40 fixed flex flex-col items-end bottom-4 right-4 gap-3"
     >
       {open && children}
 

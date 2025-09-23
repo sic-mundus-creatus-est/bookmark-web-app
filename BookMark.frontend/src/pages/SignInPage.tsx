@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
-import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { Footer } from "@/components/layouts/footer";
 import { useAuth } from "@/lib/contexts/useAuth";
@@ -42,7 +42,7 @@ export function SignInPage() {
               Sign In
             </h2>
             <div className="p-4 space-y-4">
-              <CommonTextInputField
+              <CommonTextInput
                 label="Username/E-mail"
                 fontSize={16}
                 placeholder="you@example.com"
@@ -54,7 +54,7 @@ export function SignInPage() {
                 singleLine
                 noBreaks
               />
-              <CommonTextInputField
+              <CommonTextInput
                 label="Password"
                 fontSize={16}
                 placeholder="•••••••••••••••"

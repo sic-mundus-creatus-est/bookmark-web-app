@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
-import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { Footer } from "@/components/layouts/footer";
 import { UserCreate } from "@/lib/types/user";
@@ -53,7 +53,7 @@ export function SignUpPage() {
             Sign Up
           </h2>
           <div className="p-4 space-y-4">
-            <CommonTextInputField
+            <CommonTextInput
               label="Your Name"
               fontSize={16}
               placeholder="John Doe"
@@ -65,7 +65,7 @@ export function SignUpPage() {
               }
               singleLine
             />
-            <CommonTextInputField
+            <CommonTextInput
               label="Username"
               fontSize={16}
               placeholder="john.doe"
@@ -78,7 +78,7 @@ export function SignUpPage() {
               singleLine
               noBreaks
             />
-            <CommonTextInputField
+            <CommonTextInput
               label="E-mail"
               fontSize={16}
               placeholder="john.doe@example.com"
@@ -91,7 +91,7 @@ export function SignUpPage() {
               singleLine
               noBreaks
             />
-            <CommonTextInputField
+            <CommonTextInput
               label="Password"
               fontSize={16}
               placeholder="at least 6 characters"
@@ -103,7 +103,7 @@ export function SignUpPage() {
               isSecret
               noBreaks
             />
-            <CommonTextInputField
+            <CommonTextInput
               label="Re-enter password"
               fontSize={16}
               placeholder="must match above"

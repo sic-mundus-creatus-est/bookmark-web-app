@@ -1,105 +1,101 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { getBookById } from "@/lib/services/api-calls/bookApi";
 import { useEffect, useState } from "react";
-import { Book, EditedBook } from "@/lib/types/book";
-import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
+import { BookUpdate } from "@/lib/types/book";
+import { API_FILE_RESOURCES_URL, ApiError } from "@/lib/services/api-calls/api";
 import { BookRatingStars } from "@/components/ui/book/book-rating-stars";
 import { SquarePen, X } from "lucide-react";
 import {
   BookCoverImageUpload,
   UploadLabel,
 } from "@/components/ui/book/book-cover-image-upload";
-import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
-import { getAllGenres } from "@/lib/services/api-calls/genreApi";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { BookLanguageInput } from "@/components/ui/book/book-language-input";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
-import { validateEditsAndUpdateBook } from "@/lib/services/bookService";
 
 import { useForm } from "react-hook-form";
-import { authorInputSuggestions } from "@/lib/services/authorService";
 import { BookTypePicker } from "@/components/ui/book/book-type-selector";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { getDirtyValues } from "@/lib/utils";
 import { useLoading } from "@/lib/contexts/useLoading";
+import {
+  useAllBookTypes,
+  useBook,
+  useUpdateBook,
+} from "@/lib/services/api-calls/hooks/useBookApi";
+import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
-  const { id } = useParams<{ id: string }>();
-  //------------------------------------------------------------------------------
-
+  const navigate = useNavigate();
+  const { id } = useParams() as { id: string };
   //------------------------------------------------------------------------------
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
-  const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
-
-  const [editFormError, setEditFormError] = useState<string | null>(null);
+  const [editFormError, setEditFormError] = useState<string>();
   //------------------------------------------------------------------------------
-
+  const updateBook = useUpdateBook();
   //------------------------------------------------------------------------------
-  const [book, setBook] = useState<Book>();
+  const {
+    data: book,
+    isFetching: isBookFetching,
+    error: bookError,
+  } = useBook(id);
+  const {
+    data: allBookTypes,
+    isFetching: areBookTypesFetching,
+    error: bookTypesError,
+  } = useAllBookTypes();
+  const {
+    data: allGenres,
+    isFetching: areGenresFetching,
+    error: genresError,
+  } = useAllGenres();
   //------------------------------------------------------------------------------
-
   const {
     handleSubmit,
     setValue,
     reset,
     watch,
     formState: { dirtyFields },
-  } = useForm<EditedBook>();
+  } = useForm<BookUpdate>();
+  //------------------------------------------------------------------------------
+  useEffect(() => {
+    if (!id) {
+      navigate("/");
+    }
+  }, [id, navigate]);
+  //------------------------------------------------------------------------------
+  const fetching = isBookFetching || areBookTypesFetching || areGenresFetching;
+  const error = bookError || bookTypesError || genresError;
 
   useEffect(() => {
-    if (book) {
+    if (fetching) showLoadingScreen();
+    else hideLoadingScreen();
+  }, [fetching, showLoadingScreen, hideLoadingScreen]);
+  //------------------------------------------------------------------------------
+  useEffect(() => {
+    if (editMode && book) {
       reset({
-        metadata: {
-          bookTypeId: book.bookType.id,
-          title: book.title,
-          originalLanguage: book.originalLanguage,
-          publicationYear: book.publicationYear,
-          pageCount: book.pageCount,
-          description: book.description,
-        },
-        authors: book.authors,
-        genres: book.genres,
+        ...(({ id: _id, coverImageUrl: _url, ...rest }) => rest)(book),
         coverImageFile: undefined,
       });
+    } else if (!editMode) {
+      reset();
+
+      setEditFormError(undefined);
     }
   }, [editMode, book, reset]);
+  //------------------------------------------------------------------------------
 
-  useEffect(() => {
-    async function fetchBook() {
-      try {
-        showLoadingScreen();
-        setError(false);
-
-        const data = await getBookById(id!);
-        setBook(data);
-      } catch (e) {
-        console.error("Error fetching book:", e);
-        setError(true);
-      } finally {
-        hideLoadingScreen();
-      }
-    }
-
-    fetchBook();
-  }, [hideLoadingScreen, id, showLoadingScreen]);
-
-  if (error || !book) {
-    return (
-      <div className="text-center p-10 text-lg font-mono text-destructive">
-        Book not found.
-      </div>
-    );
-  }
-
-  const handleUpdateBook = async (allFields: EditedBook) => {
+  //==============================================================================
+  const handleUpdateBook = async (allFields: BookUpdate) => {
     if (!book) return;
 
     const edits = getDirtyValues(allFields, dirtyFields);
@@ -109,16 +105,27 @@ export function BookPage() {
     if (Object.keys(edits).length <= 0)
       return setEditFormError("You haven’t made any changes.");
 
-    const { success, error } = await validateEditsAndUpdateBook(book.id, edits);
+    updateBook.mutate(
+      { id: book.id, edits: edits },
+      {
+        onError: (error: any) => {
+          setEditFormError(error?.message || "Failed to update. Try again!");
+        },
+        onSuccess: () => {
+          setEditMode(false);
+        },
+      }
+    );
+  }; //==============================================================================
 
-    if (!success) return setEditFormError(error!);
-
-    const updatedBook = await getBookById(id!);
-    setBook(updatedBook);
-
-    setEditMode(false);
-  };
-
+  if (error)
+    return (
+      <div className="text-center p-10 text-lg font-mono text-destructive">
+        {error instanceof ApiError
+          ? error.detail
+          : "An unexpected error occurred. Reload to try again."}
+      </div>
+    );
   return (
     <div className="flex-grow">
       <div className="flex justify-center md:justify-end mx-0 md:mx-2 mt-2 pt-2">
@@ -147,7 +154,7 @@ export function BookPage() {
             {editMode ? (
               <BookCoverImageUpload
                 value={
-                  book.coverImageUrl
+                  book?.coverImageUrl
                     ? `${API_FILE_RESOURCES_URL}${book.coverImageUrl}`
                     : null
                 }
@@ -160,11 +167,11 @@ export function BookPage() {
             ) : (
               <img
                 src={
-                  book.coverImageUrl
+                  book?.coverImageUrl
                     ? `${API_FILE_RESOURCES_URL}${book.coverImageUrl}`
                     : "/cover_placeholder.jpg"
                 }
-                alt={`Cover of ${book.title}`}
+                alt={`Cover of ${book?.title}`}
                 className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
               />
             )}
@@ -202,18 +209,19 @@ export function BookPage() {
           <div className="w-full">
             {editMode ? (
               <>
-                <CommonTextInputField
-                  value={watch("metadata.title")}
+                <CommonTextInput
+                  value={watch("title")}
                   onChange={(newTitle) => {
-                    setValue("metadata.title", newTitle, { shouldDirty: true });
+                    setValue("title", newTitle, { shouldDirty: true });
                   }}
                   maxLength={128}
                   showCharCount
                 />
                 <BookTypePicker
-                  value={watch("metadata.bookTypeId")}
+                  value={watch("bookType")}
+                  allBookTypes={allBookTypes}
                   onChange={(newBookType) => {
-                    setValue("metadata.bookTypeId", newBookType.id, {
+                    setValue("bookType", newBookType, {
                       shouldDirty: true,
                     });
                   }}
@@ -221,7 +229,7 @@ export function BookPage() {
               </>
             ) : (
               <h1 className="text-2xl sm:text-2xl md:text-4xl lg:text-4xl w-full font-[Verdana] font-bold text-accent leading-tight overflow-hidden">
-                {book.title}
+                {book?.title}
               </h1>
             )}
 
@@ -245,7 +253,6 @@ export function BookPage() {
                   <div className="mt-2">
                     <BookAuthorInput
                       placeholder="Start typing to find an author"
-                      fetchSuggestions={authorInputSuggestions}
                       entries={watch("authors")}
                       onChange={(updatedAuthors) => {
                         setValue("authors", updatedAuthors, {
@@ -258,7 +265,7 @@ export function BookPage() {
               ) : (
                 <>
                   <span className="italic">by </span>
-                  {book.authors.map((ba, i) => (
+                  {book?.authors.map((ba, i) => (
                     <Link to={`/author/${ba.id}`} key={ba.id}>
                       <span className="text-xl hover:text-popover">
                         {ba.name}
@@ -275,8 +282,8 @@ export function BookPage() {
             {/* Genres */}
             {editMode ? (
               <BookGenreEntries
-                initialGenres={watch("genres") || []}
-                fetchAllGenres={getAllGenres}
+                initialGenres={watch("genres")}
+                allGenres={allGenres}
                 onChange={(updatedGenres) => {
                   setValue("genres", [...updatedGenres], { shouldDirty: true });
                 }}
@@ -287,7 +294,7 @@ export function BookPage() {
                   Genres:
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {book.genres!.map((bg) => (
+                  {book?.genres!.map((bg) => (
                     <Link to={`/genre/${bg.id}`} key={bg.id}>
                       <Badge className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover">
                         {bg.name}
@@ -303,27 +310,27 @@ export function BookPage() {
               {editMode ? (
                 <>
                   <PublicationYearSelector
-                    value={watch("metadata.publicationYear")}
+                    value={watch("publicationYear")}
                     onChange={(year) =>
-                      setValue("metadata.publicationYear", year, {
+                      setValue("publicationYear", year, {
                         shouldDirty: true,
                       })
                     }
                   />
 
                   <BookPageCountInput
-                    value={watch("metadata.pageCount")}
+                    value={watch("pageCount")}
                     onChange={(newCount) =>
-                      setValue("metadata.pageCount", newCount, {
+                      setValue("pageCount", newCount, {
                         shouldDirty: true,
                       })
                     }
                   />
 
                   <BookLanguageInput
-                    value={watch("metadata.originalLanguage")}
+                    value={watch("originalLanguage")}
                     onChange={(language) =>
-                      setValue("metadata.originalLanguage", language, {
+                      setValue("originalLanguage", language, {
                         shouldDirty: true,
                       })
                     }
@@ -337,7 +344,7 @@ export function BookPage() {
                         Published in:
                       </div>
                       <div className="text-lg text-accent font-[Georgia]">
-                        {book.publicationYear}.
+                        {book?.publicationYear}.
                       </div>
                     </div>
                   </div>
@@ -347,7 +354,7 @@ export function BookPage() {
                       Pages:
                     </div>
                     <div className="text-lg text-accent font-[Georgia]">
-                      {book.pageCount}
+                      {book?.pageCount}
                     </div>
                   </div>
 
@@ -357,7 +364,7 @@ export function BookPage() {
                         Written in:
                       </div>
                       <span className="uppercase text-accent overflow-hidden font-sans font-semibold">
-                        {book.originalLanguage}
+                        {book?.originalLanguage}
                       </span>
                     </div>
                   </div>
@@ -368,17 +375,17 @@ export function BookPage() {
 
           {editMode ? (
             <CommonDescriptionInput
-              value={watch("metadata.description")}
+              value={watch("description")}
               rows={8}
               onChange={(newDesc) =>
-                setValue("metadata.description", newDesc, {
+                setValue("description", newDesc, {
                   shouldDirty: true,
                 })
               }
             />
           ) : (
             <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 whitespace-pre-line overflow-hidden w-full">
-              {book.description}
+              {book?.description}
             </p>
           )}
           {editMode ? (

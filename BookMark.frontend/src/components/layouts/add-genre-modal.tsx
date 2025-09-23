@@ -6,7 +6,7 @@ import { Plus, Tag, Tags, X } from "lucide-react";
 
 import { createGenre } from "@/lib/services/api-calls/genreApi";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
-import { CommonTextInputField } from "../ui/common/common-text-input-field";
+import { CommonTextInput } from "../ui/common/common-text-input-field";
 
 export function AddGenreModal() {
   //-----------------------------------------------------------
@@ -52,7 +52,7 @@ export function AddGenreModal() {
         </button>
       </Dialog.Trigger>
 
-      <Dialog.Overlay className="fixed inset-0 bg-accent-foreground/90 z-40" />
+      <Dialog.Overlay className="fixed inset-0 bg-accent-foreground/90 z-50" />
 
       <Dialog.Content
         className="fixed top-80 left-1/2 z-50 w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-muted border-2 border-accent rounded-lg rounded-t-3xl -translate-x-1/2 -translate-y-1/2 shadow-lg border-b-4"
@@ -76,7 +76,7 @@ export function AddGenreModal() {
           <Dialog.Description />
 
           <div className="mx-6">
-            <CommonTextInputField
+            <CommonTextInput
               placeholder="Name"
               value={name}
               onChange={setName}

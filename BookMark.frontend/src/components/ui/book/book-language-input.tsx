@@ -4,7 +4,7 @@ interface BookLanguageInputProps {
   onChange?: (value: string) => void;
 }
 export function BookLanguageInput({
-  value,
+  value = "",
   maxLength = 64,
   onChange,
 }: BookLanguageInputProps) {

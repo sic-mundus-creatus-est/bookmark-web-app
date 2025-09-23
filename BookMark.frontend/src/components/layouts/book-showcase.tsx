@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/carousel";
 
 interface BookShowcaseProps {
-  books: Book[];
+  books?: Book[];
 }
-export function BookShowcase({ books }: BookShowcaseProps) {
+export function BookShowcase({ books = [] }: BookShowcaseProps) {
   return (
     <Carousel
       opts={{

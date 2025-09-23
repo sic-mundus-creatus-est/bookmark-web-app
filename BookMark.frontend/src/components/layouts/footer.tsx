@@ -2,12 +2,12 @@ import { appConfig } from "@/config/appConfig";
 
 export function Footer() {
   return (
-    <footer className="bg-accent pb-12 pt-8 text-sm z-50">
+    <footer className="bg-accent pb-12 pt-8 text-sm z-30">
       <div className="container mx-auto px-10 sm:px-10 md:px-4 lg:px-28">
-        <div className="flex flex-col md:flex-row md:items-center justify-center sm:gap-4 md-gap-6 lg:gap-16">
+        <div className="flex flex-col md:flex-row md:items-center justify-center sm:gap-4 md-gap-6 lg:gap-16 text-background">
           {/* Left: Title + Author */}
           <div className="font-[Helvetica]">
-            <p className="font-semibold text-3xl md:text-4xl text-background">
+            <p className="font-semibold text-3xl md:text-4xl">
               {appConfig.name}
               <span className="text-popover font-bold">™</span>
             </p>

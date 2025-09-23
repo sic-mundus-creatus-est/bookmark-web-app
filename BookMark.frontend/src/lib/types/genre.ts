@@ -12,7 +12,7 @@ export interface GenreLinkProps {
   name: string;
 }
 
-export interface EditedGenre {
+export interface GenreUpdate {
   name?: string;
   description?: string;
 }

@@ -8,7 +8,7 @@ export function Logo() {
   return (
     <Link
       to={navConfig.Home.to!}
-      className="flex items-center z-50 text-4xl text-accent font-extrabold select-none"
+      className="flex items-center text-4xl text-accent font-extrabold select-none"
     >
       <Bookmark size={47} strokeWidth={3} className="text-popover" />
       {appConfig.name.toUpperCase()}

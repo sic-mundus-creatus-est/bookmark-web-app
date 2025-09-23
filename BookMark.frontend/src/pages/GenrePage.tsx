@@ -1,83 +1,88 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { SquarePen, Tag, X } from "lucide-react";
 
-import { getGenreById } from "@/lib/services/api-calls/genreApi";
-import { EditedGenre, Genre } from "@/lib/types/genre";
-import { getBooksInGenre } from "@/lib/services/api-calls/bookApi";
+import { GenreUpdate, Genre } from "@/lib/types/genre";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
-import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
 import { useForm } from "react-hook-form";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { getDirtyValues } from "@/lib/utils";
-import { validateEditsAndUpdateGenre } from "@/lib/services/genreService";
 import { GenreCatalogSection } from "@/components/ui/genre/genre-catalog-section";
 import { useLoading } from "@/lib/contexts/useLoading";
+import {
+  useGenreById,
+  useUpdateGenre,
+} from "@/lib/services/api-calls/hooks/useGenreApi";
+import { useBooksInGenre } from "@/lib/services/api-calls/hooks/useBookApi";
 
 export function GenrePage() {
-  //-------------------------------------------------------
-  const { id } = useParams<{ id: string }>();
-  //-------------------------------------------------------
-
+  //-------------------------------------------------------------
+  const navigate = useNavigate();
+  const { id } = useParams() as { id: string };
+  //-------------------------------------------------------------
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
-  const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [editFormError, setEditFormError] = useState<string | null>(null);
+  const [editFormError, setEditFormError] = useState<string>();
+  //-------------------------------------------------------------
+  const updateGenre = useUpdateGenre();
+  //-------------------------------------------------------------
+  const {
+    data: genreData,
+    isFetching: isGenreFetching,
+    error: genreError,
+  } = useGenreById(id);
+  const {
+    data: genreBooks,
+    isFetching: areGenreBooksFetching,
+    error: genreBooksError,
+  } = useBooksInGenre(id);
+  //-------------------------------------------------------------
+  const genre = useMemo<Genre | null>(() => {
+    if (!genreData) return null;
 
-  //-------------------------------------------------------
-  const [genre, setGenre] = useState<Genre | null>(null);
-  //-------------------------------------------------------
-
-  //-------------------------------------------------------
+    return {
+      ...genreData,
+      books: genreBooks,
+    };
+  }, [genreData, genreBooks]);
+  //-------------------------------------------------------------
   const {
     handleSubmit,
     setValue,
     reset,
     watch,
     formState: { dirtyFields },
-  } = useForm<EditedGenre>();
+  } = useForm<GenreUpdate>();
+  //-------------------------------------------------------------
+  useEffect(() => {
+    if (!id) {
+      navigate("/");
+    }
+  }, [id, navigate]);
+  //-------------------------------------------------------------
+  const fetching = isGenreFetching || areGenreBooksFetching;
+  const error = genreError || genreBooksError;
 
+  useEffect(() => {
+    if (fetching) showLoadingScreen();
+    else hideLoadingScreen();
+  }, [fetching, showLoadingScreen, hideLoadingScreen]);
+  //-------------------------------------------------------------
   useEffect(() => {
     if (editMode && genre) {
-      reset(genre);
+      reset({ ...(({ id: _id, ...rest }) => rest)(genre) });
     } else if (!editMode) {
       reset();
-      setEditFormError(null);
+      setEditFormError(undefined);
     }
   }, [editMode, genre, reset]);
-  //-------------------------------------------------------
+  //-------------------------------------------------------------
 
-  //==============================================================================
-  useEffect(() => {
-    async function fetchGenre() {
-      try {
-        showLoadingScreen();
-        setError(false);
-
-        if (!id) throw new Error("No author ID provided");
-
-        const [data, books] = await Promise.all([
-          await getGenreById(id),
-          await getBooksInGenre(id, 10),
-        ]);
-
-        setGenre({ ...data, books });
-      } catch (e) {
-        console.error("Error fetching book:", e);
-        setError(true);
-      } finally {
-        hideLoadingScreen();
-      }
-    }
-
-    fetchGenre();
-  }, [hideLoadingScreen, id, showLoadingScreen]);
-
-  const handleUpdateGenre = async (allFields: EditedGenre) => {
-    if (!genre) return;
-
+  //================================================================
+  const handleUpdateGenre = async (allFields: GenreUpdate) => {
     const edits = getDirtyValues(allFields, dirtyFields);
 
     console.log(edits);
@@ -85,30 +90,25 @@ export function GenrePage() {
     if (Object.keys(edits).length <= 0)
       return setEditFormError("You haven’t made any changes.");
 
-    const { success, error } = await validateEditsAndUpdateGenre(
-      genre.id,
-      edits
+    updateGenre.mutate(
+      { id: id, data: edits },
+      {
+        onError: (error: any) => {
+          setEditFormError(error?.message || "Failed to update genre");
+        },
+        onSuccess: () => {
+          setEditMode(false);
+        },
+      }
     );
+  }; //================================================================
 
-    if (!success) return setEditFormError(error!);
-
-    const updatedGenre = await getGenreById(id!);
-    setGenre({ ...genre, ...updatedGenre });
-
-    setEditMode(false);
-  };
-  //==============================================================================
-
-  //==============================================================================
-  if (error || !genre) {
+  if (error || !genre)
     return (
       <div className="text-center p-10 text-lg font-mono text-destructive">
         Genre not found.
       </div>
     );
-  }
-  //==============================================================================
-
   return (
     <div className="my-2 font-sans text-accent">
       <div className="flex justify-end mx-0 md:mx-2 pt-2">
@@ -127,7 +127,7 @@ export function GenrePage() {
 
       <section id="genre-metadata">
         {editMode ? (
-          <CommonTextInputField
+          <CommonTextInput
             value={watch("name")}
             onChange={(newName) => {
               setValue("name", newName, { shouldDirty: true });

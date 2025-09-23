@@ -60,45 +60,51 @@ export async function apiCall({
   const data = text ? JSON.parse(text) : null;
 
   if (!response.ok) {
-    throw {
+    throw new ApiError({
       instance: data.instance,
       type: data.type,
       title: data.title,
       status: data.status || response.status,
       detail: data.detail || response.statusText,
       traceId: data.traceId,
-    };
+    });
   }
 
   return data;
 }
 
-//==========================================
-export interface ConstrainedQueryParams {
-  pageIndex: number;
-  pageSize: number;
-  sortBy?: string;
-  sortDescending?: boolean;
-  filters?: Record<string, string | number>;
+//===========================================================
+
+export interface IApiError {
+  instance?: string;
+  type?: string;
+  title?: string;
+  status: number;
+  detail?: string;
+  traceId?: string;
 }
-//==========================================
-export function buildConstrainedQueryParams({
-  pageIndex = 1,
-  pageSize = 10,
-  sortBy = "",
-  sortDescending = false,
-  filters = {},
-}: ConstrainedQueryParams): string {
-  const queryParams = new URLSearchParams();
+export class ApiError extends Error implements IApiError {
+  instance?: string;
+  type?: string;
+  title?: string;
+  status: number;
+  detail?: string;
+  traceId?: string;
 
-  queryParams.append("pageIndex", pageIndex.toString());
-  queryParams.append("pageSize", pageSize.toString());
-  queryParams.append("sortBy", sortBy);
-  queryParams.append("sortDescending", sortDescending.toString());
+  constructor(error: IApiError) {
+    super(error.title || error.detail || "API Error");
 
-  for (const [key, value] of Object.entries(filters)) {
-    queryParams.append(`filters[${key}]`, value.toString());
+    this.name = "ApiError";
+
+    this.instance = error.instance;
+    this.type = error.type;
+    this.title = error.title;
+    this.status = error.status;
+    this.detail = error.detail;
+    this.traceId = error.traceId;
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
   }
-
-  return queryParams.toString();
 }

@@ -1,6 +1,13 @@
 import { Book } from "./book";
 import { GenreLinkProps } from "./genre";
 
+export interface AuthorCreate {
+  name: string;
+  biography?: string;
+  birthYear?: number;
+  deathYear?: number;
+}
+
 export interface Author {
   id: string;
   name: string;
@@ -16,7 +23,7 @@ export interface AuthorLinkProps {
   name: string;
 }
 
-export interface EditedAuthor {
+export interface AuthorUpdate {
   name?: string;
   biography?: string;
   birthYear?: number;

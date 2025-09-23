@@ -1,88 +1,97 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { CircleUserRound, SquarePen, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
-import { Author, EditedAuthor } from "@/lib/types/author";
-import { getAuthorById } from "@/lib/services/api-calls/authorApi";
-import { getGenresByAuthor } from "@/lib/services/api-calls/genreApi";
-import { getBooksByAuthor } from "@/lib/services/api-calls/bookApi";
+import { Author, AuthorUpdate } from "@/lib/types/author";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
-import { CommonTextInputField } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "@/components/ui/author/author-life-range-input";
 import { useForm } from "react-hook-form";
 import { getDirtyValues } from "@/lib/utils";
-import { validateEditsAndUpdateAuthor } from "@/lib/services/authorService";
 import { useLoading } from "@/lib/contexts/useLoading";
+import {
+  useAuthor,
+  useUpdateAuthor,
+} from "@/lib/services/api-calls/hooks/useAuthorApi";
+import { useGenresByAuthor } from "@/lib/services/api-calls/hooks/useGenreApi";
+import { useBooksByAuthor } from "@/lib/services/api-calls/hooks/useBookApi";
 
 export function AuthorPage() {
-  //-------------------------------------------------------
-  const { id } = useParams<{ id: string }>();
-  //-------------------------------------------------------
+  //--------------------------------------------------------------------------
+  const navigate = useNavigate();
+  const { id } = useParams() as { id: string };
+  //--------------------------------------------------------------------------
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
-  const [error, setError] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [editFormError, setEditFormError] = useState<string | null>(null);
+  const [editFormError, setEditFormError] = useState<string>();
+  //--------------------------------------------------------------------------
+  const updateAuthor = useUpdateAuthor();
+  //--------------------------------------------------------------------------
+  const {
+    data: authorData,
+    isFetching: isAuthorFetching,
+    error: authorError,
+  } = useAuthor(id);
+  const {
+    data: genres,
+    isFetching: areGenresFetching,
+    error: genresError,
+  } = useGenresByAuthor(id);
+  const {
+    data: books,
+    isFetching: areBooksFetching,
+    error: booksError,
+  } = useBooksByAuthor(id, 10);
+  //--------------------------------------------------------------------------
+  const author = useMemo<Author | null>(() => {
+    if (!authorData) return null;
 
-  //-------------------------------------------------------
-  const [author, setAuthor] = useState<Author | null>(null);
-  //-------------------------------------------------------
-
-  //-------------------------------------------------------
+    return {
+      ...authorData,
+      genres: genres,
+      books: books,
+    };
+  }, [authorData, genres, books]);
+  //--------------------------------------------------------------------------
   const {
     handleSubmit,
     setValue,
     reset,
     watch,
     formState: { dirtyFields },
-  } = useForm<EditedAuthor>();
+  } = useForm<AuthorUpdate>();
+  //--------------------------------------------------------------------------
+  useEffect(() => {
+    if (!id) {
+      navigate("/");
+    }
+  }, [id, navigate]);
 
   useEffect(() => {
     if (editMode && author) {
-      reset(author);
+      reset({ ...(({ id: _id, ...rest }) => rest)(author) });
     } else if (!editMode) {
       reset();
-      setEditFormError(null);
+      setEditFormError(undefined);
     }
   }, [editMode, author, reset]);
-  //-------------------------------------------------------
+  //--------------------------------------------------------------------------
+  const fetching = isAuthorFetching || areGenresFetching || areBooksFetching;
+  const error = authorError || genresError || booksError;
+
+  useEffect(() => {
+    if (fetching) showLoadingScreen();
+    else hideLoadingScreen();
+  }, [fetching, showLoadingScreen, hideLoadingScreen]);
+  //--------------------------------------------------------------------------
 
   //==============================================================================
-  useEffect(() => {
-    async function fetchAuthor() {
-      try {
-        showLoadingScreen();
-        setError(false);
-
-        if (!id) throw new Error("No author ID provided");
-
-        const [data, genres, books] = await Promise.all([
-          getAuthorById(id),
-          getGenresByAuthor(id),
-          getBooksByAuthor(id, 10),
-        ]);
-
-        setAuthor({
-          ...data,
-          genres,
-          books,
-        });
-      } catch (e) {
-        console.error("Error fetching book:", e);
-        setError(true);
-      } finally {
-        hideLoadingScreen();
-      }
-    }
-
-    fetchAuthor();
-  }, [hideLoadingScreen, id, showLoadingScreen]);
-
-  const handleUpdateAuthor = async (allFields: EditedAuthor) => {
+  const handleUpdateAuthor = async (allFields: AuthorUpdate) => {
     if (!author) return;
 
     let edits = getDirtyValues(allFields, dirtyFields);
@@ -100,30 +109,25 @@ export function AuthorPage() {
     if (Object.keys(edits).length <= 0)
       return setEditFormError("You haven’t made any changes.");
 
-    const { success, error } = await validateEditsAndUpdateAuthor(
-      author.id,
-      edits
+    updateAuthor.mutate(
+      { id: author.id, data: edits },
+      {
+        onError: (error: any) => {
+          setEditFormError(error?.message || "Failed to update author");
+        },
+        onSuccess: () => {
+          setEditMode(false);
+        },
+      }
     );
+  }; //==============================================================================
 
-    if (!success) return setEditFormError(error!);
-
-    const updatedAuthor = await getAuthorById(id!);
-    setAuthor({ ...author, ...updatedAuthor });
-
-    setEditMode(false);
-  };
-  //==============================================================================
-
-  //==============================================================================
-  if (error || !author) {
+  if (error || !author)
     return (
       <div className="text-center p-10 text-lg font-mono text-popover">
         Author not found.
       </div>
     );
-  }
-  //==============================================================================
-
   return (
     <div className="flex-grow max-w-full container mx-auto sm:px-16 lg:px-24 xl:px-32 my-4 sm:mt-10">
       <div className="flex justify-end mx-0 md:mx-2 mt-2 pt-2">
@@ -150,7 +154,7 @@ export function AuthorPage() {
         </div>
         <div className="w-full">
           {editMode ? (
-            <CommonTextInputField
+            <CommonTextInput
               placeholder="Name"
               value={watch("name")}
               onChange={(newName) => {
@@ -217,7 +221,7 @@ export function AuthorPage() {
             Best From This Author:
           </h2>
           <div className="w-full flex justify-center flex-1 min-w-0">
-            <BookShowcase books={author.books!} />
+            <BookShowcase books={author.books} />
           </div>
         </div>
       )}

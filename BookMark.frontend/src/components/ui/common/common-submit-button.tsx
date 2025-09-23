@@ -2,7 +2,7 @@ import { Plus } from "lucide-react";
 
 interface CommonSubmitButtonProps {
   label: string;
-  errorLabel?: string | null;
+  errorLabel?: string;
   showCancel?: boolean;
   onClick?: () => void;
   onCancel?: () => void;
