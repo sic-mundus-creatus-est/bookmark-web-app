@@ -6,7 +6,7 @@ import { Plus, Tag, Tags, X } from "lucide-react";
 
 import { createGenre } from "@/lib/services/api-calls/genreApi";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
-import { CommonTextInput } from "../ui/common/common-text-input-field";
+import { CommonTextInput } from "../ui/common/common-text-input";
 
 export function AddGenreModal() {
   //-----------------------------------------------------------

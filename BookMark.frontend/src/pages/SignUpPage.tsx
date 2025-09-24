@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
-import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { Footer } from "@/components/layouts/footer";
 import { UserCreate } from "@/lib/types/user";

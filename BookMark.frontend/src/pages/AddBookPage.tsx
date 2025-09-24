@@ -5,7 +5,7 @@ import {
   BookCoverImageUpload,
   UploadLabel,
 } from "@/components/ui/book/book-cover-image-upload";
-import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";

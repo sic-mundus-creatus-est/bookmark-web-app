@@ -8,7 +8,7 @@ import { BookShowcase } from "@/components/layouts/book-showcase";
 import { Author, AuthorUpdate } from "@/lib/types/author";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
-import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "@/components/ui/author/author-life-range-input";
 import { useForm } from "react-hook-form";

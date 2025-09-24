@@ -6,7 +6,7 @@ import { SquarePen, Tag, X } from "lucide-react";
 import { GenreUpdate, Genre } from "@/lib/types/genre";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
-import { CommonTextInput } from "@/components/ui/common/common-text-input-field";
+import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { useForm } from "react-hook-form";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { getDirtyValues } from "@/lib/utils";

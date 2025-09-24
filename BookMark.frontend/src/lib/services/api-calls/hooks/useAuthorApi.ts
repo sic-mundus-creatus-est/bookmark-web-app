@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  authorSuggestions,
+  getAuthorSuggestions,
   createAuthor,
   getAuthorById,
   getConstrainedAuthors,
@@ -37,14 +37,21 @@ export function useConstrainedAuthors(params: ConstrainedQueryParams) {
   });
 }
 
-export function useAuthorSuggestions(searchTerm: string) {
+export function useAuthorSuggestions(
+  searchTerm: string,
+  skipIds: string[],
+  count?: number
+) {
   return useQuery<AuthorLinkProps[], ApiError>({
-    queryKey: [KEY_AUTHORS, searchTerm],
-    queryFn: () => authorSuggestions(searchTerm),
+    queryKey: [KEY_AUTHORS, searchTerm, skipIds],
+    queryFn: () => getAuthorSuggestions(searchTerm, skipIds, count),
     enabled: searchTerm.trim() !== "",
-    keepPreviousData: false,
     staleTime: 1 * (60 * 1000),
     cacheTime: 5 * (60 * 1000),
+    keepPreviousData: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 //--------------------------------------------------------------------------

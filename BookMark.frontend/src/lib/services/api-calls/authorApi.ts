@@ -25,19 +25,26 @@ export function getConstrainedAuthors(params: ConstrainedQueryParams) {
   });
 }
 
+export async function getAuthorSuggestions(
+  searchTerm: string,
+  skipIds: string[],
+  count: number = 5
+) {
+  const query = new URLSearchParams();
+  query.append("searchTerm", searchTerm);
+  query.append("count", count.toString());
+
+  skipIds.forEach((id) => query.append("skipIds", id));
+
+  const url = `/api/authors/get-author-suggestions?${query.toString()}`;
+
+  return apiCall({ method: "GET", endpoint: url });
+}
+
 export function updateAuthor(id: string, editedData: AuthorUpdate) {
   return apiCall({
     method: PATCH,
     endpoint: `/api/authors/update/${id}`,
     body: editedData,
   });
-}
-
-export async function authorSuggestions(searchTerm: string, count: number = 5) {
-  const result = await getConstrainedAuthors({
-    filters: { "Name~=": searchTerm },
-    pageIndex: 1,
-    pageSize: count,
-  });
-  return result.items ?? [];
 }

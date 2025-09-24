@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AuthorDescriptionInputProps {
   rows?: number;
@@ -8,7 +8,6 @@ interface AuthorDescriptionInputProps {
   placeholder?: string;
   onChange?: (value: string) => void;
 }
-
 export function CommonDescriptionInput({
   rows = 6,
   value,
@@ -17,21 +16,27 @@ export function CommonDescriptionInput({
   placeholder,
   onChange,
 }: AuthorDescriptionInputProps) {
+  //---------------------------------------------------------------------
   const [charCount, setCharCount] = useState(value?.length ?? 0);
+  //---------------------------------------------------------------------
+  useEffect(() => {
+    if (value) setCharCount(value.length);
+  }, [value]);
+  //---------------------------------------------------------------------
 
-  const handleResizeableChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setCharCount(e.target.value.length);
-    onChange?.(e.target.value);
-  };
+  //=====================================================================
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    onChange?.(newValue);
+    setCharCount(newValue.length);
+  }; //=====================================================================
 
   return (
     <div className="flex flex-col">
       <textarea
         value={value ?? undefined}
         title={title}
-        onChange={handleResizeableChange}
+        onChange={handleChange}
         placeholder={placeholder}
         rows={rows}
         maxLength={maxLength}

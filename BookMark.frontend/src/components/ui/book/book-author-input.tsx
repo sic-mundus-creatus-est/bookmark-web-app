@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import { Author, AuthorLinkProps } from "@/lib/types/author";
 import { useAuthorSuggestions } from "@/lib/services/api-calls/hooks/useAuthorApi";
@@ -10,7 +10,9 @@ interface BookAuthorInputProps {
   placeholder?: string;
   entries?: AuthorLinkProps[];
   fetchSuggestions?: (
-    searchTerm: string
+    searchTerm: string,
+    skipIds: string[],
+    count?: number
   ) => UseQueryResult<AuthorLinkProps[], ApiError>;
   onChange?: (entries: AuthorLinkProps[]) => void;
 }
@@ -29,7 +31,11 @@ export function BookAuthorInput({
     null
   );
   //-----------------------------------------------------------------------------
-  const { data: suggestions = [] } = fetchSuggestions(debouncedSearchTerm);
+  const skipIds = useMemo(() => entries.map((a) => a.id), [entries]);
+  const { data: suggestions = [] } = fetchSuggestions(
+    debouncedSearchTerm,
+    skipIds
+  );
 
   const availableSuggestions =
     debouncedSearchTerm.trim() !== ""

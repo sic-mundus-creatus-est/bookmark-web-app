@@ -6,7 +6,7 @@ import { UserRoundPen, X } from "lucide-react";
 
 import { createAuthor } from "@/lib/services/api-calls/authorApi";
 import { CommonSubmitButton } from "../ui/common/common-submit-button";
-import { CommonTextInput } from "../ui/common/common-text-input-field";
+import { CommonTextInput } from "../ui/common/common-text-input";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "../ui/author/author-life-range-input";
 
