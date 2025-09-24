@@ -12,4 +12,12 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
 {
     public AuthorController(AuthorRepository repository) : base(repository) { }
 
+    [HttpGet("get-author-suggestions")]
+    public async Task<ActionResult<AuthorResponseDTO[]>> GetAuthorSuggestions([FromQuery] string searchTerm, [FromQuery] List<string>? skipIds, [FromQuery] int count = 5)
+    {
+        var authors = await ((AuthorRepository)_repository).GetAuthorSuggestionsAsync(searchTerm, skipIds, count);
+
+        return Ok(authors);
+    }
+
 }

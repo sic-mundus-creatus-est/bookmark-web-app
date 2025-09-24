@@ -1,4 +1,5 @@
 using BookMark.Models.Domain;
+using BookMark.Models.DTOs;
 using BookMark.Models.Relationships;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,5 +18,31 @@ public class AuthorRepository : BaseRepository<Author>
                                                                         };
 
     public AuthorRepository(AppDbContext context) : base(context) { _bookAuthorDbSet = context.Set<BookAuthor>(); }
+
+    public async Task<List<AuthorResponseDTO>> GetAuthorSuggestionsAsync(string searchTerm, List<string>? skipIds, int count)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return [];
+
+        var query = _dbSet.AsQueryable();
+
+
+        query = query.Where(a => a.Name.Contains(searchTerm));
+
+        query = query.OrderByDescending(a => a.Name.StartsWith(searchTerm))
+                .ThenBy(a => a.Name.IndexOf(searchTerm))
+                .ThenBy(a => a.Name);
+
+
+        if (skipIds != null && skipIds.Count > 0)
+            query = query.Where(a => !skipIds.Contains(a.Id.ToString()));
+
+        return await query.Take(count)
+                          .Select(a => new AuthorResponseDTO
+                          {
+                            Id = a.Id,
+                            Name = a.Name
+                          }).ToListAsync();
+    }
 
 }
