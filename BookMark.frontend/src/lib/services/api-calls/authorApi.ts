@@ -1,11 +1,17 @@
 import { apiCall, GET, POST, PATCH } from "@/lib/services/api-calls/api";
-import { AuthorCreate, AuthorUpdate } from "@/lib/types/author";
+import {
+  Author,
+  AuthorCreate,
+  AuthorLinkProps,
+  AuthorUpdate,
+} from "@/lib/types/author";
+import { Page } from "@/lib/types/common";
 import {
   buildConstrainedQueryParams,
   ConstrainedQueryParams,
 } from "@/lib/utils";
 
-export function createAuthor(data: AuthorCreate) {
+export function createAuthor(data: AuthorCreate): Promise<Author> {
   return apiCall({
     method: POST,
     endpoint: "/api/authors/create",
@@ -13,11 +19,13 @@ export function createAuthor(data: AuthorCreate) {
   });
 }
 
-export function getAuthorById(id: string) {
+export function getAuthorById(id: string): Promise<Author> {
   return apiCall({ method: GET, endpoint: `/api/authors/get/${id}` });
 }
 
-export function getConstrainedAuthors(params: ConstrainedQueryParams) {
+export function getConstrainedAuthors(
+  params: ConstrainedQueryParams
+): Promise<Page<AuthorLinkProps>> {
   const query = buildConstrainedQueryParams(params);
   return apiCall({
     method: GET,
@@ -29,7 +37,7 @@ export async function getAuthorSuggestions(
   searchTerm: string,
   skipIds: string[],
   count: number = 5
-) {
+): Promise<AuthorLinkProps[]> {
   const query = new URLSearchParams();
   query.append("searchTerm", searchTerm);
   query.append("count", count.toString());
@@ -41,7 +49,10 @@ export async function getAuthorSuggestions(
   return apiCall({ method: "GET", endpoint: url });
 }
 
-export function updateAuthor(id: string, editedData: AuthorUpdate) {
+export function updateAuthor(
+  id: string,
+  editedData: AuthorUpdate
+): Promise<void> {
   return apiCall({
     method: PATCH,
     endpoint: `/api/authors/update/${id}`,

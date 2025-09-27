@@ -1,11 +1,18 @@
 import { apiCall, GET, POST, PATCH, PUT } from "@/lib/services/api-calls/api";
-import { BookCreate, BookMetadata } from "@/lib/types/book";
+import {
+  Book,
+  BookCreate,
+  BookLinkProps,
+  BookMetadata,
+  BookType,
+} from "@/lib/types/book";
+import { Page } from "@/lib/types/common";
 import {
   buildConstrainedQueryParams,
   ConstrainedQueryParams,
 } from "@/lib/utils";
 
-export async function createBook(data: BookCreate) {
+export async function createBook(data: BookCreate): Promise<Book> {
   const formData = new FormData();
 
   formData.append("BookTypeId", data.bookType.id);
@@ -39,11 +46,13 @@ export async function createBook(data: BookCreate) {
   });
 }
 
-export function getBookById(id: string) {
+export function getBookById(id: string): Promise<Book> {
   return apiCall({ method: GET, endpoint: `/api/books/get/${id}` });
 }
 
-export function getConstrainedBooks(params: ConstrainedQueryParams) {
+export function getConstrainedBooks(
+  params: ConstrainedQueryParams
+): Promise<Page<BookLinkProps>> {
   const query = buildConstrainedQueryParams(params);
   return apiCall({
     method: GET,
@@ -51,7 +60,10 @@ export function getConstrainedBooks(params: ConstrainedQueryParams) {
   });
 }
 
-export function updateBookMetadata(id: string, metadata: BookMetadata) {
+export function updateBookMetadata(
+  id: string,
+  metadata: BookMetadata
+): Promise<void> {
   return apiCall({
     method: PATCH,
     endpoint: `/api/books/update/${id}`,
@@ -59,7 +71,10 @@ export function updateBookMetadata(id: string, metadata: BookMetadata) {
   });
 }
 
-export function updateBookCoverImage(id: string, newCover: File | null) {
+export function updateBookCoverImage(
+  id: string,
+  newCover: File | null
+): Promise<void> {
   const formData = new FormData();
 
   formData.append("newCover", newCover ?? "");
@@ -71,37 +86,49 @@ export function updateBookCoverImage(id: string, newCover: File | null) {
   });
 }
 
-export function updateBookAuthors(id: string, authorIds: string[]) {
+export function updateBookAuthors(
+  bookId: string,
+  authorIds: string[]
+): Promise<void> {
   return apiCall({
     method: PUT,
-    endpoint: `/api/books/${id}/replace-authors`,
+    endpoint: `/api/books/${bookId}/replace-authors`,
     body: authorIds,
   });
 }
 
-export function updateBookGenres(id: string, genreIds: string[]) {
+export function updateBookGenres(
+  bookId: string,
+  genreIds: string[]
+): Promise<void> {
   return apiCall({
     method: PUT,
-    endpoint: `/api/books/${id}/replace-genres`,
+    endpoint: `/api/books/${bookId}/replace-genres`,
     body: genreIds,
   });
 }
 
-export function getBooksByAuthor(authorId: string, count: number = 10) {
+export function getBooksByAuthor(
+  authorId: string,
+  count: number = 10
+): Promise<BookLinkProps[]> {
   return apiCall({
     method: GET,
     endpoint: `/api/books/by/${authorId}?count=${count}`,
   });
 }
 
-export function getBooksInGenre(genreId: string, count: number) {
+export function getBooksInGenre(
+  genreId: string,
+  count: number
+): Promise<BookLinkProps[]> {
   return apiCall({
     method: GET,
     endpoint: `/api/books/genre/${genreId}?count=${count}`,
   });
 }
 
-export function getAllBookTypes() {
+export function getAllBookTypes(): Promise<BookType[]> {
   return apiCall({
     method: GET,
     endpoint: "/api/book-types/get-all",

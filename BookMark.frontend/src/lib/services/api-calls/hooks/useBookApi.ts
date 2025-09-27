@@ -11,7 +11,13 @@ import {
   updateBookGenres,
   updateBookMetadata,
 } from "../bookApi";
-import { Book, BookCreate, BookType, BookUpdate } from "@/lib/types/book";
+import {
+  Book,
+  BookCreate,
+  BookLinkProps,
+  BookType,
+  BookUpdate,
+} from "@/lib/types/book";
 import { ConstrainedQueryParams } from "@/lib/utils";
 import { ApiError } from "../api";
 import { Page } from "@/lib/types/common";
@@ -37,7 +43,7 @@ export function useBook(id: string) {
 
 export function useConstrainedBooks(params: ConstrainedQueryParams) {
   const queryString = params ? JSON.stringify(params) : "";
-  return useQuery<Page<Book>, ApiError>({
+  return useQuery<Page<BookLinkProps>, ApiError>({
     queryKey: [KEY_BOOKS, KEY_CONSTRAINED_BOOKS, queryString],
     queryFn: () => getConstrainedBooks(params),
     enabled: !!params,
@@ -45,7 +51,7 @@ export function useConstrainedBooks(params: ConstrainedQueryParams) {
 }
 
 export function useBooksByAuthor(authorId: string, count: number) {
-  return useQuery<Book[], ApiError>({
+  return useQuery<BookLinkProps[], ApiError>({
     queryKey: [KEY_BOOKS, KEY_BOOKS_BY_AUTHOR, authorId, count],
     queryFn: () => getBooksByAuthor(authorId, count),
     enabled: !!authorId,
@@ -53,7 +59,7 @@ export function useBooksByAuthor(authorId: string, count: number) {
 }
 
 export function useBooksInGenre(genreId: string, count: number = 10) {
-  return useQuery<Book[], ApiError>({
+  return useQuery<BookLinkProps[], ApiError>({
     queryKey: [KEY_BOOKS, KEY_BOOKS_IN_GENRE, genreId, count],
     queryFn: () => getBooksInGenre(genreId, count),
     enabled: !!genreId,

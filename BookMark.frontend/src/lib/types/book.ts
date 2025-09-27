@@ -31,6 +31,15 @@ export interface Book {
   ratingCount?: number;
 }
 
+export interface BookLinkProps {
+  id: string;
+  title: string;
+  authors: AuthorLinkProps[];
+  coverImageUrl?: string;
+
+  rating?: number;
+}
+
 export interface BookUpdate {
   title?: string;
   publicationYear?: number;

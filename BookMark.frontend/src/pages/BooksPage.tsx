@@ -5,7 +5,7 @@ import { Pagination } from "@/components/pagination";
 import { BookCard } from "@/components/ui/book/book-card";
 import { useLoading } from "@/lib/contexts/useLoading";
 import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
-import { Book } from "@/lib/types/book";
+import { BookLinkProps } from "@/lib/types/book";
 
 const PAGE_SIZE = 12;
 export function BooksPage() {
@@ -63,7 +63,7 @@ export function BooksPage() {
   return (
     <div className="w-full pt-4 pb-3">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
-        {page?.items?.map((book: Book) => (
+        {page?.items?.map((book: BookLinkProps) => (
           <div key={book.id} className="aspect-[2/3] w-full max-w-xs">
             <BookCard book={book} />
           </div>

@@ -14,6 +14,7 @@ import {
 } from "@/lib/types/author";
 import { ConstrainedQueryParams } from "@/lib/utils";
 import { ApiError } from "../api";
+import { Page } from "@/lib/types/common";
 
 const KEY_AUTHOR = "author";
 const KEY_AUTHORS = "authors";
@@ -30,7 +31,7 @@ export function useAuthor(id: string) {
 }
 
 export function useConstrainedAuthors(params: ConstrainedQueryParams) {
-  return useQuery<Author[], ApiError>({
+  return useQuery<Page<AuthorLinkProps>, ApiError>({
     queryKey: [KEY_AUTHORS, KEY_CONSTRAINED_AUTHORS, params],
     queryFn: () => getConstrainedAuthors(params),
     enabled: !!params,
@@ -72,7 +73,7 @@ export function useCreateAuthor() {
 export function useUpdateAuthor() {
   const queryClient = useQueryClient();
 
-  return useMutation<Author, ApiError, { id: string; data: AuthorUpdate }>({
+  return useMutation<void, ApiError, { id: string; data: AuthorUpdate }>({
     mutationFn: ({ id, data }) => updateAuthor(id, data),
     onSuccess: (_, variables) => {
       const { id } = variables;

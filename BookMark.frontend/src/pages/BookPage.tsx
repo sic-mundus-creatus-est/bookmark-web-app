@@ -81,13 +81,11 @@ export function BookPage() {
   }, [fetching, showLoadingScreen, hideLoadingScreen]);
   //------------------------------------------------------------------------------
   useEffect(() => {
-    if (editMode && book) {
+    if (book) {
       reset({
         ...(({ id: _id, coverImageUrl: _url, ...rest }) => rest)(book),
         coverImageFile: undefined,
       });
-    } else if (!editMode) {
-      reset();
 
       setEditFormError(undefined);
     }

@@ -25,7 +25,7 @@ export function useGenreById(id: string) {
 }
 
 export function useAllGenres() {
-  return useQuery<Genre[], ApiError>({
+  return useQuery<GenreLinkProps[], ApiError>({
     queryKey: [KEY_GENRES, KEY_ALL_GENRES],
     queryFn: getAllGenres,
   });
@@ -57,9 +57,8 @@ export function useCreateGenre() {
 export function useUpdateGenre() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: GenreUpdate }) =>
-      updateGenre(id, data),
+  return useMutation<void, ApiError, { id: string; data: GenreUpdate }>({
+    mutationFn: ({ id, data }) => updateGenre(id, data),
     onSuccess: (_, variables) => {
       const { id } = variables;
       queryClient.invalidateQueries({ queryKey: [KEY_GENRE, id] });
