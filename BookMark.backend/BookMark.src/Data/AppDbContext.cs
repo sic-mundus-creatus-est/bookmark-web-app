@@ -64,7 +64,7 @@ public class AppDbContext : IdentityDbContext<User>
         return await base.SaveChangesAsync(cancellationToken);
     }
 
-    public void ApplyChangesForUpdate(DbContext context, object entityToUpdate, object updateData)
+    public void ApplyChanges(DbContext context, object entityToUpdate, object updateData)
     {
         var entry = context.Entry(entityToUpdate);
         var entityProps = entry.Metadata.GetProperties().Select(p => p.Name)

@@ -1,3 +1,4 @@
+using AutoMapper;
 using BookMark.Models.Domain;
 using BookMark.Models.Relationships;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ namespace BookMark.Data.Repositories;
 public class GenreRepository : BaseRepository<Genre>
 {
     protected DbSet<BookAuthor> _bookAuthorDbSet { get; set; }
-    public GenreRepository(AppDbContext context) : base(context)
+    public GenreRepository(AppDbContext context, IMapper mapper) : base(context, mapper)
     {
         _bookAuthorDbSet = context.Set<BookAuthor>();
     }

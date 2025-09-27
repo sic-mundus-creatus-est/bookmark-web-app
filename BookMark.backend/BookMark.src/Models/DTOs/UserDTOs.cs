@@ -1,52 +1,58 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace BookMark.Models.DTOs;
-
-public class UserCreateDTO
+public record UserCreateDTO
 {
     [Required]
     [Length(1, 32)]
-    public string Username { get; set; } = null!;
+    public required string Username { get; init; }
 
     [Required]
     [EmailAddress]
     [MaxLength(256)]
-    public string Email { get; set; } = null!;
+    public required string Email { get; init; }
 
     [Required]
-    public string Password { get; set; } = null!;
+    public required string Password { get; init; }
 
     [Required]
     [Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
-    public string ConfirmPassword { get; set; } = null!;
+    public required string ConfirmPassword { get; init; }
 
     [Required]
     [MaxLength(64)]
-    public string DisplayName { get; set; } = null!;
+    public required string DisplayName { get; init; }
 }
 
-public class UserCredentialsDTO
+public record UserCredentialsDTO
 {
     [Required]
-    public string UsernameOrEmail { get; set; } = null!;
+    public required string UsernameOrEmail { get; init; }
 
     [Required]
-    public string Password { get; set; } = null!;
+    public required string Password { get; init; }
 }
 
-public class UserUpdateDTO
+public record UserUpdateDTO
 {
     [MaxLength(64)]
-    public string? DisplayName { get; set; }
+    public string? DisplayName { get; init; }
     [MaxLength(4000)]
-    public string? AboutMe { get; set; }
+    public string? AboutMe { get; init; }
 }
 
-public class UserResponseDTO
+public record UserResponseDTO
 {
-    public string Id { get; set; } = null!;
-    public string Username { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public string DisplayName { get; set; } = null!;
-    public string? AboutMe { get; set; }
+    public required string Id { get; init; }
+    public required string Username { get; init; }
+    public required string Email { get; init; }
+    public required string DisplayName { get; init; }
+    public string? AboutMe { get; init; }
+}
+
+public record UserLinkDTO
+{
+    public required string Id { get; init; }
+    public required string Username { get; init; }
+    public required string DisplayName { get; init; }
 }

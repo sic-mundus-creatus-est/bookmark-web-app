@@ -8,29 +8,31 @@ using Microsoft.IdentityModel.Tokens;
 using BookMark.Models;
 using BookMark.Models.Domain;
 using System.Data;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 
 namespace BookMark.Data.Repositories;
 
 public interface IBaseRepository<TModel>
 {
-    Task<TModel> CreateAsync(TModel entityToCreate);
+    Task CreateAsync(TModel entityToCreate);
     Task<bool> ExistsAsync(string id);
-    Task<TModel?> GetByIdAsync(string id, bool changeTracking = false);
-    Task<List<TModel>> GetMultipleByIdsAsync(IEnumerable<string> ids, bool changeTracking = false);
-    Task<List<TModel>> GetAllAsync();
-    Task<Page<TModel>> GetConstrainedAsync( int pageIndex,
-                                            int pageSize,
-                                            bool sortDescending = false,
-                                            string? sortBy = null,
-                                            Dictionary<string, string>? filters = null,
-                                            IQueryable<TModel>? query = null );
-    Task<TModel?> UpdateAsync(TModel entityToUpdate, object updateData);
-    Task DeleteAsync(TModel entity);
+    Task<TResponseDTO?> GetByIdAsync<TResponseDTO>(string id, bool changeTracking = false);
+    Task<List<TLinkDTO>> GetAllAsync<TLinkDTO>();
+    Task<Page<TLinkDTO>> GetConstrainedAsync<TLinkDTO>( int pageIndex,
+                                                        int pageSize,
+                                                        bool sortDescending = false,
+                                                        string? sortBy = null,
+                                                        Dictionary<string, string>? filters = null,
+                                                        IQueryable<TModel>? query = null );
+    Task UpdateAsync<TUpdateDTO>(string id, TUpdateDTO updateData);
+    Task DeleteAsync(string id);
 }
 
-public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : class, IModel
+public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TModel : class, IModel, new()
 {
     protected readonly AppDbContext _context;
+    protected readonly IMapper _mapper;
     protected DbSet<TModel> _dbSet { get; set; }
 
     protected abstract IReadOnlySet<string> AllowedFilterProps { get; }
@@ -47,63 +49,55 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
 
 
-    public BaseRepository(AppDbContext context)
+    public BaseRepository(AppDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
         _dbSet = context.Set<TModel>();
     }
 
 
-    public virtual async Task<TModel> CreateAsync(TModel entityToCreate)
+    public virtual async Task CreateAsync(TModel entityToCreate)
     {
         await _dbSet.AddAsync(entityToCreate);
         await _context.SaveChangesAsync();
-
-        return entityToCreate;
     }
 
 
     public virtual async Task<bool> ExistsAsync(string id)
     {
-        return await _dbSet.IgnoreAutoIncludes().AsNoTracking().AnyAsync(b => b.Id == id);
+        return await _dbSet.AsNoTracking().AnyAsync(b => b.Id == id);
     }
 
 
-    public virtual async Task<TModel?> GetByIdAsync(string id, bool changeTracking = false)
+    public virtual async Task<TResponseDTO?> GetByIdAsync<TResponseDTO>(string id, bool changeTracking = false)
     {
         IQueryable<TModel> query = _dbSet;
 
         if (!changeTracking)
             query = query.AsNoTracking();
 
-        return await query.FirstOrDefaultAsync(b => b.Id == id);
+        return await query.Where(b => b.Id == id)
+                            .ProjectTo<TResponseDTO>(_mapper.ConfigurationProvider)
+                            .FirstOrDefaultAsync();
     }
 
 
-    public virtual async Task<List<TModel>> GetMultipleByIdsAsync(IEnumerable<string> ids, bool changeTracking = false)
+    public virtual async Task<List<TLinkDTO>> GetAllAsync<TLinkDTO>()
     {
-        IQueryable<TModel> query = _dbSet;
-
-        if (!changeTracking)
-            query = query.AsNoTracking();
-            
-        return await query.Where(b => ids.Contains(b.Id))
-                          .ToListAsync();
+        return await _dbSet.AsNoTracking()
+                            .ProjectTo<TLinkDTO>(_mapper.ConfigurationProvider)
+                            .ToListAsync();
     }
 
 
-    public virtual async Task<List<TModel>> GetAllAsync()
-    {
-        return await _dbSet.AsNoTracking().ToListAsync();
-    }
-
-
-    public virtual async Task<Page<TModel>> GetConstrainedAsync(int pageIndex,
-                                                        int pageSize,
-                                                        bool sortDescending = false,
-                                                        string? sortBy = null,
-                                                        Dictionary<string, string>? filters = null,
-                                                        IQueryable<TModel>? customQuery = null) {
+    public virtual async Task<Page<TLinkDTO>> GetConstrainedAsync<TLinkDTO>(
+                                                int pageIndex,
+                                                int pageSize,
+                                                bool sortDescending = false,
+                                                string? sortBy = null,
+                                                Dictionary<string, string>? filters = null,
+                                                IQueryable<TModel>? customQuery = null) {
         if (pageIndex < 1)
             throw new ArgumentOutOfRangeException(nameof(pageIndex), "PageIndex must be greater than zero.");
         if (pageSize < 1)
@@ -111,8 +105,8 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
         var query = customQuery ?? _dbSet.AsNoTracking().AsQueryable();
 
-        if (!filters.IsNullOrEmpty())
-        foreach (var filter in filters!)
+        if (filters != null && filters.Count > 0)
+        foreach (var filter in filters)
         {
             string key = filter.Key;
             string value = filter.Value;
@@ -169,30 +163,33 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         if (totalPages > 0 && pageIndex > totalPages)
             throw new ArgumentOutOfRangeException(nameof(pageIndex), $"You requested page {pageIndex}, but there are only {totalPages} page(s) available with the given constraints.");
 
-        List<TModel> entities = [];
+        List<TLinkDTO> entities = [];
         if (totalPages > 0)
         {
             entities = await query.Skip((pageIndex - 1) * pageSize)
                                   .Take(pageSize)
+                                  .ProjectTo<TLinkDTO>(_mapper.ConfigurationProvider)
                                   .ToListAsync();
         }
 
-        return new Page<TModel>(entities, pageIndex, totalPages);
+        return new Page<TLinkDTO>(entities, pageIndex, totalPages);
     }
 
 
-    public virtual async Task<TModel?> UpdateAsync(TModel entityToUpdate, object updateData)
+    public virtual async Task UpdateAsync<TUpdateDTO>(string id, TUpdateDTO updateData)
     {
-        _context.ApplyChangesForUpdate(_context, entityToUpdate, updateData);
+        TModel entityToUpdate = new TModel { Id = id };
 
+        _context.ApplyChanges(_context, entityToUpdate, updateData!);
         await _context.SaveChangesAsync();
-        return entityToUpdate;
     }
 
 
-    public virtual async Task DeleteAsync(TModel entity)
+    public virtual async Task DeleteAsync(string id)
     {
-        _dbSet.Remove(entity);
+        TModel entityToDelete = new TModel { Id = id };
+
+        _dbSet.Remove(entityToDelete);
         await _context.SaveChangesAsync();
     }
 

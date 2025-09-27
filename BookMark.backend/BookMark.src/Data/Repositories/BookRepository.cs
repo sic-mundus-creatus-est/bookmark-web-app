@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using BookMark.Models.Domain;
 using BookMark.Models.Relationships;
 using BookMark.Models;
+using AutoMapper;
+using BookMark.Models.DTOs;
+using AutoMapper.QueryableExtensions;
 
 namespace BookMark.Data.Repositories;
 
@@ -20,74 +23,49 @@ public class BookRepository : BaseRepository<Book>
                                                                             nameof(Book.Description)
                                                                         };
 
-    public BookRepository(AppDbContext context) : base(context)
+    public BookRepository(AppDbContext context, IMapper mapper) : base(context, mapper)
     {
         _bookAuthorDbSet = context.Set<BookAuthor>();
         _bookGenreDbSet = context.Set<BookGenre>();
     }
 
 
-    public override async Task<Book> CreateAsync(Book newBook)
+    public override async Task CreateAsync(Book bookToCreate)
     {        
-        await _dbSet.AddAsync(newBook);
+        await _dbSet.AddAsync(bookToCreate);
 
-        await _bookAuthorDbSet.AddRangeAsync(newBook.BookAuthors);
+        await _bookAuthorDbSet.AddRangeAsync(bookToCreate.BookAuthors);
 
-        await _bookGenreDbSet.AddRangeAsync(newBook.BookGenres);
+        await _bookGenreDbSet.AddRangeAsync(bookToCreate.BookGenres);
 
         await _context.SaveChangesAsync();
-
-        return newBook;
     }
 
 
-    public override async Task<Book?> GetByIdAsync(string id, bool changeTracking = false)
-    {
-        IQueryable<Book> query = _dbSet;
-
-        if (!changeTracking)
-            query = query.AsNoTracking();
-
-        return await query.Include(b => b.BookType)
-                          .Include(b => b.BookAuthors).ThenInclude(b => b.Author)
-                          .Include(b => b.BookGenres).ThenInclude(b => b.Genre)
-                          .FirstOrDefaultAsync(b => b.Id == id);
-    }
-
-
-    public override async Task<List<Book>> GetAllAsync()
-    {
-        return await _dbSet.AsNoTracking().Include(b => b.BookType)
-                                          .Include(b => b.BookAuthors).ThenInclude(b => b.Author)
-                                          .Include(b => b.BookGenres).ThenInclude(b => b.Genre)
-                                          .ToListAsync();
-    }
-
-
-    public async Task<Page<Book>> GetConstrainedBooksAsync(int pageIndex,
+    public async Task<Page<BookLinkDTO>> GetConstrainedBooksAsync<BookLinkDTO>(int pageIndex,
                                                             int pageSize,
                                                             bool sortDescending = false,
                                                             string? sortBy = null,
                                                             Dictionary<string, string>? bookFilters = null,
-                                                            List<string>? bookTypes = null,
-                                                            List<string>? bookAuthors = null,
-                                                            List<string>? bookGenres = null) {
+                                                            List<string>? bookTypeIds = null,
+                                                            List<string>? bookAuthorIds = null,
+                                                            List<string>? bookGenreIds = null) {
         var query = _dbSet.AsNoTracking()
                           .Include(b => b.BookType)
                           .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
                           .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
                           .AsQueryable();
 
-        if (bookTypes?.Count > 0)
-            query = query.Where(b => bookTypes.Any(bt => b.BookType.Name.Contains(bt)));
+        if (bookTypeIds?.Count > 0)
+            query = query.Where(b => bookTypeIds.Any(bt => b.BookType.Name.Contains(bt)));
 
-        if (bookAuthors?.Count > 0)
-            query = query.Where(b => b.BookAuthors.Any(ba => bookAuthors.Any(a => ba.Author.Name.Contains(a))));
+        if (bookAuthorIds?.Count > 0)
+            query = query.Where(b => b.BookAuthors.Any(ba => bookAuthorIds.Any(a => ba.Author.Name.Contains(a))));
 
-        if (bookGenres?.Count > 0)
-            query = query.Where(b => b.BookGenres.Any(bg => bookGenres.Any(g => bg.Genre.Name.Contains(g))));
+        if (bookGenreIds?.Count > 0)
+            query = query.Where(b => b.BookGenres.Any(bg => bookGenreIds.Any(g => bg.Genre.Name.Contains(g))));
 
-        return await GetConstrainedAsync(pageIndex, pageSize, sortDescending, sortBy, bookFilters, query);
+        return await GetConstrainedAsync<BookLinkDTO>(pageIndex, pageSize, sortDescending, sortBy, bookFilters, query);
     }
 
 
@@ -119,26 +97,22 @@ public class BookRepository : BaseRepository<Book>
     }
 
 
-    public async Task<List<Book>> GetBooksByAuthorAsync(string authorId, int count)
+    public async Task<List<BookLinkDTO>> GetBooksByAuthorAsync(string authorId, int count)
     {
-        return await _dbSet.Include(b => b.BookType)
-                           .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
-                           .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
-                           .Where(b => b.BookAuthors.Any(ba => ba.AuthorId == authorId))
+        return await _dbSet.Where(b => b.BookAuthors.Any(ba => ba.AuthorId == authorId))
                            .AsNoTracking()
                            .Take(count)
+                           .ProjectTo<BookLinkDTO>(_mapper.ConfigurationProvider)
                            .ToListAsync();
     }
     
 
-    public async Task<List<Book>> GetBooksInGenreAsync(string genreId, int count)
+    public async Task<List<BookLinkDTO>> GetBooksInGenreAsync(string genreId, int count)
     {
-        return await _dbSet.Include(b => b.BookType)
-                           .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
-                           .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
-                           .Where(b => b.BookGenres.Any(bg => bg.GenreId == genreId))
+        return await _dbSet.Where(b => b.BookGenres.Any(bg => bg.GenreId == genreId))
                            .AsNoTracking()
                            .Take(count)
+                           .ProjectTo<BookLinkDTO>(_mapper.ConfigurationProvider)
                            .ToListAsync();
     }
 

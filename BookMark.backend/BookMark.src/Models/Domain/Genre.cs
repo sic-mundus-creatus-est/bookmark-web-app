@@ -1,54 +1,26 @@
 using System.ComponentModel.DataAnnotations;
-using BookMark.Models.DTOs;
+
 using BookMark.Models.Relationships;
 
 namespace BookMark.Models.Domain;
-
 public class Genre : IModel
 {
-    [Key]
-    public string Id { get; private set; }
+    [Key]//_______________________________________________________________
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    //____________________________________________________________________
 
-    [Required]
-    public string Name { get; set; } = null!;
-
+    //MAIN_DATA___________________________________________________________
+    public string Name { get; set; } = default!;
     public string? Description { get; set; }
+    //____________________________________________________________________
 
-// --------------------------------------------------------
-    public DateTime CreatedAt { get; private set; }
+    //AUDIT_INFO__________________________________________________________
+    public DateTime CreatedAt { get; init; } = DateTime.Now;
     public DateTime UpdatedAt { get; set; }
-    // --------------------------------------------------------
-    // --------------------------------------------------------
-    public ICollection<BookGenre> BookGenres { get; set; } = [];
-// --------------------------------------------------------
+    //____________________________________________________________________
 
-    public Genre()
-    {
-        Id = Guid.NewGuid().ToString();
-        CreatedAt = DateTime.Now;
-    }
-
-#region MAPPING
-
-    public void MapFrom(object source)
-    {
-        if(source is GenreCreateDTO creationData)
-        {
-            Name = creationData.Name;
-            Description = creationData.Description;
-        }
-    }
-
-    public void MapTo(object dest)
-    {
-        if(dest is GenreResponseDTO response)
-        {
-            response.Id = Id;
-            response.Name = Name;
-            response.Description = Description;
-        }
-    }
-
-#endregion
+    //RELATIONSHIPS_______________________________________________________
+    public ICollection<BookGenre> BookGenres { get; set; } = default!;
+    //____________________________________________________________________
 
 }

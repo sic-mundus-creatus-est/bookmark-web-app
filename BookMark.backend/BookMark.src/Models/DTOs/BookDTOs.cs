@@ -2,96 +2,105 @@ using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace BookMark.Models.DTOs;
-
-public class BookCreateDTO
+public record BookCreateDTO
 {
     [Required]
-    public string BookTypeId { get; set; } = null!;
+    public required string BookTypeId { get; init; }
 
     [Required]
     [MaxLength(256)]
-    public string Title { get; set; } = null!;
+    public required string Title { get; init; }
 
     [Required]
     [Length(1, Controllers.BookController.MAX_BOOK_AUTHORS)]
     [SwaggerSchema("Array input with [FromForm] doesn't work in Swagger, test with Postman.")]
-    public List<string> AuthorIds { get; set; } = null!;
+    public required List<string> AuthorIds { get; init; }
 
     [Required]
     [Length(1, Controllers.BookController.MAX_BOOK_GENRES)]
-    public List<string> GenreIds { get; set; } = null!;
+    public required List<string> GenreIds { get; init; }
 
     [Required]
     [MaxLength(64)]
-    public string OriginalLanguage { get; set; } = null!;
+    public required string OriginalLanguage { get; init; }
 
     [Required]
-    [Range(0, int.MaxValue)]
-    public int PageCount { get; set; } = 0;
+    [Range(1, int.MaxValue)]
+    public required int PageCount { get; init; }
 
-    [Range(0, int.MaxValue)]
-    public int PublicationYear { get; set; } = 0;
+    [Range(1, int.MaxValue)]
+    public required int PublicationYear { get; init; }
 
     [MaxLength(4000)]
-    public string? Description { get; set; }
+    public string? Description { get; init; }
 
-    public IFormFile? CoverImageFile { get; set; }
+    public IFormFile? CoverImageFile { get; init; }
 }
 
-public class BookUpdateDTO
+public record BookUpdateDTO
 {
-    public string? BookTypeId { get; set; }
+    public string? BookTypeId { get; init; }
 
     [MaxLength(256)]
-    public string? Title { get; set; }
+    public string? Title { get; init; }
 
     [MaxLength(64)]
-    public string? OriginalLanguage { get; set; }
+    public string? OriginalLanguage { get; init; }
 
     [Range(0, int.MaxValue)]
-    public int? PublicationYear { get; set; }
+    public int? PublicationYear { get; init; }
 
     [Range(0, int.MaxValue)]
-    public int? PageCount { get; set; }
+    public int? PageCount { get; init; }
 
     [MaxLength(4000)]
-    public string? Description { get; set; }
+    public string? Description { get; init; }
 }
 
-public class BookTypeDTO
+public record BookResponseDTO
+{
+    public required string Id { get; init; }
+    public required string Title { get; init; }
+    public required string OriginalLanguage { get; init; }
+    public required int PageCount { get; init; }
+    public required int PublicationYear { get; init; }
+    public string? Description { get; init; }
+    public string? CoverImageUrl { get; init; }
+    public required BookTypeResponseDTO BookType { get; init; }
+    public required List<BookAuthorResponseDTO> Authors { get; init; }
+    public required List<BookGenreResponseDTO> Genres { get; init; }
+}
+
+
+public record BookLinkDTO
+{
+    public required string Id { get; init; }
+    public required string Title { get; init; }
+    public string? CoverImageUrl { get; init; }
+    public required List<BookAuthorResponseDTO> Authors { get; init; }
+}
+
+
+public record BookTypeCreateUpdateDTO
 {
     [Required]
-    public string Name { get; set; } = null!;
+    public required string Name { get; init; }
 }
 
-public class BookTypeResponseDTO
+public record BookTypeResponseDTO
 {
-    public string Id { get; set; } = null!;
-    public string Name { get; set; } = null!;
+    public required string Id { get; init; }
+    public required string Name { get; init; }
 }
 
-public class BookGenreResponseDTO
+public record BookGenreResponseDTO
 {
-    public string Id { get; set; } = null!;
-    public string Name { get; set; } = null!;
+    public required string Id { get; init; }
+    public required string Name { get; init; }
 }
 
-public class BookAuthorResponseDTO
+public record BookAuthorResponseDTO
 {
-    public string Id { get; set; } = null!;
-    public string Name { get; set; } = null!;
-}
-
-public class BookResponseDTO
-{
-    public string Id { get; set; } = null!;
-    public string Title { get; set; } = null!;
-    public string OriginalLanguage { get; set; } = null!;
-    public int PageCount { get; set; }
-    public int PublicationYear { get; set; }
-    public string? Description { get; set; }
-    public string? CoverImageUrl { get; set; }
-    public BookTypeResponseDTO BookType { get; set; } = null!;
-    public List<BookAuthorResponseDTO> Authors { get; set; } = [];
-    public List<BookGenreResponseDTO> Genres { get; set; } = [];
+    public required string Id { get; init; }
+    public required string Name { get; init; }
 }

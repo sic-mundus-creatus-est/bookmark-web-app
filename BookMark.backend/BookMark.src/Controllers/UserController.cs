@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 
 using BookMark.Models.DTOs;
 using BookMark.Models.Roles;
@@ -16,7 +17,7 @@ namespace BookMark.Controllers;
 
 [ApiController]
 [Route("api/users")]
-public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO, UserResponseDTO>
+public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO, UserResponseDTO, UserLinkDTO>
 {
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
@@ -25,7 +26,8 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     public UserController(  UserManager<User> userManager,
                             RoleManager<IdentityRole> roleManager,
                             IConfiguration configuration,
-                            UserRepository repository  )  : base(repository)
+                            UserRepository repository,
+                            IMapper mapper  )  : base(repository, mapper)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -47,8 +49,8 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
                                 detail: "The username is already taken. Please choose a different one.",
                                 statusCode: StatusCodes.Status409Conflict );
 
-        var userToCreate = new User();
-        userToCreate.MapFrom(creationData);
+        var userToCreate = _mapper.Map<User>(creationData);
+        userToCreate.SecurityStamp = Guid.NewGuid().ToString();
 
         var createdUser = await _userManager.CreateAsync(userToCreate, creationData.Password);
         if (!createdUser.Succeeded)
@@ -59,8 +61,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
 
         await _userManager.AddToRoleAsync(userToCreate, UserRoles.RegularUser);
         
-        var response = new UserResponseDTO();
-        userToCreate.MapTo(response);
+        var response = _mapper.Map<UserResponseDTO>(userToCreate);
 
         return CreatedAtAction(nameof(Get), new { id = userToCreate.Id }, response);
     }
@@ -122,14 +123,14 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
-            return Problem( title: "Not Found",
-                            detail: $"No User with ID '{id}' was found. It may have been previously deleted or never existed.",
-                            statusCode: StatusCodes.Status404NotFound );
+            return Problem( title: "No User to Delete",
+                            detail: $"The User with ID '{id}' already does not exist.",
+                            statusCode: StatusCodes.Status400BadRequest );
 
         var userToDelete = await _userManager.DeleteAsync(user);
         if (!userToDelete.Succeeded)
         return Problem( title: "Unable to Delete User",
-                        detail: "The system encountered an unexpected issue while trying to delete the user. Please try again or contact support.",
+                        detail: "The system encountered an unexpected issue while trying to delete the user account. Please try again or contact support.",
                         statusCode: StatusCodes.Status500InternalServerError );
 
         return NoContent();

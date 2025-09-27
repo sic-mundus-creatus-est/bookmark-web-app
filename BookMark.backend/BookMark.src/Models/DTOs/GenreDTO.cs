@@ -1,32 +1,36 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace BookMark.Models.DTOs;
-
-public class GenreCreateDTO
+public record GenreCreateDTO
 {
     [Required]
     [MaxLength(255)]
-    public string Name { get; set; } = null!;
+    public required string Name { get; init; }
 
     [MaxLength(4000)]
-    public string? Description { get; set; }
+    public string? Description { get; init; }
 
 }
 
-public class GenreUpdateDTO
+public record GenreUpdateDTO
 {
     [MaxLength(255)]
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 
     [MaxLength(4000)]
-    public string? Description { get; set; }
+    public string? Description { get; init; }
 
 }
 
-public class GenreResponseDTO
+public record GenreResponseDTO
 {
-    public string Id { get; set; } = null!;
-    public string Name { get; set; } = null!;
-    public string? Description { get; set; }
-    
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public string? Description { get; init; }
+}
+
+public record GenreLinkDTO
+{
+    public required string Id { get; init; }
+    public required string Name { get; init; }
 }

@@ -1,37 +1,42 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace BookMark.Models.DTOs;
-
-public class AuthorCreateDTO
+public record AuthorCreateDTO
 {
     [Required]
     [MaxLength(255)]
-    public string Name { get; set; } = null!;
+    public required string Name { get; init; }
 
     [MaxLength(4000)]
-    public string? Biography { get; set; }
+    public string? Biography { get; init; }
 
-    public int? BirthYear { get; set; }
-    public int? DeathYear { get; set; }
+    public int? BirthYear { get; init; }
+    public int? DeathYear { get; init; }
 }
 
-public class AuthorUpdateDTO
+public record AuthorUpdateDTO
 {
     [MaxLength(255)]
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 
     [MaxLength(4000)]
-    public string? Biography { get; set; }
+    public string? Biography { get; init; }
 
-    public int? BirthYear { get; set; }
-    public int? DeathYear { get; set; }
+    public int? BirthYear { get; init; }
+    public int? DeathYear { get; init; }
 }
 
-public class AuthorResponseDTO
+public record AuthorResponseDTO
 {
-    public string Id { get; set; } = null!;
-    public string Name { get; set; } = null!;
-    public string? Biography { get; set; }
-    public int? BirthYear { get; set; }
-    public int? DeathYear { get; set; }
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public string? Biography { get; init; }
+    public int? BirthYear { get; init; }
+    public int? DeathYear { get; init; }
+}
+
+public record AuthorLinkDTO
+{
+    public required string Id { get; init; }
+    public required string Name { get; init; }
 }

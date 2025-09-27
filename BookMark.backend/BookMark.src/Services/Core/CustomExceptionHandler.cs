@@ -24,7 +24,7 @@ public class CustomExceptionHandler(IProblemDetailsService problemDetailsService
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
-            Title = "An error occurred",
+            Title = "An Error Occurred",
             Type = exception.GetType().Name,
             Detail = exception.Message
         };

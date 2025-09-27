@@ -1,6 +1,5 @@
 using System.Text;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,19 +14,32 @@ using BookMark.Services.Core;
 using BookMark.Models.Domain;
 using BookMark.Services.Domain;
 using BookMark.Data.Repositories;
+using AutoMapper.Internal;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
 
 #region SERVICES
 
-//APP-DB-CONTEXT------------------------------------------
+//APP-DB-CONTEXT_______________________________________________________________________________________________
 builder.Services.AddDbContext<AppDbContext>( options => {
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
         options.EnableSensitiveDataLogging(); } );
-//APP-DB-CONTEXT------------------------------------------
+//_____________________________________________________________________________________________________________
 
-//BOOKMARK-SERVICES--------------------------------------
+//AUTO-MAPPER__________________________________________________________________________________________________
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MapperConfig>();
+
+    cfg.Internal().ForAllPropertyMaps(
+        pm => pm.DestinationName == "CreatedAt" || pm.DestinationName == "UpdatedAt",
+        (propertyMap, options) => options.Ignore()
+    );
+});
+//_____________________________________________________________________________________________________________
+
+//BOOKMARK-SERVICES____________________________________________________________________________________________
 builder.Services.AddTransient<IFileService, FileService>();
 
 builder.Services.AddScoped<BookService>();
@@ -37,9 +49,9 @@ builder.Services.AddScoped<BookTypeRepository>();
 builder.Services.AddScoped<AuthorRepository>();
 builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<UserRepository>();
-//BOOKMARK-SERVICES--------------------------------------
+//_____________________________________________________________________________________________________________
 
-//CORS-----------------------------
+//CORS_________________________________________________________________________________________________________
 var corsPolicy = "CorsPolicy";
 
 builder.Services.AddCors( options => {
@@ -52,16 +64,16 @@ builder.Services.AddCors( options => {
         .AllowAnyHeader()
         .AllowCredentials();
     }); } );
-//CORS-----------------------------
+//_____________________________________________________________________________________________________________
 
-//CONTROLLERS-----------------------------------------------
+//CONTROLLERS__________________________________________________________________________________________________
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.MaxDepth = 64;
 });
-//CONTROLLERS-----------------------------------------------
+//_____________________________________________________________________________________________________________
 
-//CUSTOM-EXCEPTION-HANDLING-------------------------------------
+//CUSTOM-EXCEPTION-HANDLING____________________________________________________________________________________
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddProblemDetails(options => {
     options.CustomizeProblemDetails = context =>
@@ -74,9 +86,9 @@ builder.Services.AddProblemDetails(options => {
         Activity? activity = context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
         context.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
     }; } );
-//CUSTOM-EXCEPTION-HANDLING-------------------------------------
+//_____________________________________________________________________________________________________________
 
-//IDENTITY-CORE--------------------------------------------
+//IDENTITY-CORE________________________________________________________________________________________________
 builder.Services.AddAuthorization();
 
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -117,11 +129,11 @@ builder.Services.AddAuthentication( options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
         };
     } );
-//IDENTITY-CORE--------------------------------------------
+//_____________________________________________________________________________________________________________
 
 
 
-//SWAGGER---------------------------------------------------------------------------
+//SWAGGER______________________________________________________________________________________________________
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -151,7 +163,7 @@ builder.Services.AddSwaggerGen(c =>
     });
     c.EnableAnnotations();
 });
-//SWAGGER---------------------------------------------------------------------------
+//_____________________________________________________________________________________________________________
 
 #endregion
 
@@ -162,7 +174,7 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
-//FILE-UPLOADING-------------------------------------------------------------------
+//FILE-UPLOADING_______________________________________________________________________________________________
 var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "Uploads");
 if (!Directory.Exists(uploadsPath))
 {
@@ -174,21 +186,21 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/Resources"
 });
-//FILE-UPLOADING-------------------------------------------------------------------
+//_____________________________________________________________________________________________________________
 
 
-//CORS-----------------------------
+//CORS_________________________________________________________________________________________________________
 app.UseRouting();
 app.UseCors(corsPolicy);
-//CORS-----------------------------
+//_____________________________________________________________________________________________________________
 
-//SWAGGER----------------------------
+//SWAGGER______________________________________________________________________________________________________
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-//SWAGGER----------------------------
+//_____________________________________________________________________________________________________________
 
 app.UseAuthorization();
 app.MapControllers();

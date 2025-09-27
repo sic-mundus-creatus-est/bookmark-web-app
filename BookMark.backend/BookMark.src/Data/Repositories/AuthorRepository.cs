@@ -1,3 +1,5 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using BookMark.Models.Domain;
 using BookMark.Models.DTOs;
 using BookMark.Models.Relationships;
@@ -17,9 +19,9 @@ public class AuthorRepository : BaseRepository<Author>
                                                                             nameof(Author.DeathYear)
                                                                         };
 
-    public AuthorRepository(AppDbContext context) : base(context) { _bookAuthorDbSet = context.Set<BookAuthor>(); }
+    public AuthorRepository(AppDbContext context, IMapper mapper) : base(context, mapper) { _bookAuthorDbSet = context.Set<BookAuthor>(); }
 
-    public async Task<List<AuthorResponseDTO>> GetAuthorSuggestionsAsync(string searchTerm, List<string>? skipIds, int count)
+    public async Task<List<AuthorLinkDTO>> GetAuthorSuggestionsAsync(string searchTerm, List<string>? skipIds, int count)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
             return [];
@@ -38,11 +40,7 @@ public class AuthorRepository : BaseRepository<Author>
             query = query.Where(a => !skipIds.Contains(a.Id.ToString()));
 
         return await query.Take(count)
-                          .Select(a => new AuthorResponseDTO
-                          {
-                            Id = a.Id,
-                            Name = a.Name
-                          }).ToListAsync();
+                          .ProjectTo<AuthorLinkDTO>(_mapper.ConfigurationProvider).ToListAsync();
     }
 
 }

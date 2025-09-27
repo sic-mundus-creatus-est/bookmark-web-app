@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 using BookMark.Models;
 using BookMark.Models.Domain;
@@ -7,57 +8,48 @@ using BookMark.Data.Repositories;
 namespace BookMark.Controllers;
 
 [ApiController]
-public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : ControllerBase where TModel : IModel
+public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkDTO> : ControllerBase where TModel : IModel
 {
     protected readonly IBaseRepository<TModel> _repository;
-    public BaseController(IBaseRepository<TModel> repository) 
+    protected readonly IMapper _mapper;
+    public BaseController(IBaseRepository<TModel> repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
 
     [HttpPost("create")]
     public virtual async Task<ActionResult<TResponseDTO>> Create([FromBody] TCreateDTO creationData)
     {
-        TModel entityToCreate = Activator.CreateInstance<TModel>();
-        entityToCreate.MapFrom(creationData!);
+        TModel entityToCreate = _mapper.Map<TModel>(creationData);
 
-        var createdEntity = await _repository.CreateAsync(entityToCreate);
+        await _repository.CreateAsync(entityToCreate);
 
-        var response = Activator.CreateInstance<TResponseDTO>();
-        createdEntity.MapTo(response!);
-
-        return CreatedAtAction(nameof(Get), new { id = entityToCreate.Id }, response);
+        var createdEntity = await _repository.GetByIdAsync<TResponseDTO>(entityToCreate.Id);
+        return CreatedAtAction(nameof(Get), new { id = entityToCreate.Id }, createdEntity);
     }
 
 
     [HttpGet("get/{id}")]
     public virtual async Task<ActionResult<TResponseDTO>> Get([FromRoute] string id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _repository.GetByIdAsync<TResponseDTO>(id);
         if (entity == null)
             return Problem( title: "Not Found",
-                            detail: $"No {typeof(TModel).Name} with ID '{id}' was found.",
+                            detail: $"No {typeof(TModel).Name} with ID '{id}' found.",
                             statusCode: StatusCodes.Status404NotFound );
-        
-        var response = Activator.CreateInstance<TResponseDTO>();
-        entity.MapTo(response!);
 
-        return Ok(response);
+        return Ok(entity);
     }
 
 
     [HttpGet("get-all")]
-    public virtual async Task<ActionResult<IEnumerable<TResponseDTO>>> GetAll()
+    public virtual async Task<ActionResult<List<TLinkDTO>>> GetAll()
     {
-        var entities = await _repository.GetAllAsync();
-        var response = entities.Select( entity =>
-                                        {
-                                            var dto = Activator.CreateInstance<TResponseDTO>();
-                                            entity.MapTo(dto!);
-                                            return dto;
-                                        } );
-        return Ok(response);
+        var entities = await _repository.GetAllAsync<TLinkDTO>();
+        
+        return Ok(entities);
     }
 
 
@@ -69,39 +61,23 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
         [FromQuery] string? sortBy = null,
         [FromQuery(Name="filters")] Dictionary<string, string>? filters = null)
     {
-        var page = await _repository.GetConstrainedAsync(
+        var page = await _repository.GetConstrainedAsync<TLinkDTO>(
             pageIndex, pageSize, sortDescending, sortBy, filters
         );
 
-        var itemDtos = page.Items!.Select(entity =>
-        {
-            var dto = Activator.CreateInstance<TResponseDTO>();
-            entity.MapTo(dto!);
-            return dto;
-        }).ToList();
-
-        var response = new Page<TResponseDTO>(
-            itemDtos, page.PageIndex, page.TotalPages);
-
-        return Ok(response);
+        return Ok(page);
     }
 
 
     [HttpPatch("update/{id}")]
     public virtual async Task<ActionResult<TResponseDTO>> Update([FromRoute] string id, [FromBody] TUpdateDTO updateData)
     {
-        TModel? entityToUpdate = await _repository.GetByIdAsync(id);
-        if (entityToUpdate == null)
-            return Problem( title: "Not Found",
-                            detail: $"No {nameof(TModel)} with ID '{id}' was found. Nothing to update.",
-                            statusCode: StatusCodes.Status404NotFound );
-
         if (updateData == null)
-            return Problem( title: "No Changes Sent",
-                            detail: $"Nothing to update.",
+            return Problem( title: "Bad Request",
+                            detail: $"Update data is empty. Nothing to update.",
                             statusCode: StatusCodes.Status400BadRequest );
 
-        await _repository.UpdateAsync(entityToUpdate, updateData);
+        await _repository.UpdateAsync(id, updateData!);
 
         return Ok();
     }
@@ -110,13 +86,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO> : Cont
     [HttpDelete("delete/{id}")]
     public virtual async Task<ActionResult> Delete([FromRoute] string id)
     {           
-        var entityToDelete = await _repository.GetByIdAsync(id, changeTracking: true);
-        if (entityToDelete == null)
-            return Problem( title: "Not Found",
-                            detail: $"No {nameof(TModel)} with ID '{id}' was found. It may have been previously deleted or never existed.",
-                            statusCode: StatusCodes.Status404NotFound );
-
-        await _repository.DeleteAsync(entityToDelete);
+        await _repository.DeleteAsync(id);
         
         return NoContent();
     }
