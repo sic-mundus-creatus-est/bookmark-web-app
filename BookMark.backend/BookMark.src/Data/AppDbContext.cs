@@ -8,6 +8,17 @@ namespace BookMark.Data;
 
 public class AppDbContext : IdentityDbContext<User>
 {
+    //___________________________________________________________________
+    public DbSet<Book> Books { get; set; }
+    public DbSet<Author> Authors { get; set; }
+    public DbSet<Genre> Genres { get; set; }
+    public DbSet<BookType> BookTypes { get; set; }
+    public DbSet<BookAuthor> BookAuthors { get; set; }
+    public DbSet<BookGenre> BookGenres { get; set; }
+    public DbSet<BookReview> UserBookInteractions { get; set; }
+    //___________________________________________________________________
+
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 
@@ -17,36 +28,53 @@ public class AppDbContext : IdentityDbContext<User>
 
         // --------------------------------------------------------
         // BookAuthors Relationship
+        modelBuilder.Entity<BookAuthor>().ToTable("BookAuthors");
         modelBuilder.Entity<BookAuthor>()
             .HasKey(ba => new { ba.BookId, ba.AuthorId });
         modelBuilder.Entity<BookAuthor>()
             .HasOne(ba => ba.Book)
-            .WithMany(b => b.BookAuthors) // Navigation Property in Book
+            .WithMany(b => b.Authors) // Navigation Property in Book
             .HasForeignKey(ba => ba.BookId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<BookAuthor>()
             .HasOne(ba => ba.Author)
-            .WithMany(a => a.BookAuthors) // Navigation Property in Author
+            .WithMany(a => a.Books) // Navigation Property in Author
             .HasForeignKey(ba => ba.AuthorId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<BookAuthor>().ToTable("BookAuthors");
         // --------------------------------------------------------
 
         // --------------------------------------------------------
         // BookGenres Relationship
+        modelBuilder.Entity<BookGenre>().ToTable("BookGenres");
         modelBuilder.Entity<BookGenre>()
             .HasKey(bg => new { bg.BookId, bg.GenreId });
         modelBuilder.Entity<BookGenre>()
             .HasOne(bg => bg.Book)
-            .WithMany(b => b.BookGenres) // Navigation Property in Book
+            .WithMany(b => b.Genres) // Navigation Property in Book
             .HasForeignKey(bg => bg.BookId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<BookGenre>()
             .HasOne(bg => bg.Genre)
-            .WithMany(g => g.BookGenres) // Navigation Property in Genre
+            .WithMany(g => g.Books) // Navigation Property in Genre
             .HasForeignKey(bg => bg.GenreId) //Foreign Key
             .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<BookGenre>().ToTable("BookGenres");
+        // --------------------------------------------------------
+
+        // --------------------------------------------------------
+        // BookReviews Relationship
+        modelBuilder.Entity<BookReview>().ToTable("BookReviews");
+        modelBuilder.Entity<BookReview>()
+            .HasKey(br => new { br.UserId, br.BookId });
+        modelBuilder.Entity<BookReview>()
+            .HasOne(br => br.User)
+            .WithMany(u => u.Reviews)
+            .HasForeignKey(br => br.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<BookReview>()
+            .HasOne(br => br.Book)
+            .WithMany(b => b.Reviews)
+            .HasForeignKey(br => br.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
         // --------------------------------------------------------
 
     }
@@ -84,13 +112,5 @@ public class AppDbContext : IdentityDbContext<User>
             }
         }
     }
-
-
-    public DbSet<Book> Books { get; set; }
-    public DbSet<Author> Authors { get; set; }
-    public DbSet<Genre> Genres { get; set; }
-    public DbSet<BookType> BookTypes { get; set; }
-    public DbSet<BookAuthor> BookAuthors { get; set; }
-    public DbSet<BookGenre> BookGenres { get; set; }
 
 }

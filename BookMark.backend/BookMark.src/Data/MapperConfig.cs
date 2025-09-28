@@ -12,20 +12,17 @@ public class MapperConfig : Profile
         //BOOK___________________________________________________________________________________________
         CreateMap<Book, Book>();
         CreateMap<BookCreateDTO, Book>()
-        .ForPath(dest => dest.BookTypeId, opt => opt.MapFrom(src => src.BookTypeId));
-        CreateMap<Book, BookResponseDTO>()
-                            .ForMember(dest => dest.Authors, opt => opt.MapFrom(src => src.BookAuthors))
-                            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.BookGenres));
+                .ForPath(dest => dest.BookTypeId, opt => opt.MapFrom(src => src.BookTypeId));
+        CreateMap<Book, BookResponseDTO>();
         CreateMap<BookAuthor, BookAuthorResponseDTO>()
-                            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Author.Id))
-                            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Author.Name));
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Author.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Author.Name));
         CreateMap<BookGenre, BookGenreResponseDTO>()
-                            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Genre.Id))
-                            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Genre.Name));
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Genre.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Genre.Name));
         CreateMap<BookType, BookType>();
         CreateMap<BookType, BookTypeResponseDTO>();
-        CreateMap<Book, BookLinkDTO>()
-                            .ForMember(dest => dest.Authors, opt => opt.MapFrom(src => src.BookAuthors));
+        CreateMap<Book, BookLinkDTO>();
         //_______________________________________________________________________________________________
 
         //AUTHOR_________________________________________________________________________________________
@@ -48,6 +45,8 @@ public class MapperConfig : Profile
         CreateMap<User, UserResponseDTO>();
         CreateMap<User, UserLinkDTO>();
         //_______________________________________________________________________________________________
+
+        CreateMap<BookReview, BookReviewResponseDTO>();
     }
 
 }

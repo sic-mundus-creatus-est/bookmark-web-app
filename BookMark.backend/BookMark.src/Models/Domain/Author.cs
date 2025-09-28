@@ -23,7 +23,7 @@ public class Author : IModel
     //____________________________________________________________________
 
     //RELATIONSHIPS_______________________________________________________
-    public ICollection<BookAuthor> BookAuthors { get; set; } = default!;
+    public ICollection<BookAuthor> Books { get; set; } = default!;
     //____________________________________________________________________
 
 }

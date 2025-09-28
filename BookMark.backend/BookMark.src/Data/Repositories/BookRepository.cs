@@ -34,9 +34,9 @@ public class BookRepository : BaseRepository<Book>
     {        
         await _dbSet.AddAsync(bookToCreate);
 
-        await _bookAuthorDbSet.AddRangeAsync(bookToCreate.BookAuthors);
+        await _bookAuthorDbSet.AddRangeAsync(bookToCreate.Authors);
 
-        await _bookGenreDbSet.AddRangeAsync(bookToCreate.BookGenres);
+        await _bookGenreDbSet.AddRangeAsync(bookToCreate.Genres);
 
         await _context.SaveChangesAsync();
     }
@@ -52,18 +52,18 @@ public class BookRepository : BaseRepository<Book>
                                                             List<string>? bookGenreIds = null) {
         var query = _dbSet.AsNoTracking()
                           .Include(b => b.BookType)
-                          .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
-                          .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                          .Include(b => b.Authors).ThenInclude(ba => ba.Author)
+                          .Include(b => b.Genres).ThenInclude(bg => bg.Genre)
                           .AsQueryable();
 
         if (bookTypeIds?.Count > 0)
             query = query.Where(b => bookTypeIds.Any(bt => b.BookType.Name.Contains(bt)));
 
         if (bookAuthorIds?.Count > 0)
-            query = query.Where(b => b.BookAuthors.Any(ba => bookAuthorIds.Any(a => ba.Author.Name.Contains(a))));
+            query = query.Where(b => b.Authors.Any(ba => bookAuthorIds.Any(a => ba.Author.Name.Contains(a))));
 
         if (bookGenreIds?.Count > 0)
-            query = query.Where(b => b.BookGenres.Any(bg => bookGenreIds.Any(g => bg.Genre.Name.Contains(g))));
+            query = query.Where(b => b.Genres.Any(bg => bookGenreIds.Any(g => bg.Genre.Name.Contains(g))));
 
         return await GetConstrainedAsync<BookLinkDTO>(pageIndex, pageSize, sortDescending, sortBy, bookFilters, query);
     }
@@ -99,7 +99,7 @@ public class BookRepository : BaseRepository<Book>
 
     public async Task<List<BookLinkDTO>> GetBooksByAuthorAsync(string authorId, int count)
     {
-        return await _dbSet.Where(b => b.BookAuthors.Any(ba => ba.AuthorId == authorId))
+        return await _dbSet.Where(b => b.Authors.Any(ba => ba.AuthorId == authorId))
                            .AsNoTracking()
                            .Take(count)
                            .ProjectTo<BookLinkDTO>(_mapper.ConfigurationProvider)
@@ -109,7 +109,7 @@ public class BookRepository : BaseRepository<Book>
 
     public async Task<List<BookLinkDTO>> GetBooksInGenreAsync(string genreId, int count)
     {
-        return await _dbSet.Where(b => b.BookGenres.Any(bg => bg.GenreId == genreId))
+        return await _dbSet.Where(b => b.Genres.Any(bg => bg.GenreId == genreId))
                            .AsNoTracking()
                            .Take(count)
                            .ProjectTo<BookLinkDTO>(_mapper.ConfigurationProvider)

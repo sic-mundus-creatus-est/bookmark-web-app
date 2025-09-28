@@ -49,6 +49,7 @@ builder.Services.AddScoped<BookTypeRepository>();
 builder.Services.AddScoped<AuthorRepository>();
 builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<BookReviewRepository>();
 //_____________________________________________________________________________________________________________
 
 //CORS_________________________________________________________________________________________________________

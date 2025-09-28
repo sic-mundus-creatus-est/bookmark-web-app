@@ -66,7 +66,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
     public virtual async Task<bool> ExistsAsync(string id)
     {
-        return await _dbSet.AsNoTracking().AnyAsync(b => b.Id == id);
+        return await _dbSet.AnyAsync(b => b.Id == id);
     }
 
 
@@ -188,7 +188,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     public virtual async Task DeleteAsync(string id)
     {
         TModel entityToDelete = new TModel { Id = id };
-
+        _dbSet.Attach(entityToDelete);
         _dbSet.Remove(entityToDelete);
         await _context.SaveChangesAsync();
     }

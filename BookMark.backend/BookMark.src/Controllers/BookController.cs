@@ -34,8 +34,8 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     {
         var bookToCreate = _mapper.Map<Book>(creationData);
 
-        bookToCreate.BookAuthors = _bookService.AssembleBookAuthors(bookToCreate.Id, creationData.AuthorIds);
-        bookToCreate.BookGenres = _bookService.AssembleBookGenres(bookToCreate.Id, creationData.GenreIds);
+        bookToCreate.Authors = _bookService.AssembleBookAuthors(bookToCreate.Id, creationData.AuthorIds);
+        bookToCreate.Genres = _bookService.AssembleBookGenres(bookToCreate.Id, creationData.GenreIds);
 
         if (creationData.CoverImageFile != null)
             bookToCreate.CoverImageUrl = await _fileService.SaveFileAsync(creationData.CoverImageFile,

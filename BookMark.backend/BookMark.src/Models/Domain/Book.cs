@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using BookMark.Models.Relationships;
 
 namespace BookMark.Models.Domain;
+
 public class Book : IModel
 {
     [Key]//______________________________________________________________
@@ -14,7 +15,7 @@ public class Book : IModel
     public string Title { get; set; } = default!;
     public string OriginalLanguage { get; set; } = default!;
     public int PageCount { get; set; } = default!;
-    public int PublicationYear { get; set; }  = default!;
+    public int PublicationYear { get; set; } = default!;
     public string? Description { get; set; }
     public string? CoverImageUrl { get; set; }
     //____________________________________________________________________
@@ -28,8 +29,9 @@ public class Book : IModel
     [ForeignKey("BookTypeId")] // <--
     public string BookTypeId { get; set; } = default!;
     public BookType BookType { get; set; } = default!;
-    public ICollection<BookAuthor> BookAuthors { get; set; } = default!;
-    public ICollection<BookGenre> BookGenres { get; set; } = default!;
+    public ICollection<BookAuthor> Authors { get; set; } = default!;
+    public ICollection<BookGenre> Genres { get; set; } = default!;
+    public ICollection<BookReview> Reviews { get; set; } = default!;
     //____________________________________________________________________
 
 }

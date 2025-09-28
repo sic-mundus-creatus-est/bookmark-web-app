@@ -20,7 +20,7 @@ public class Genre : IModel
     //____________________________________________________________________
 
     //RELATIONSHIPS_______________________________________________________
-    public ICollection<BookGenre> BookGenres { get; set; } = default!;
+    public ICollection<BookGenre> Books { get; set; } = default!;
     //____________________________________________________________________
 
 }
