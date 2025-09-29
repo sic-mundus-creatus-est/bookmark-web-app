@@ -5,8 +5,8 @@ using BookMark.Models.Domain;
 namespace BookMark.Models.Relationships;
 public class BookReview
 {
-    public int? Rating;
-    public string? Content;
+    public int? Rating { get; set; }
+    public string? Content { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public string UserId { get; set; } = default!;

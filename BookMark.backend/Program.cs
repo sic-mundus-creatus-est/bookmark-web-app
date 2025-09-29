@@ -31,11 +31,6 @@ builder.Services.AddDbContext<AppDbContext>( options => {
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MapperConfig>();
-
-    cfg.Internal().ForAllPropertyMaps(
-        pm => pm.DestinationName == "CreatedAt" || pm.DestinationName == "UpdatedAt",
-        (propertyMap, options) => options.Ignore()
-    );
 });
 //_____________________________________________________________________________________________________________
 

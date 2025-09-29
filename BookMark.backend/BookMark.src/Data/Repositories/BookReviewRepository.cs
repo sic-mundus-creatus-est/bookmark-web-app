@@ -26,18 +26,18 @@ public class BookReviewRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<int> GetBookReviewCount(string bookId)
+    public async Task<int> GetBookReviewCountAsync(string bookId)
     {
         return await _dbSet.CountAsync(br => br.BookId == bookId);
     }
 
-    public async Task<double?> GetBookReviewAverageRating(string bookId)
+    public async Task<double?> GetBookReviewAverageRatingAsync(string bookId)
     {
         return await _dbSet.Where(br => br.BookId == bookId && br.Rating != null)
                             .AverageAsync(br => (double?)br.Rating);
     }
 
-    public async Task<BookReviewResponseDTO?> GetBookReviewByUser(string userId, string bookId)
+    public async Task<BookReviewResponseDTO?> GetBookReviewByCurrentUserAsync(string userId, string bookId)
     {
         return await _dbSet.AsNoTracking()
                             .Where(br => br.UserId == userId && br.BookId == bookId)
@@ -45,10 +45,27 @@ public class BookReviewRepository
                             .FirstOrDefaultAsync();
     }
 
-    public async Task<Page<BookReviewResponseDTO>> GetLatestBookReviews(string bookId, int pageIndex, int pageSize)
+    public async Task<Page<BookReviewResponseDTO>> GetLatestBookReviewsAsync(string bookId, int pageIndex = 1, int pageSize = 5)
     {
         var query = _dbSet.AsNoTracking()
                             .Where(br => br.BookId == bookId)
+                            .OrderByDescending(br => br.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var items = await query.Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize)
+                                .ProjectTo<BookReviewResponseDTO>(_mapper.ConfigurationProvider)
+                                .ToListAsync();
+
+        return new Page<BookReviewResponseDTO>(items, pageIndex, totalPages);
+    }
+
+    public async Task<Page<BookReviewResponseDTO>> GetLatestBookReviewsByUserAsync(string userId, int pageIndex = 1, int pageSize = 5)
+    {
+        var query = _dbSet.AsNoTracking()
+                            .Where(br => br.UserId == userId)
                             .OrderByDescending(br => br.CreatedAt);
 
         var totalCount = await query.CountAsync();

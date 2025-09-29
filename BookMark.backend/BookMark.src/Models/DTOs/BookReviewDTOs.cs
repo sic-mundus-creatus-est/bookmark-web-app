@@ -5,8 +5,6 @@ namespace BookMark.Models.DTOs;
 public record BookReviewCreateDTO
 {
     [Required]
-    public required string UserId { get; init; }
-    [Required]
     public required string BookId { get; init; }
 
     [Range(1, 5)]
