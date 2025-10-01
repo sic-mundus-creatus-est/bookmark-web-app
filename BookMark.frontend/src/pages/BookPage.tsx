@@ -30,6 +30,8 @@ import {
   useUpdateBook,
 } from "@/lib/services/api-calls/hooks/useBookApi";
 import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
+import { BookRatingInput } from "@/components/ui/book/book-rating-input";
+import { CommonDescription } from "@/components/ui/common/common-description";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -41,6 +43,8 @@ export function BookPage() {
   const [editFormError, setEditFormError] = useState<string>();
   //------------------------------------------------------------------------------
   const updateBook = useUpdateBook();
+
+  const [rating, setRating] = useState<number>(0);
   //------------------------------------------------------------------------------
   const {
     data: book,
@@ -142,9 +146,9 @@ export function BookPage() {
           )}
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start pt-2 pb-10">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 pt-2 pb-10 min-h-screen">
         {/* Cover */}
-        <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
+        <Card className="rounded-b-lg w-full mx-auto bg-accent rounded-t-lg md:sticky md:top-36 lg:top-28 self-start">
           <CardContent
             className="p-0 bg-background rounded-t-lg"
             style={{ aspectRatio: "2 / 3" }}
@@ -178,24 +182,18 @@ export function BookPage() {
             {editMode ? (
               <UploadLabel />
             ) : (
-              <div className="flex justify-center mx-10">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-5">
-                    <BookRatingStars
-                      rating={3.4}
-                      starSize="3xl"
-                      showEmptyStars
-                    />
-                    <span className="text-3xl font-medium text-muted">
-                      {3.4}
-                    </span>
-                  </div>
+              <div className="py-2">
+                <div className="flex gap-5">
+                  <BookRatingStars value={2.4} size={30} showEmptyStars />
+                  <span className="text-[32px] font-bold text-muted font-[Candara] -mt-2">
+                    {(2.4).toFixed(2)}
+                  </span>
+                </div>
 
-                  <div className="pl-1 -mt-3">
-                    <span className="text-xs font-mono text-background">
-                      18587 ratings
-                    </span>
-                  </div>
+                <div className="pl-1 -mt-2">
+                  <h5 className="text-[14px] font-mono text-background text-start">
+                    {(18587).toLocaleString("en-US")} ratings
+                  </h5>
                 </div>
               </div>
             )}
@@ -275,7 +273,6 @@ export function BookPage() {
               )}
             </div>
           </div>
-
           <div className="rounded-lg border-2 border-b-4 border-accent bg-muted px-2 sm:px-4 py-6 space-y-6">
             {/* Genres */}
             {editMode ? (
@@ -370,7 +367,6 @@ export function BookPage() {
               )}
             </div>
           </div>
-
           {editMode ? (
             <CommonDescriptionInput
               value={watch("description")}
@@ -382,9 +378,12 @@ export function BookPage() {
               }
             />
           ) : (
-            <p className="text-lg leading-relaxed text-accent font-[Georgia] indent-4 whitespace-pre-line overflow-hidden w-full">
-              {book?.description}
-            </p>
+            <CommonDescription
+              value={book?.description}
+              showBackground={false}
+              fontSize={18}
+              maxPreviewLength={500}
+            />
           )}
           {editMode ? (
             <div className="flex justify-end">
@@ -397,6 +396,22 @@ export function BookPage() {
               />
             </div>
           ) : null}
+          <div className="p-2 px-4 rounded-2xl border-b-8  border-2 border-accent bg-muted">
+            <h5 className="text-xl font-semibold">
+              What would you rate{" "}
+              <span className="italic text-popover">{book?.title}</span>?
+            </h5>
+            <div className="px-2 pt-1 flex justify-end">
+              <BookRatingInput value={rating} size={34} onChange={setRating} />
+            </div>
+            <h5 className="text-xl font-semibold">What did you think of it?</h5>
+            <div className="pl-2 mt-1">
+              <CommonDescriptionInput rows={8} maxLength={2000} />
+            </div>
+            <div className="flex justify-end mt-2">
+              <CommonSubmitButton label="Post Review" />
+            </div>
+          </div>
         </div>
       </div>
     </div>

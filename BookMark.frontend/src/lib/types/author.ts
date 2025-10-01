@@ -1,4 +1,4 @@
-import { Book } from "./book";
+import { Book as BookLinkProps } from "./book";
 import { GenreLinkProps } from "./genre";
 
 export interface AuthorCreate {
@@ -15,7 +15,7 @@ export interface Author {
   birthYear?: number;
   deathYear?: number;
   genres?: GenreLinkProps[];
-  books?: Book[];
+  books?: BookLinkProps[];
 }
 
 export interface AuthorLinkProps {

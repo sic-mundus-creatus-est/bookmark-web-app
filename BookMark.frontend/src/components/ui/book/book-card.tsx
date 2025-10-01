@@ -23,12 +23,13 @@ export function BookCard({ book }: { book: BookLinkProps }) {
         {/* Book Details */}
         <CardContent className="p-2 px-1 pb-0 flex-grow flex flex-col bg-muted rounded-b-sm">
           {/* Title - exactly 2 lines */}
-          <h3 className="font-bold font-sans text-lg leading-tight line-clamp-2 mb-1 h-[2.7rem] overflow-hidden text-accent">
+          <h3 className="font-bold font-sans text-lg leading-tight line-clamp-2 mb-1 overflow-hidden text-accent min-h-12">
+            {" "}
             {book.title}
           </h3>
 
           {/* Author */}
-          <div className="text-accent whitespace-nowrap overflow-x-auto scrollbar-hide">
+          <div className="text-accent whitespace-nowrap overflow-x-auto scrollbar-hide -mt-2">
             <span className="pl-0.5 italic text-sm">by </span>
             {book.authors.map((a, i) => (
               <button
@@ -49,10 +50,10 @@ export function BookCard({ book }: { book: BookLinkProps }) {
           </div>
 
           {/* Rating */}
-          <div className="flex items-center -mt-2 space-x-1 px-1">
-            <BookRatingStars rating={book.rating ?? 3.4} />
-            <span className="text-md tracking-tighter text-accent font-sans font-semibold">
-              {book.rating?.toFixed(1) ?? 3.4}
+          <div className="flex -mt-1 space-x-1 px-1">
+            <BookRatingStars value={book.rating ?? 4.7} />
+            <span className="text-[18px] tracking-tighter text-accent font-semibold font-mono leading-tight">
+              {(4.7).toFixed(2)}
             </span>
           </div>
         </CardContent>

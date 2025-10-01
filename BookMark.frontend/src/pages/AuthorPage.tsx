@@ -5,7 +5,7 @@ import { CircleUserRound, SquarePen, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
-import { Author, AuthorUpdate } from "@/lib/types/author";
+import { AuthorUpdate } from "@/lib/types/author";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
@@ -43,20 +43,20 @@ export function AuthorPage() {
     error: genresError,
   } = useGenresByAuthor(id);
   const {
-    data: books,
+    data: authorBooks,
     isFetching: areBooksFetching,
     error: booksError,
   } = useBooksByAuthor(id, 10);
   //--------------------------------------------------------------------------
-  const author = useMemo<Author | null>(() => {
+  const author = useMemo(() => {
     if (!authorData) return null;
 
     return {
       ...authorData,
       genres: genres,
-      books: books,
+      books: authorBooks,
     };
-  }, [authorData, genres, books]);
+  }, [authorData, genres, authorBooks]);
   //--------------------------------------------------------------------------
   const {
     handleSubmit,

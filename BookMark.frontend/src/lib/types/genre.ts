@@ -1,10 +1,10 @@
-import { Book } from "./book";
+import { BookLinkProps } from "./book";
 
 export interface Genre {
   id: string;
   name: string;
   description?: string;
-  books?: Book[];
+  books?: BookLinkProps[];
 }
 
 export interface GenreLinkProps {

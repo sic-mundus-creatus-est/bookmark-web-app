@@ -2,11 +2,15 @@ import { useState } from "react";
 
 interface CommonDescriptionProps {
   value?: string;
+  fontSize?: number;
   maxPreviewLength?: number;
+  showBackground?: boolean;
 }
 export function CommonDescription({
   value,
+  fontSize = 16,
   maxPreviewLength = 400,
+  showBackground = true,
 }: CommonDescriptionProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -20,8 +24,10 @@ export function CommonDescription({
 
   return (
     <p
-      className="w-full indent-4 text-base font-[Georgia] leading-tight rounded-lg bg-muted p-2 border-2 border-b-4 border-accent break-words overflow-hidden whitespace-pre-line"
-      style={{ cursor: isLong ? "pointer" : "default" }}
+      className={`w-full indent-4 font-[Georgia] rounded-lg break-words overflow-hidden whitespace-pre-line ${
+        showBackground ? "p-2 border-2 border-b-4 border-accent bg-muted" : ""
+      }`}
+      style={{ cursor: isLong ? "pointer" : "default", fontSize: fontSize }}
       onClick={() => isLong && setExpanded(!expanded)}
     >
       {displayText}

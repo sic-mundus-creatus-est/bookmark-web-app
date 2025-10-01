@@ -1,4 +1,4 @@
-import { Book } from "@/lib/types/book";
+import { BookLinkProps } from "@/lib/types/book";
 import { BookCard } from "@/components/ui/book/book-card";
 
 import {
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/carousel";
 
 interface BookShowcaseProps {
-  books?: Book[];
+  books?: BookLinkProps[];
 }
 export function BookShowcase({ books = [] }: BookShowcaseProps) {
   return (

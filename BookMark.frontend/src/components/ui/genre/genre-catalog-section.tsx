@@ -1,10 +1,10 @@
 import { BookShowcase } from "@/components/layouts/book-showcase";
-import { Book } from "@/lib/types/book";
+import { BookLinkProps } from "@/lib/types/book";
 
 interface GenreCatalogSectionProps {
   name: string;
   type: string;
-  books?: Book[];
+  books?: BookLinkProps[];
   review: string;
   reverse?: boolean;
 }
