@@ -30,8 +30,9 @@ import {
   useUpdateBook,
 } from "@/lib/services/api-calls/hooks/useBookApi";
 import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
-import { BookRatingInput } from "@/components/ui/book/book-rating-input";
 import { CommonDescription } from "@/components/ui/common/common-description";
+import { BookReviewCard } from "@/components/ui/book/book-review-card";
+import { PostReviewForm } from "@/components/layouts/post-review-form";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -396,20 +397,22 @@ export function BookPage() {
               />
             </div>
           ) : null}
-          <div className="p-2 px-4 rounded-2xl border-b-8  border-2 border-accent bg-muted">
-            <h5 className="text-xl font-semibold">
-              What would you rate{" "}
-              <span className="italic text-popover">{book?.title}</span>?
-            </h5>
-            <div className="px-2 pt-1 flex justify-end">
-              <BookRatingInput value={rating} size={34} onChange={setRating} />
-            </div>
-            <h5 className="text-xl font-semibold">What did you think of it?</h5>
-            <div className="pl-2 mt-1">
-              <CommonDescriptionInput rows={8} maxLength={2000} />
-            </div>
-            <div className="flex justify-end mt-2">
-              <CommonSubmitButton label="Post Review" />
+          <div className="flex flex-col gap-4">
+            <PostReviewForm
+              subjectTitle={book?.title}
+              rating={rating}
+              onRatingChange={setRating}
+            />
+            <div className="">
+              <div className="mb-6">
+                <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4">
+                  Community Reviews
+                </h4>
+                <h6 className="pl-3 italic -mt-0.5 font-sans">
+                  displaying 1 - 30 of 12,345 reviews
+                </h6>
+              </div>
+              <BookReviewCard />
             </div>
           </div>
         </div>

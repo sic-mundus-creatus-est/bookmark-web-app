@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 
 interface BookRatingInputProps {
-  value: number; // integer 0-5
-  onChange: (newValue: number) => void;
+  value?: number; // integer 0-5
+  onChange?: (newValue: number) => void;
   size?: number;
 }
 
 export const BookRatingInput = ({
-  value,
+  value = 0,
   onChange,
   size = 24,
 }: BookRatingInputProps) => {
@@ -30,7 +30,7 @@ export const BookRatingInput = ({
             <button
               key={starValue}
               type="button"
-              onClick={() => onChange(starValue)}
+              onClick={() => onChange?.(starValue)}
               onMouseEnter={() => setHoverValue(starValue)}
               className="focus:outline-none"
             >
@@ -47,7 +47,7 @@ export const BookRatingInput = ({
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={() => onChange(0)}
+          onClick={() => onChange?.(0)}
           onMouseEnter={() => setHoverValue(null)}
           className="text-sm font-mono underline pr-1 hover:font-bold"
         >

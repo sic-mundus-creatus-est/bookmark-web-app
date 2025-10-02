@@ -2,19 +2,21 @@ import { useState } from "react";
 
 interface CommonDescriptionProps {
   value?: string;
+  placeholder?: string;
   fontSize?: number;
   maxPreviewLength?: number;
   showBackground?: boolean;
 }
 export function CommonDescription({
   value,
+  placeholder = "No description...",
   fontSize = 16,
   maxPreviewLength = 400,
   showBackground = true,
 }: CommonDescriptionProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const safeDescription = value?.trim() ? value : "No description...";
+  const safeDescription = value?.trim() ? value : placeholder;
 
   const isLong = safeDescription.length > maxPreviewLength;
   const displayText =
