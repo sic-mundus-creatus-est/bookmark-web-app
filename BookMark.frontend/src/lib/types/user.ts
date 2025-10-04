@@ -18,3 +18,9 @@ export interface UserCreate {
   confirmPassword: string;
   displayName: string;
 }
+
+export interface UserLinkProps {
+  id: string;
+  username: string;
+  displayName?: string;
+}

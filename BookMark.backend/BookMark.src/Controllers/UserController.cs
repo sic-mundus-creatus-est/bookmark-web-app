@@ -171,14 +171,14 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
         reviewToCreate.UserId = currentUserId;
         await _bookReviewRepository.CreateBookReviewAsync(reviewToCreate);
 
-        var createdReview = await _bookReviewRepository.GetBookReviewByCurrentUserAsync(currentUserId, review.BookId);
-        return CreatedAtAction(nameof(GetBookReviewByCurrentUser), new { userId = currentUserId, bookId = review.BookId }, createdReview);
+        var createdReview = await _bookReviewRepository.GetCurrentUserBookReviewAsync(currentUserId, review.BookId);
+        return CreatedAtAction(nameof(GetCurrentUserBookReview), new { userId = currentUserId, bookId = review.BookId }, createdReview);
     }
 
 
     [Authorize(Roles = UserRoles.RegularUser)]
-    [HttpGet("get-book-review-by-current-user/{bookId}")]
-    public async Task<ActionResult<BookReviewResponseDTO?>> GetBookReviewByCurrentUser([FromRoute] string bookId)
+    [HttpGet("get-current-user-book-review/{bookId}")]
+    public async Task<ActionResult<BookReviewResponseDTO?>> GetCurrentUserBookReview([FromRoute] string bookId)
     {
         var currentUserId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if(currentUserId == null)
@@ -186,7 +186,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
                             detail: "Invalid session.",
                             statusCode: StatusCodes.Status401Unauthorized);
 
-        var review = await _bookReviewRepository.GetBookReviewByCurrentUserAsync(currentUserId, bookId);
+        var review = await _bookReviewRepository.GetCurrentUserBookReviewAsync(currentUserId, bookId);
 
         return Ok(review);
     }

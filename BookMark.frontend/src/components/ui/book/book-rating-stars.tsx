@@ -1,13 +1,13 @@
 import { Sparkles, Star } from "lucide-react";
 
 interface RatingStarsProps {
-  value: number;
+  value?: number;
   size?: number;
   showEmptyStars?: boolean;
 }
 
 export const BookRatingStars = ({
-  value,
+  value = 0,
   size = 16,
   showEmptyStars = false,
 }: RatingStarsProps) => {

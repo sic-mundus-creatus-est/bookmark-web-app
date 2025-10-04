@@ -37,7 +37,7 @@ public class BookReviewRepository
                             .AverageAsync(br => (double?)br.Rating);
     }
 
-    public async Task<BookReviewResponseDTO?> GetBookReviewByCurrentUserAsync(string userId, string bookId)
+    public async Task<BookReviewResponseDTO?> GetCurrentUserBookReviewAsync(string userId, string bookId)
     {
         return await _dbSet.AsNoTracking()
                             .Where(br => br.UserId == userId && br.BookId == bookId)

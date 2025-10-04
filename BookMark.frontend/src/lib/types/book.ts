@@ -1,5 +1,6 @@
 import { AuthorLinkProps } from "@/lib/types/author";
 import { GenreLinkProps } from "@/lib/types//genre";
+import { UserLinkProps } from "./user";
 
 export interface BookCreate {
   bookType: BookType;
@@ -27,8 +28,8 @@ export interface Book {
   authors: AuthorLinkProps[];
   genres: GenreLinkProps[];
 
-  rating?: number;
-  ratingCount?: number;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface BookLinkProps {
@@ -66,4 +67,12 @@ export interface BookMetadata {
 export interface BookType {
   id: string;
   name: string;
+}
+
+export interface BookReview {
+  user: UserLinkProps;
+  bookId: string;
+  rating: number;
+  content: string;
+  createdAt: string;
 }

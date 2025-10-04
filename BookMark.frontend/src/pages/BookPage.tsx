@@ -185,15 +185,29 @@ export function BookPage() {
             ) : (
               <div className="py-2">
                 <div className="flex gap-5">
-                  <BookRatingStars value={2.4} size={30} showEmptyStars />
+                  {book?.averageRating ? (
+                    <BookRatingStars
+                      value={book?.averageRating}
+                      size={30}
+                      showEmptyStars
+                    />
+                  ) : null}
                   <span className="text-[32px] font-bold text-muted font-[Candara] -mt-2">
-                    {(2.4).toFixed(2)}
+                    {book?.averageRating != null ? (
+                      book.averageRating.toFixed(2)
+                    ) : (
+                      <span className="text-center text-2xl">
+                        Be the first to rate this book!
+                      </span>
+                    )}
                   </span>
                 </div>
 
                 <div className="pl-1 -mt-2">
                   <h5 className="text-[14px] font-mono text-background text-start">
-                    {(18587).toLocaleString("en-US")} ratings
+                    {book?.reviewCount
+                      ? (18587).toLocaleString("en-US") + " reviews"
+                      : null}
                   </h5>
                 </div>
               </div>
@@ -334,7 +348,7 @@ export function BookPage() {
                 </>
               ) : (
                 <>
-                  <div className="col-span-2 bg-background px-2 py-2 rounded">
+                  <div className="col-span-2 bg-background px-2 py-1 rounded">
                     <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
                       <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
                         Published in:
@@ -403,17 +417,15 @@ export function BookPage() {
               rating={rating}
               onRatingChange={setRating}
             />
-            <div className="">
-              <div className="mb-6">
-                <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4">
-                  Community Reviews
-                </h4>
-                <h6 className="pl-3 italic -mt-0.5 font-sans">
-                  displaying 1 - 30 of 12,345 reviews
-                </h6>
-              </div>
-              <BookReviewCard />
+            <div className="mb-6">
+              <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4">
+                Community Reviews
+              </h4>
+              <h6 className="pl-3 italic -mt-0.5 font-sans">
+                displaying 1 - 30 of 12,345 reviews
+              </h6>
             </div>
+            <BookReviewCard />
           </div>
         </div>
       </div>

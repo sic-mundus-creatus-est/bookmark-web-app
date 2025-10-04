@@ -45,7 +45,7 @@ export function useGenresByAuthor(authorId: string) {
 export function useCreateGenre() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<Genre, ApiError, { name: string; description?: string }>({
     mutationFn: (data: { name: string; description?: string }) =>
       createGenre(data),
     onSuccess: () => {
