@@ -3,7 +3,7 @@ import { createContext } from "react";
 import { UserAuth, UserCreate } from "@/lib/types/user";
 
 export interface IAuthContext {
-  user: UserAuth | null;
+  user?: UserAuth;
   signIn: (credentials: {
     usernameOrEmail: string;
     password: string;

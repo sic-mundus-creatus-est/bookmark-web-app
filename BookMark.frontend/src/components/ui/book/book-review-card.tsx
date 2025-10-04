@@ -1,12 +1,15 @@
+import { UserLinkProps } from "@/lib/types/user";
 import { CommonDescription } from "../common/common-description";
 import { BookRatingStars } from "./book-rating-stars";
 
 interface BookReviewCardProps {
+  user?: UserLinkProps;
   rating?: number;
   content?: string;
   postedOn?: Date;
 }
 export function BookReviewCard({
+  user,
   rating = 4,
   content,
   postedOn = new Date(),
@@ -15,8 +18,8 @@ export function BookReviewCard({
     <div className="flex flex-col w-full px-1">
       <div className="flex flex-col">
         <h5 className="font-bold overflow-hidden text-lg">
-          <span className="text-accent hover:text-popover text-nowrap overflow-hidden cursor-pointer">
-            @john.doe
+          <span className="text-accent hover:text-popover text-nowrap overflow-hidden cursor-pointer font-[Helvetica]">
+            @{user?.username}
           </span>
           :
         </h5>

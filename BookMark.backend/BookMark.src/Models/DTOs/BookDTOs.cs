@@ -69,6 +69,9 @@ public record BookResponseDTO
     public required BookTypeResponseDTO BookType { get; init; }
     public required List<BookAuthorResponseDTO> Authors { get; init; }
     public required List<BookGenreResponseDTO> Genres { get; init; }
+
+    public double? AverageRating { get; set; }
+    public int? ReviewCount { get; set; }
 }
 
 
@@ -78,6 +81,9 @@ public record BookLinkDTO
     public required string Title { get; init; }
     public string? CoverImageUrl { get; init; }
     public required List<BookAuthorResponseDTO> Authors { get; init; }
+
+    public double? AverageRating { get; set; }
+    public int? ReviewCount { get; set; }
 }
 
 

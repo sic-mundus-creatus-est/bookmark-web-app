@@ -23,7 +23,7 @@ export function BookCard({ book }: { book: BookLinkProps }) {
         {/* Book Details */}
         <CardContent className="p-2 px-1 pb-0 flex-grow flex flex-col bg-muted rounded-b-sm">
           {/* Title - exactly 2 lines */}
-          <h3 className="font-bold font-sans text-lg leading-tight line-clamp-2 mb-1 overflow-hidden text-accent min-h-12">
+          <h3 className="font-bold font-sans text-lg leading-tight line-clamp-2 mb-1 overflow-hidden text-accent min-h-12 overflow-y-auto scrollbar-hide">
             {" "}
             {book.title}
           </h3>
@@ -50,11 +50,21 @@ export function BookCard({ book }: { book: BookLinkProps }) {
           </div>
 
           {/* Rating */}
-          <div className="flex -mt-1 space-x-1 px-1">
-            <BookRatingStars value={book.rating ?? 4.7} />
-            <span className="text-[18px] tracking-tighter text-accent font-semibold font-mono leading-tight">
-              {(4.7).toFixed(2)}
-            </span>
+          <div className="flex items-center gap-2 h-5">
+            {book?.averageRating != null ? (
+              <>
+                <BookRatingStars value={book.averageRating} />
+                <span className="text-[18px] tracking-tighter text-accent font-semibold font-mono leading-tight">
+                  {book.averageRating.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <div className="flex items-center justify-center w-full h-6">
+                <span className="text-[15px] font-bold italic text-accent/65">
+                  not yet rated...
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

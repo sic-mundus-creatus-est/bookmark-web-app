@@ -33,13 +33,13 @@ export function getDirtyValues<T extends object>(
 
 // ================================================
 
-export const decodeToken = (token: string): UserAuth | null => {
+export const decodeToken = (token: string): UserAuth | undefined => {
   try {
     const decoded = jwtDecode<UserAuth>(token);
-    if (decoded.exp * 1000 < Date.now()) return null; // token expired if null
-    return { username: decoded.username, role: decoded.role, exp: decoded.exp };
+    if (decoded.exp * 1000 < Date.now()) return; // token expired if null
+    return { sub: decoded.sub, role: decoded.role, exp: decoded.exp };
   } catch {
-    return null;
+    return;
   }
 };
 

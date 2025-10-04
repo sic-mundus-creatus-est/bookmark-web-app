@@ -38,7 +38,8 @@ export interface BookLinkProps {
   authors: AuthorLinkProps[];
   coverImageUrl?: string;
 
-  rating?: number;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface BookUpdate {

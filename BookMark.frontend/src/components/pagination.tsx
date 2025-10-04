@@ -53,7 +53,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <nav className={`mt-2 text-center font-serif ${className}`}>
+    <nav className={`text-center font-serif ${className}`}>
       <div className="inline-flex flex-wrap items-center justify-center gap-2 text-xl sm:text-lg">
         {currentPage > 1 && totalPages > 1 && (
           <span

@@ -80,7 +80,7 @@ export function SignInPage() {
                     className="inline-block font-normal text-popover underline italic decoration-2 cursor-pointer
                    hover:scale-105"
                   >
-                    Register
+                    Sign Up
                   </span>
                 </Link>
               </h5>

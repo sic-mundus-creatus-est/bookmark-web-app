@@ -33,19 +33,32 @@ import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { BookReviewCard } from "@/components/ui/book/book-review-card";
 import { PostReviewForm } from "@/components/layouts/post-review-form";
+import {
+  useCreateBookReview,
+  useCurrentUserBookReview,
+  useLatestBookReviews,
+} from "@/lib/services/api-calls/hooks/useUserApi";
+import { useAuth } from "@/lib/contexts/useAuth";
+import { Pagination } from "@/components/pagination";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
   const navigate = useNavigate();
   const { id } = useParams() as { id: string };
   //------------------------------------------------------------------------------
+  const { user: currentUser } = useAuth();
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editFormError, setEditFormError] = useState<string>();
   //------------------------------------------------------------------------------
   const updateBook = useUpdateBook();
 
-  const [rating, setRating] = useState<number>(0);
+  const [newReview, setNewReview] = useState<{
+    rating?: number;
+    content?: string;
+  }>();
+
+  const createBookReview = useCreateBookReview();
   //------------------------------------------------------------------------------
   const {
     data: book,
@@ -62,6 +75,23 @@ export function BookPage() {
     isFetching: areGenresFetching,
     error: genresError,
   } = useAllGenres();
+  const { data: currentUserReview } = useCurrentUserBookReview(id, currentUser);
+
+  const reviewPageIndex = 1;
+  const reviewPageSize = 5;
+  const hasReviews = (book?.reviewCount ?? 0) > 0;
+  let reviewDisplayText = "No reviews yet";
+
+  if (hasReviews && book?.reviewCount) {
+    const start = (reviewPageIndex - 1) * reviewPageSize + 1;
+    const end = Math.min(reviewPageIndex * reviewPageSize, book.reviewCount);
+    reviewDisplayText = `Displaying ${start}–${end} of ${book.reviewCount.toLocaleString()} reviews`;
+  }
+  const { data: bookReviews } = useLatestBookReviews(
+    id,
+    reviewPageIndex,
+    reviewPageSize
+  );
   //------------------------------------------------------------------------------
   const {
     handleSubmit,
@@ -119,7 +149,23 @@ export function BookPage() {
         },
       }
     );
-  }; //==============================================================================
+  };
+
+  const handleCreateReview = async () => {
+    if (!book) return;
+
+    console.log(newReview);
+
+    createBookReview.mutate(
+      { bookId: book.id, ...newReview },
+      {
+        onError: (error: any) => {
+          console.log(error.message);
+        },
+      }
+    );
+  };
+  //==============================================================================
 
   if (error)
     return (
@@ -147,7 +193,7 @@ export function BookPage() {
           )}
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 pt-2 pb-10 min-h-screen">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 pt-2 pb-10">
         {/* Cover */}
         <Card className="rounded-b-lg w-full mx-auto bg-accent rounded-t-lg md:sticky md:top-36 lg:top-28 self-start">
           <CardContent
@@ -184,32 +230,23 @@ export function BookPage() {
               <UploadLabel />
             ) : (
               <div className="py-2">
-                <div className="flex gap-5">
-                  {book?.averageRating ? (
-                    <BookRatingStars
-                      value={book?.averageRating}
-                      size={30}
-                      showEmptyStars
-                    />
-                  ) : null}
-                  <span className="text-[32px] font-bold text-muted font-[Candara] -mt-2">
-                    {book?.averageRating != null ? (
-                      book.averageRating.toFixed(2)
-                    ) : (
-                      <span className="text-center text-2xl">
-                        Be the first to rate this book!
-                      </span>
-                    )}
+                <span className="inline-flex gap-5">
+                  <BookRatingStars
+                    value={book?.averageRating}
+                    size={30}
+                    showEmptyStars
+                  />
+                  <span className="text-[32px] font-bold text-muted font-[Candara] leading-tight">
+                    {book?.averageRating != null
+                      ? book.averageRating.toFixed(2)
+                      : "N/A"}
                   </span>
-                </div>
+                </span>
 
-                <div className="pl-1 -mt-2">
-                  <h5 className="text-[14px] font-mono text-background text-start">
-                    {book?.reviewCount
-                      ? (18587).toLocaleString("en-US") + " reviews"
-                      : null}
-                  </h5>
-                </div>
+                <h5 className="pl-1 -mt-1 text-[14px] font-mono text-background text-start">
+                  {(book?.reviewCount ?? 18587).toLocaleString("en-US")}{" "}
+                  review/s
+                </h5>
               </div>
             )}
           </CardFooter>
@@ -400,7 +437,7 @@ export function BookPage() {
               maxPreviewLength={500}
             />
           )}
-          {editMode ? (
+          {editMode && (
             <div className="flex justify-end">
               <CommonSubmitButton
                 label="Update"
@@ -410,23 +447,73 @@ export function BookPage() {
                 onCancel={() => setEditMode((prev) => !prev)}
               />
             </div>
-          ) : null}
-          <div className="flex flex-col gap-4">
-            <PostReviewForm
-              subjectTitle={book?.title}
-              rating={rating}
-              onRatingChange={setRating}
-            />
-            <div className="mb-6">
-              <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4">
-                Community Reviews
-              </h4>
-              <h6 className="pl-3 italic -mt-0.5 font-sans">
-                displaying 1 - 30 of 12,345 reviews
-              </h6>
+          )}
+          {!editMode && (
+            <div className="flex flex-col gap-4">
+              {currentUser && !currentUserReview && (
+                <PostReviewForm
+                  subjectTitle={book?.title}
+                  rating={newReview?.rating}
+                  content={newReview?.content}
+                  onRatingChange={(rating) => {
+                    setNewReview({ ...newReview, rating: rating });
+                  }}
+                  onContentChange={(content) => {
+                    setNewReview({ ...newReview, content: content });
+                  }}
+                  onSubmit={handleCreateReview}
+                />
+              )}
+              {hasReviews && (
+                <>
+                  {currentUser && currentUserReview && (
+                    <div className="border-2 border-accent p-0.5 rounded-lg bg-muted">
+                      <h5 className="font-semibold font-mono pl-0.5 cursor-default text-center">
+                        - YOUR REVIEW -
+                      </h5>
+                      <BookReviewCard
+                        rating={currentUserReview.rating}
+                        content={currentUserReview.content}
+                        user={currentUserReview.user}
+                        postedOn={new Date(currentUserReview.createdAt)}
+                      />
+                      <div className="flex justify-end pr-5 underline font-semibold cursor-pointer font-mono">
+                        Delete Review
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4 rounded-b-sm">
+                      Community Reviews
+                    </h4>
+                    <h6 className="pl-3 italic -mt-0.5 font-sans">
+                      <span className="text-sm text-muted-foreground">
+                        {reviewDisplayText}
+                      </span>
+                    </h6>
+                  </div>
+                  {bookReviews?.items?.map((review) => (
+                    <BookReviewCard
+                      key={`${review.user.id}-${review.bookId}`}
+                      rating={review.rating}
+                      content={review.content}
+                      user={review.user}
+                      postedOn={new Date(review.createdAt)}
+                    />
+                  ))}
+                  {bookReviews && (
+                    <Pagination
+                      currentPage={reviewPageIndex}
+                      totalPages={bookReviews.totalPages}
+                      onPageChange={() => {
+                        console.log("imagine a page change");
+                      }}
+                    />
+                  )}
+                </>
+              )}
             </div>
-            <BookReviewCard />
-          </div>
+          )}
         </div>
       </div>
     </div>

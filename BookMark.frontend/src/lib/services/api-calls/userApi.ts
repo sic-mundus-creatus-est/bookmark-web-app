@@ -4,8 +4,8 @@ import { Page } from "@/lib/types/common";
 
 export function createBookReview(data: {
   bookId: string;
-  rating: number;
-  content: string;
+  rating?: number;
+  content?: string;
 }): Promise<BookReview> {
   return apiCall({
     method: POST,
@@ -18,15 +18,6 @@ export function getCurrentUserBookReview(bookId: string): Promise<BookReview> {
   return apiCall({
     method: GET,
     endpoint: `/api/users/get-current-user-book-review/${bookId}`,
-  });
-}
-
-export function getBookReviewStats(
-  bookId: string
-): Promise<{ averageRating: number; reviewCount: number }> {
-  return apiCall({
-    method: GET,
-    endpoint: `/api/users/get-book-review-stats/${bookId}`,
   });
 }
 

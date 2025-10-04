@@ -8,6 +8,7 @@ interface PostReviewFormProps {
   content?: string;
   onRatingChange?: (value: number) => void;
   onContentChange?: (value: string) => void;
+  onSubmit?: () => void;
 }
 export function PostReviewForm({
   subjectTitle = "it",
@@ -15,6 +16,7 @@ export function PostReviewForm({
   content,
   onRatingChange,
   onContentChange,
+  onSubmit,
 }: PostReviewFormProps) {
   return (
     <div className="p-2 px-3 rounded-b-xl rounded-t-md border-b-8 border-2 border-accent bg-muted">
@@ -38,7 +40,7 @@ export function PostReviewForm({
         />
       </div>
       <div className="flex justify-end mt-2">
-        <CommonSubmitButton label="Post Review" />
+        <CommonSubmitButton label="Post Review" onClick={onSubmit} />
       </div>
     </div>
   );

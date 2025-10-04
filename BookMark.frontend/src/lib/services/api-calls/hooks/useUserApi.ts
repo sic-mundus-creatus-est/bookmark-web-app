@@ -2,34 +2,28 @@ import { BookReview } from "@/lib/types/book";
 import {
   createBookReview,
   deleteBookReview,
-  getBookReviewStats,
   getCurrentUserBookReview,
   getLatestBookReviews,
 } from "../userApi";
 import { ApiError } from "../api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page } from "@/lib/types/common";
+import { UserAuth } from "@/lib/types/user";
 
 const KEY_BOOK_REVIEW = "book_review";
 const KEY_BOOK_REVIEWS = "book_reviews";
 const KEY_BY_USER = "by_user";
-const KEY_STATS = "stats";
 
 //--------------------------------------------------------------------------
 // QUERIES
-export function useCurrentUserBookReview(userId: string) {
+export function useCurrentUserBookReview(
+  bookId: string,
+  currentUser?: UserAuth
+) {
   return useQuery<BookReview, ApiError>({
-    queryKey: [KEY_BOOK_REVIEW, userId],
-    queryFn: () => getCurrentUserBookReview(userId),
-    enabled: !!userId,
-  });
-}
-
-export function useBookReviewStats(bookId: string) {
-  return useQuery<{ averageRating: number; reviewCount: number }, ApiError>({
-    queryKey: [KEY_BOOK_REVIEW, KEY_STATS, bookId],
-    queryFn: () => getBookReviewStats(bookId),
-    enabled: !!bookId,
+    queryKey: [KEY_BOOK_REVIEW, bookId],
+    queryFn: () => getCurrentUserBookReview(bookId),
+    enabled: !!bookId && bookId.trim() !== "" && !!currentUser,
   });
 }
 
@@ -66,9 +60,9 @@ export function useCreateBookReview() {
   return useMutation<
     BookReview,
     ApiError,
-    { bookId: string; rating: number; content: string }
+    { bookId: string; rating?: number; content?: string }
   >({
-    mutationFn: (data: { bookId: string; rating: number; content: string }) =>
+    mutationFn: (data: { bookId: string; rating?: number; content?: string }) =>
       createBookReview(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [KEY_BOOK_REVIEWS] });

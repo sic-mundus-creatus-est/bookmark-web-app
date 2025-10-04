@@ -116,7 +116,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
         var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddMinutes(15),
+                expires: DateTime.Now.AddMinutes(60),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
@@ -128,7 +128,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     [HttpDelete("delete/{id}")]
     public override async Task<ActionResult> Delete([FromRoute] string id)
     {
-        var currentUserId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isAdmin = User.IsInRole(UserRoles.Admin);
 
         if (currentUserId != id && !isAdmin)
@@ -161,6 +161,13 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
             return Problem(title: "Unauthorized",
                             detail: "Invalid session.",
                             statusCode: StatusCodes.Status401Unauthorized);
+        
+        var existingReview = await _bookReviewRepository.GetCurrentUserBookReviewAsync(currentUserId, review.BookId);
+
+        if (existingReview != null)
+            return Problem(title: "Conflict",
+                            detail: "You have already submitted a review for this book!",
+                            statusCode: StatusCodes.Status409Conflict);
 
         if (review.Rating == null && string.IsNullOrWhiteSpace(review.Content))
             return Problem(title: "Bad Request",
@@ -180,8 +187,8 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     [HttpGet("get-current-user-book-review/{bookId}")]
     public async Task<ActionResult<BookReviewResponseDTO?>> GetCurrentUserBookReview([FromRoute] string bookId)
     {
-        var currentUserId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-        if(currentUserId == null)
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null)
             return Problem(title: "Unauthorized",
                             detail: "Invalid session.",
                             statusCode: StatusCodes.Status401Unauthorized);
@@ -189,22 +196,6 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
         var review = await _bookReviewRepository.GetCurrentUserBookReviewAsync(currentUserId, bookId);
 
         return Ok(review);
-    }
-
-
-    [HttpGet("get-book-review-stats/{bookId}")]
-    public async Task<ActionResult<BookReviewStatsDTO>> GetBookReviewStats([FromRoute] string bookId)
-    {
-        var averageRating = await _bookReviewRepository.GetBookReviewAverageRatingAsync(bookId);
-        var reviewCount = await _bookReviewRepository.GetBookReviewCountAsync(bookId);
-
-        var stats = new BookReviewStatsDTO
-        {
-            AverageRating = averageRating,
-            ReviewCount = reviewCount
-        };
-
-        return Ok(stats);
     }
 
 
@@ -229,7 +220,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     [HttpDelete("delete-book-review/{userId}/{bookId}")]
     public async Task<ActionResult> DeleteBookReview([FromRoute] string userId, [FromRoute] string bookId)
     {
-        var currentUserId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var isAdmin = User.IsInRole(UserRoles.Admin);
 
         if (currentUserId != userId && !isAdmin)

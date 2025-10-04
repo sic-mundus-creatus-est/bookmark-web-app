@@ -5,12 +5,12 @@ import { AuthContext, IAuthContext } from "./authContext";
 import { decodeToken } from "../utils";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserAuth | null>(null);
+  const [user, setUser] = useState<UserAuth>();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const decoded = storedToken ? decodeToken(storedToken) : null;
+    const decoded = storedToken ? decodeToken(storedToken) : undefined;
     setUser(decoded);
     setLoading(false);
   }, []);
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // -----------------------------
   const signOut: IAuthContext["signOut"] = () => {
     localStorage.removeItem("token");
-    setUser(null);
+    setUser(undefined);
   };
   // ------------------------------------------------------------
 

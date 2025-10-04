@@ -26,17 +26,6 @@ public class BookReviewRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<int> GetBookReviewCountAsync(string bookId)
-    {
-        return await _dbSet.CountAsync(br => br.BookId == bookId);
-    }
-
-    public async Task<double?> GetBookReviewAverageRatingAsync(string bookId)
-    {
-        return await _dbSet.Where(br => br.BookId == bookId && br.Rating != null)
-                            .AverageAsync(br => (double?)br.Rating);
-    }
-
     public async Task<BookReviewResponseDTO?> GetCurrentUserBookReviewAsync(string userId, string bookId)
     {
         return await _dbSet.AsNoTracking()
