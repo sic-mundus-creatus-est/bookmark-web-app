@@ -54,12 +54,12 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
                                                                                 [FromQuery] bool sortDescending = false,
                                                                                 [FromQuery] string? sortBy = null,
                                                                                 [FromQuery(Name = "filters")] Dictionary<string, string>? filters = null,
-                                                                                [FromQuery] List<string>? bookTypeIds = null,
-                                                                                [FromQuery] List<string>? bookAuthorIds = null,
-                                                                                [FromQuery] List<string>? bookGenreIds = null)
+                                                                                [FromQuery] List<string>? bookTypeNames = null,
+                                                                                [FromQuery] List<string>? bookAuthorNames = null,
+                                                                                [FromQuery] List<string>? bookGenreNames = null)
     {
         var page = await ((BookRepository)_repository).GetConstrainedBooksAsync<BookLinkDTO>(
-            pageIndex, pageSize, sortDescending, sortBy, filters, bookTypeIds, bookAuthorIds, bookGenreIds);
+            pageIndex, pageSize, sortDescending, sortBy, filters, bookTypeNames, bookAuthorNames, bookGenreNames);
 
         return Ok(page);
     }

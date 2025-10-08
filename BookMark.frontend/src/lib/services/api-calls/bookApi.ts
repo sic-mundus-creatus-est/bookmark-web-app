@@ -51,9 +51,29 @@ export function getBookById(id: string): Promise<Book> {
 }
 
 export function getConstrainedBooks(
-  params: ConstrainedQueryParams
+  params?: ConstrainedQueryParams,
+  bookTypeNames?: string[],
+  bookAuthorNames?: string[],
+  bookGenreNames?: string[]
 ): Promise<Page<BookLinkProps>> {
-  const query = buildConstrainedQueryParams(params);
+  if (!params)
+    return apiCall({
+      method: GET,
+      endpoint: `/api/books/get-constrained-books`,
+    });
+
+  const query = new URLSearchParams(buildConstrainedQueryParams(params));
+
+  if (bookTypeNames?.length) {
+    for (const id of bookTypeNames) query.append("bookTypeNames", id);
+  }
+  if (bookAuthorNames?.length) {
+    for (const id of bookAuthorNames) query.append("bookAuthorNames", id);
+  }
+  if (bookGenreNames?.length) {
+    for (const id of bookGenreNames) query.append("bookGenreNames", id);
+  }
+
   return apiCall({
     method: GET,
     endpoint: `/api/books/get-constrained-books?${query}`,

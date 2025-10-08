@@ -1,13 +1,14 @@
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useMatches, useSearchParams } from "react-router-dom";
 
 import { Pagination } from "@/components/pagination";
 import { BookCard } from "@/components/ui/book/book-card";
 import { useLoading } from "@/lib/contexts/useLoading";
-import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 import { BookLinkProps } from "@/lib/types/book";
+import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 
 const PAGE_SIZE = 12;
+
 export function BooksPage() {
   //------------------------------------------------------------------------------
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
@@ -15,15 +16,23 @@ export function BooksPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const currentPage = isNaN(pageParam) ? 1 : Math.max(1, pageParam);
+
+  const matches = useMatches();
+  console.log(matches[1].handle);
+  const bookType: string = (matches[1].handle as string) ?? undefined;
+
   //------------------------------------------------------------------------------
   const {
     data: page,
     isFetching: fetching,
     error,
-  } = useConstrainedBooks({
-    pageIndex: currentPage,
-    pageSize: PAGE_SIZE,
-  });
+  } = useConstrainedBooks(
+    {
+      pageIndex: currentPage,
+      pageSize: PAGE_SIZE,
+    },
+    bookType ? [bookType] : undefined
+  );
   //------------------------------------------------------------------------------
   useEffect(() => {
     if (fetching) {

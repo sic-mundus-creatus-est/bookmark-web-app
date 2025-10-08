@@ -47,23 +47,23 @@ public class BookRepository : BaseRepository<Book>
                                                             bool sortDescending = false,
                                                             string? sortBy = null,
                                                             Dictionary<string, string>? bookFilters = null,
-                                                            List<string>? bookTypeIds = null,
-                                                            List<string>? bookAuthorIds = null,
-                                                            List<string>? bookGenreIds = null) {
+                                                            List<string>? bookTypeNames = null,
+                                                            List<string>? bookAuthorNames = null,
+                                                            List<string>? bookGenreNames = null) {
         var query = _dbSet.AsNoTracking()
                           .Include(b => b.BookType)
                           .Include(b => b.Authors).ThenInclude(ba => ba.Author)
                           .Include(b => b.Genres).ThenInclude(bg => bg.Genre)
                           .AsQueryable();
 
-        if (bookTypeIds?.Count > 0)
-            query = query.Where(b => bookTypeIds.Any(bt => b.BookType.Name.Contains(bt)));
+        if (bookTypeNames?.Count > 0)
+            query = query.Where(b => bookTypeNames.Any(bt => b.BookType.Name.Contains(bt)));
 
-        if (bookAuthorIds?.Count > 0)
-            query = query.Where(b => b.Authors.Any(ba => bookAuthorIds.Any(a => ba.Author.Name.Contains(a))));
+        if (bookAuthorNames?.Count > 0)
+            query = query.Where(b => b.Authors.Any(ba => bookAuthorNames.Any(a => ba.Author.Name.Contains(a))));
 
-        if (bookGenreIds?.Count > 0)
-            query = query.Where(b => b.Genres.Any(bg => bookGenreIds.Any(g => bg.Genre.Name.Contains(g))));
+        if (bookGenreNames?.Count > 0)
+            query = query.Where(b => b.Genres.Any(bg => bookGenreNames.Any(g => bg.Genre.Name.Contains(g))));
 
         return await GetConstrainedAsync<BookLinkDTO>(pageIndex, pageSize, sortDescending, sortBy, bookFilters, query);
     }

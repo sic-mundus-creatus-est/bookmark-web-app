@@ -41,12 +41,33 @@ export function useBook(id: string) {
   });
 }
 
-export function useConstrainedBooks(params: ConstrainedQueryParams) {
-  const queryString = params ? JSON.stringify(params) : "";
+export function useConstrainedBooks(
+  params?: ConstrainedQueryParams,
+  bookTypeNames?: string[],
+  bookAuthorNames?: string[],
+  bookGenreNames?: string[]
+) {
   return useQuery<Page<BookLinkProps>, ApiError>({
-    queryKey: [KEY_BOOKS, KEY_CONSTRAINED_BOOKS, queryString],
-    queryFn: () => getConstrainedBooks(params),
+    queryKey: [
+      KEY_BOOKS,
+      KEY_CONSTRAINED_BOOKS,
+      JSON.stringify({
+        params,
+        bookTypeIds: bookTypeNames,
+        bookAuthorIds: bookAuthorNames,
+        bookGenreIds: bookGenreNames,
+      }),
+    ],
+    queryFn: () =>
+      getConstrainedBooks(
+        params,
+        bookTypeNames,
+        bookAuthorNames,
+        bookGenreNames
+      ),
     enabled: !!params,
+    staleTime: 1 * (60 * 1000),
+    cacheTime: 2 * (60 * 1000),
   });
 }
 

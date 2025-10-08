@@ -27,12 +27,12 @@ export function AuthRow() {
   };
 
   return (
-    <div className="pt-2 flex justify-end space-x-4 flex-wrap text-popover mr-0.5">
+    <div className="pt-2 flex justify-end space-x-4 flex-wrap text-popover mr-1.5 lg:mr-0.5">
       {auth.user ? (
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex flex-row items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
+          className="flex flex-row items-center text-sm font-semibold border-b-2 border-transparent hover:text-accent transition-colors duration-200"
         >
           <span className="mr-1">
             <LogOut size={17} strokeWidth={2} />
@@ -45,7 +45,7 @@ export function AuthRow() {
           return (
             <Link
               to={item.to!}
-              className="flex flex-row items-center text-sm font-semibold border-b-2 border-transparent hover:border-accent transition-colors duration-200"
+              className="flex flex-row items-center text-sm font-semibold border-b-2 border-transparent hover:text-accent transition-colors duration-200"
               key={item.title}
             >
               <span className="mr-1">
