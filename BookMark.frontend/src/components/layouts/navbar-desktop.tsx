@@ -1,9 +1,7 @@
-import { SearchIcon } from "lucide-react";
-
-import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/logo";
 import { navConfig } from "@/config/navConfig";
 import { NavLink } from "react-router-dom";
+import { CommonSearchBox } from "../ui/common/common-search-box";
 
 export function DesktopNavbar() {
   return (
@@ -15,7 +13,7 @@ export function DesktopNavbar() {
         </div>
       </div>
 
-      <SearchBar />
+      <CommonSearchBox className="-mt-3.5" />
     </div>
   );
 }
@@ -24,14 +22,14 @@ export function ContentRow() {
   const contentLinks = navConfig.Categories.items;
 
   return (
-    <div className="flex text-md flex-wrap font-bold text-popover gap-5">
+    <div className="flex text-md flex-wrap font-bold text-accent gap-5">
       {contentLinks?.map((item) => (
         <div key={item.title} className="flex items-center space-x-5">
           <NavLink
             to={item.to!}
             className={({ isActive }) =>
-              `hover:scale-105 hover:text-primary ${
-                isActive ? "font-extrabold text-accent" : ""
+              `hover:scale-105 hover:text-popover ${
+                isActive ? "font-extrabold text-popover" : ""
               }`
             }
           >
@@ -39,20 +37,6 @@ export function ContentRow() {
           </NavLink>
         </div>
       ))}
-    </div>
-  );
-}
-
-function SearchBar() {
-  return (
-    <div className="relative flex items-center ml-auto -mt-1">
-      <Input
-        placeholder="Search..."
-        className="w-48 md:w-64 bg-muted pl-4 pr-12 text-accent rounded-lg border-b-2 border-accent"
-      />
-      <span className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-accent p-2 rounded-r-lg text-background hover:text-popover cursor-pointer">
-        <SearchIcon size={20} strokeWidth={3} />
-      </span>
     </div>
   );
 }

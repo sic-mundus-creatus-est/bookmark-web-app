@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { SearchIcon } from "lucide-react";
 import Hamburger from "hamburger-react";
 
 import { navConfig } from "@/config/navConfig";
-import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/logo";
 import { NavLink } from "react-router-dom";
+import { CommonSearchBox } from "../ui/common/common-search-box";
 
 export function MobileNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,7 +33,7 @@ export function MobileNavbar() {
             toggled={menuOpen}
             toggle={setMenuOpen}
             direction="left"
-            color="currentColor"
+            color={menuOpen ? "hsl(var(--popover))" : "hsl(var(--accent))"}
           />
         </div>
       </div>
@@ -78,15 +77,7 @@ export function MobileNavbar() {
         )}
       </div>
 
-      <div className="relative pb-2">
-        <Input
-          placeholder="Search..."
-          className="w-full rounded-lg bg-muted text-accent border-b-2 border-accent"
-        />
-        <span className="absolute right-0 p-2 rounded-r-lg bg-accent text-background transform -translate-y-9">
-          <SearchIcon size={20} strokeWidth={3} />
-        </span>
-      </div>
+      <CommonSearchBox />
     </div>
   );
 }

@@ -13,14 +13,15 @@ export function BooksPage() {
   //------------------------------------------------------------------------------
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
   //------------------------------------------------------------------------------
+  const matches = useMatches();
+  const bookTypeNames = (matches[1].handle as string[]) ?? undefined;
+  //------------------------------------------------------------------------------
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const currentPage = isNaN(pageParam) ? 1 : Math.max(1, pageParam);
-
-  const matches = useMatches();
-  console.log(matches[1].handle);
-  const bookType: string = (matches[1].handle as string) ?? undefined;
-
+  //------------------------------------------------------------------------------
+  const searchQuery = searchParams.get("searchTerm") || "";
+  const filters = searchQuery ? { "Title~=": searchQuery } : undefined;
   //------------------------------------------------------------------------------
   const {
     data: page,
@@ -30,8 +31,9 @@ export function BooksPage() {
     {
       pageIndex: currentPage,
       pageSize: PAGE_SIZE,
+      filters: filters,
     },
-    bookType ? [bookType] : undefined
+    bookTypeNames
   );
   //------------------------------------------------------------------------------
   useEffect(() => {
@@ -59,18 +61,31 @@ export function BooksPage() {
         1,
         Math.min(newPage, page?.totalPages || 1)
       );
-      setSearchParams({ page: validatedPage.toString() });
+
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("page", validatedPage.toString());
+
+      setSearchParams(newParams);
     }
   }; //==============================================================================
 
   if (error)
     return (
       <div className="text-center p-10 text-lg font-mono text-destructive">
-        No books here.
+        An error occurred.
       </div>
     );
   return (
     <div className="w-full pt-4 pb-3">
+      {filters && (
+        <h4 className="text-center text-lg font-semibold font-[Helvetica] overflow-hidden line-clamp-2">
+          Search results for{" "}
+          <span className="italic font-extrabold text-popover text-xl">
+            "{searchQuery}"
+          </span>
+          :
+        </h4>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4 mb-2">
         {page?.items?.map((book: BookLinkProps) => (
           <div key={book.id} className="aspect-[2/3] w-full max-w-xs">

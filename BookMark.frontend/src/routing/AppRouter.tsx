@@ -45,19 +45,23 @@ export const AppRouter = createBrowserRouter([
         element: <BooksPage />,
       },
       {
+        path: "/all",
+        element: <BooksPage />,
+      },
+      {
         path: "/books",
         element: <BooksPage />,
-        handle: "book",
+        handle: ["book"],
       },
       {
         path: "/comics",
         element: <BooksPage />,
-        handle: "comic",
+        handle: ["comic"],
       },
       {
         path: "/manga",
         element: <BooksPage />,
-        handle: "manga",
+        handle: ["manga"],
       },
     ],
   },
