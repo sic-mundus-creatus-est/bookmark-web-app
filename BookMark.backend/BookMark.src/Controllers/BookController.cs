@@ -6,7 +6,6 @@ using BookMark.Services.Core;
 using BookMark.Models.Domain;
 using BookMark.Services.Domain;
 using BookMark.Data.Repositories;
-using BookMark.Models;
 
 namespace BookMark.Controllers;
 
@@ -45,23 +44,6 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
 
         var createdBook = await _repository.GetByIdAsync<BookResponseDTO>(bookToCreate.Id);
         return CreatedAtAction(nameof(Get), new { id = bookToCreate.Id }, createdBook);
-    }
-
-
-    [HttpGet("get-constrained-books")]
-    public async Task<ActionResult<Page<BookResponseDTO>>> GetConstrainedBooks([FromQuery] int pageIndex = 1,
-                                                                                [FromQuery] int pageSize = 10,
-                                                                                [FromQuery] bool sortDescending = false,
-                                                                                [FromQuery] string? sortBy = null,
-                                                                                [FromQuery(Name = "filters")] Dictionary<string, string>? filters = null,
-                                                                                [FromQuery] List<string>? bookTypeNames = null,
-                                                                                [FromQuery] List<string>? bookAuthorNames = null,
-                                                                                [FromQuery] List<string>? bookGenreNames = null)
-    {
-        var page = await ((BookRepository)_repository).GetConstrainedBooksAsync<BookLinkDTO>(
-            pageIndex, pageSize, sortDescending, sortBy, filters, bookTypeNames, bookAuthorNames, bookGenreNames);
-
-        return Ok(page);
     }
 
 

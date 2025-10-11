@@ -14,27 +14,40 @@ export function BooksPage() {
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
   //------------------------------------------------------------------------------
   const matches = useMatches();
-  const bookTypeNames = (matches[1].handle as string[]) ?? undefined;
+  const bookTypeName = (matches[1].handle as string) ?? undefined;
   //------------------------------------------------------------------------------
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const currentPage = isNaN(pageParam) ? 1 : Math.max(1, pageParam);
   //------------------------------------------------------------------------------
-  const searchQuery = searchParams.get("searchTerm") || "";
-  const filters = searchQuery ? { "Title~=": searchQuery } : undefined;
+  const searchQuery = searchParams.get("searchTerm") || undefined;
+  let filters = {};
+
+  if (searchQuery != undefined) {
+    filters = {
+      ...filters,
+      "Title~=": searchQuery,
+      "Description~=": searchQuery,
+      "Authors.Author.Name~=": searchQuery,
+    };
+  }
+
+  if (bookTypeName != undefined) {
+    filters = {
+      ...filters,
+      "BookType.Name==": bookTypeName,
+    };
+  }
   //------------------------------------------------------------------------------
   const {
     data: page,
     isFetching: fetching,
     error,
-  } = useConstrainedBooks(
-    {
-      pageIndex: currentPage,
-      pageSize: PAGE_SIZE,
-      filters: filters,
-    },
-    bookTypeNames
-  );
+  } = useConstrainedBooks({
+    pageIndex: currentPage,
+    pageSize: PAGE_SIZE,
+    filters: filters,
+  });
   //------------------------------------------------------------------------------
   useEffect(() => {
     if (fetching) {
@@ -76,8 +89,8 @@ export function BooksPage() {
       </div>
     );
   return (
-    <div className="w-full pt-4 pb-3">
-      {filters && (
+    <div className={`w-full pb-2 ${!searchQuery && "pt-2"}`}>
+      {searchQuery && (
         <h4 className="text-center text-lg font-semibold font-[Helvetica] overflow-hidden line-clamp-2">
           Search results for{" "}
           <span className="italic font-extrabold text-popover text-xl">

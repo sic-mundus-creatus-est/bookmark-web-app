@@ -41,30 +41,10 @@ export function useBook(id: string) {
   });
 }
 
-export function useConstrainedBooks(
-  params?: ConstrainedQueryParams,
-  bookTypeNames?: string[],
-  bookAuthorNames?: string[],
-  bookGenreNames?: string[]
-) {
+export function useConstrainedBooks(params: ConstrainedQueryParams) {
   return useQuery<Page<BookLinkProps>, ApiError>({
-    queryKey: [
-      KEY_BOOKS,
-      KEY_CONSTRAINED_BOOKS,
-      JSON.stringify({
-        params,
-        bookTypeIds: bookTypeNames,
-        bookAuthorIds: bookAuthorNames,
-        bookGenreIds: bookGenreNames,
-      }),
-    ],
-    queryFn: () =>
-      getConstrainedBooks(
-        params,
-        bookTypeNames,
-        bookAuthorNames,
-        bookGenreNames
-      ),
+    queryKey: [KEY_BOOKS, KEY_CONSTRAINED_BOOKS, params],
+    queryFn: () => getConstrainedBooks(params),
     enabled: !!params,
     staleTime: 1 * (60 * 1000),
     cacheTime: 2 * (60 * 1000),

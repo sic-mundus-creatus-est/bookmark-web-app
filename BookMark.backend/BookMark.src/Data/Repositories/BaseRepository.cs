@@ -3,13 +3,14 @@ using System.Linq.Dynamic.Core;
 using System.Text.RegularExpressions;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 using BookMark.Models;
 using BookMark.Models.Domain;
 using System.Data;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using System.Collections;
+using System.Linq.Expressions;
 
 namespace BookMark.Data.Repositories;
 
@@ -23,8 +24,7 @@ public interface IBaseRepository<TModel>
                                                         int pageSize,
                                                         bool sortDescending = false,
                                                         string? sortBy = null,
-                                                        Dictionary<string, string>? filters = null,
-                                                        IQueryable<TModel>? query = null );
+                                                        Dictionary<string, string>? filters = null );
     Task UpdateAsync<TUpdateDTO>(string id, TUpdateDTO updateData);
     Task DeleteAsync(string id);
 }
@@ -37,12 +37,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
     protected abstract IReadOnlySet<string> AllowedFilterProps { get; }
 
-    private static readonly IReadOnlyDictionary<string, Type> _allTModelProps = typeof(TModel)
-                                                                                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                                                                .ToDictionary(
-                                                                                    p => p.Name,
-                                                                                    p => p.PropertyType
-                                                                                );
+    private static readonly IReadOnlyDictionary<string, Type> _allTModelProps = GetAllProps(typeof(TModel));
 
     protected IReadOnlyDictionary<string, Type> FilterPropTypes => _allTModelProps.Where(kv => AllowedFilterProps.Contains(kv.Key))
                                                                                   .ToDictionary(kv => kv.Key, kv => kv.Value);
@@ -91,91 +86,6 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     }
 
 
-    public virtual async Task<Page<TLinkDTO>> GetConstrainedAsync<TLinkDTO>(
-                                                int pageIndex,
-                                                int pageSize,
-                                                bool sortDescending = false,
-                                                string? sortBy = null,
-                                                Dictionary<string, string>? filters = null,
-                                                IQueryable<TModel>? customQuery = null) {
-        if (pageIndex < 1)
-            throw new ArgumentOutOfRangeException(nameof(pageIndex), "PageIndex must be greater than zero.");
-        if (pageSize < 1)
-            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than zero.");
-
-        var query = customQuery ?? _dbSet.AsNoTracking().AsQueryable();
-
-        if (filters != null && filters.Count > 0)
-        foreach (var filter in filters)
-        {
-            string key = filter.Key;
-            string value = filter.Value;
-
-            var match = Regex.Match(key, @"^([a-zA-Z]+)(==|>=|<=|>|<|~=)$");
-            if (!match.Success)
-                throw new FormatException($"Invalid filter key format for '{key}'. Keys must end with a comparison operator (==, >=, <=, >, <, ~=).");
-
-            string propName = match.Groups[1].Value;
-            string op = match.Groups[2].Value;
-
-            if (!FilterPropTypes.ContainsKey(propName))
-                throw new KeyNotFoundException($"Invalid filter key '{key}'. Allowed keys are: {string.Join(", ", FilterPropTypes.Keys)}.");
-
-            object typedValue;
-            try
-            {
-                typedValue = Convert.ChangeType(value, FilterPropTypes[propName]);
-            }
-            catch (Exception ex) when (ex is InvalidCastException || ex is FormatException || ex is OverflowException)
-            {
-                throw new FormatException($"Invalid filter value format for key '{key}'. Expected a value in the format of type '{FilterPropTypes[propName].Name}'.");
-            }
-
-            string predicate;
-            object[] values;
-
-            if (op == "~=" && FilterPropTypes[propName] == typeof(string))
-            {
-                predicate = $"{propName}.Contains(@0)";
-                values = [typedValue];
-            }
-            else
-            {
-                predicate = $"{propName} {op} @0";
-                values = [typedValue];
-            }
-
-            query = query.Where(predicate, values);
-        }
-
-        var direction = sortDescending ? "descending" : "ascending";
-        if(string.IsNullOrEmpty(sortBy))
-            query = query.OrderBy( $"Id {direction}" );
-        else if (FilterPropTypes.ContainsKey(sortBy))
-            query = query.OrderBy( $"{sortBy} {direction}" );
-        else
-            throw new KeyNotFoundException($"Invalid sorting parameter '{sortBy}'. Valid options are: {string.Join(", ", FilterPropTypes.Keys)}.");
-
-        var count = await query.CountAsync();
-        var totalPages = (int)Math.Ceiling(count / (double)pageSize);
-
-
-        if (totalPages > 0 && pageIndex > totalPages)
-            throw new ArgumentOutOfRangeException(nameof(pageIndex), $"You requested page {pageIndex}, but there are only {totalPages} page(s) available with the given constraints.");
-
-        List<TLinkDTO> entities = [];
-        if (totalPages > 0)
-        {
-            entities = await query.Skip((pageIndex - 1) * pageSize)
-                                  .Take(pageSize)
-                                  .ProjectTo<TLinkDTO>(_mapper.ConfigurationProvider)
-                                  .ToListAsync();
-        }
-
-        return new Page<TLinkDTO>(entities, pageIndex, totalPages);
-    }
-
-
     public virtual async Task UpdateAsync<TUpdateDTO>(string id, TUpdateDTO updateData)
     {
         TModel entityToUpdate = new TModel { Id = id };
@@ -191,6 +101,198 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
         _dbSet.Attach(entityToDelete);
         _dbSet.Remove(entityToDelete);
         await _context.SaveChangesAsync();
+    }
+
+
+    protected static Dictionary<string, Type> GetAllProps(Type type, string prefix = "", HashSet<Type>? visited = null)
+    {
+        visited ??= [];
+        var dict = new Dictionary<string, Type>();
+
+        if (visited.Contains(type))
+            return dict; // Already visited this type, stop recursion
+
+        visited.Add(type);
+
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            string propName = string.IsNullOrEmpty(prefix) ? prop.Name : $"{prefix}.{prop.Name}";
+            dict[propName] = prop.PropertyType;
+
+            if (prop.PropertyType == typeof(string) || prop.PropertyType.IsValueType)
+                continue;
+
+            Type subType = prop.PropertyType;
+
+            // For collections, get the element type
+            if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) && prop.PropertyType.IsGenericType)
+                subType = prop.PropertyType.GetGenericArguments().First();
+
+            // Recurse into sub-properties
+            foreach (var subProp in GetAllProps(subType, propName, visited))
+                dict[subProp.Key] = subProp.Value;
+        }
+
+        return dict;
+    }
+
+
+    public virtual async Task<Page<TLinkDTO>> GetConstrainedAsync<TLinkDTO>(int pageIndex, int pageSize,
+                                                                            bool sortDescending = false,
+                                                                            string? sortBy = null,
+                                                                            Dictionary<string, string>? filters = null) {
+        if (pageIndex < 1 || pageSize < 1)
+            throw new ArgumentOutOfRangeException(pageIndex < 1 ? nameof(pageIndex) : nameof(pageSize), "Must be greater than zero.");
+
+        var query = _dbSet.AsNoTracking().AsQueryable();
+
+        if (filters?.Count > 0)
+        {
+            var (predicates, values, filterTuples) = BuildFilters(filters);
+            query = query.Where(string.Join(" || ", predicates), [.. values]);
+            query = ApplySorting(query, sortBy, sortDescending, filterTuples);
+        }
+        else query = ApplySorting(query, sortBy, sortDescending);
+
+        var count = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(count / (double)pageSize);
+
+        if (totalPages > 0 && pageIndex > totalPages)
+            throw new ArgumentOutOfRangeException(nameof(pageIndex), $"Page {pageIndex} requested, only {totalPages} available.");
+
+        var entities = (totalPages > 0) ? await query.Skip((pageIndex - 1) * pageSize).Take(pageSize)
+                                                     .ProjectTo<TLinkDTO>(_mapper.ConfigurationProvider).ToListAsync()
+                                        : [];
+
+        return new Page<TLinkDTO>(entities, pageIndex, totalPages);
+    }
+
+
+    private (List<string> predicates, List<object> values, List<(string, string, object)> tuples) BuildFilters(Dictionary<string, string> filters)
+    {
+        var predicates = new List<string>();
+        var values = new List<object>();
+        var tuples = new List<(string, string, object)>();
+
+        foreach (var filter in filters)
+        {
+            var match = Regex.Match(filter.Key, @"([\w\.]+)(==|>=|<=|>|<|~=)");
+            if (!match.Success) throw new FormatException($"Invalid filter: '{filter.Key}'");
+
+            var prop = match.Groups[1].Value;
+            var op = match.Groups[2].Value;
+
+            if (!FilterPropTypes.ContainsKey(prop))
+                throw new KeyNotFoundException($"Invalid filter key '{filter.Key}'. Allowed: {string.Join(", ", FilterPropTypes.Keys)}");
+
+            var value = Convert.ChangeType(filter.Value, FilterPropTypes[prop]);
+            predicates.Add(BuildPredicate(typeof(TModel), prop, op, values.Count));
+            values.Add(value);
+            tuples.Add((prop, op, value));
+        }
+
+        return (predicates, values, tuples);
+    }
+
+
+    private IQueryable<TModel> ApplySorting(IQueryable<TModel> query, string? sortBy, bool sortDescending, List<(string Prop, string Op, object Value)>? filterTuples = null)
+    {
+        if (string.IsNullOrEmpty(sortBy))
+        {
+            // default sorting: by the order of filters (relevance sort)
+            if (filterTuples?.Count > 0)
+            {
+                IOrderedQueryable<TModel>? ordered = null;
+
+                foreach (var (prop, op, val) in filterTuples)
+                {
+                    if (op == "~=" && FilterPropTypes[prop] == typeof(string))
+                    {
+                        // relevance sorting (contains first)
+                        var containsLambda = BaseRepository<TModel>.BuildContainsLambda(prop, val);
+                        ordered = (ordered == null) ? query.OrderByDescending(containsLambda)
+                                                    : ordered.ThenByDescending(containsLambda);
+                    }
+                    else
+                    {
+                        // Regular sorting
+                        var selector = BaseRepository<TModel>.GetPropertySelector(prop);
+                        ordered = ordered == null
+                            ? (sortDescending ? query.OrderByDescending(selector) : query.OrderBy(selector))
+                            : (sortDescending ? ordered.ThenByDescending(selector) : ordered.ThenBy(selector));
+                    }
+                }
+
+                // Add stable secondary ordering
+                return ordered?.ThenBy(GetPropertySelector("Id")) ?? query.OrderBy(GetPropertySelector("Id"));
+            }
+            return sortDescending ? query.OrderByDescending(GetPropertySelector("Id"))
+                                  : query.OrderBy(GetPropertySelector("Id"));
+        }
+
+        if (!FilterPropTypes.ContainsKey(sortBy))
+            throw new KeyNotFoundException($"Invalid sort parameter '{sortBy}'.");
+
+        return sortDescending ? query.OrderByDescending(GetPropertySelector(sortBy))
+                              : query.OrderBy(GetPropertySelector(sortBy));
+    }
+
+
+    private static Expression<Func<TModel, object>> GetPropertySelector(string propertyPath)
+    {
+        var param = Expression.Parameter(typeof(TModel), "x");
+        Expression prop = param;
+
+        foreach (var part in propertyPath.Split('.'))
+        {
+            var propInfo = prop.Type.GetProperty(part);
+            if (propInfo == null)
+                return GetPropertySelector("Id"); // Fallback to Id if property not found
+            prop = Expression.Property(prop, propInfo);
+        }
+
+        return Expression.Lambda<Func<TModel, object>>(Expression.Convert(prop, typeof(object)), param);
+    }
+
+
+    private static Expression<Func<TModel, bool>> BuildContainsLambda(string propertyPath, object value)
+    {
+        var param = Expression.Parameter(typeof(TModel), "x");
+        Expression prop = param;
+
+        foreach (var part in propertyPath.Split('.'))
+        {
+            var propInfo = prop.Type.GetProperty(part);
+            if (propInfo == null)
+                return x => false; // Fallback if property not found
+            prop = Expression.Property(prop, propInfo);
+        }
+
+        var containsCall = Expression.Call(prop, typeof(string).GetMethod("Contains", [typeof(string)])!, Expression.Constant(value));
+        return Expression.Lambda<Func<TModel, bool>>(containsCall, param);
+    }
+
+
+    private static string BuildPredicate(Type rootType, string propPath, string op, int valueIndex)
+    {
+        string[] parts = propPath.Split('.');
+        Type currentType = rootType;
+
+        for (int i = 0; i < parts.Length; i++)
+        {
+            var prop = currentType.GetProperty(parts[i]);
+            if (prop == null) throw new InvalidOperationException($"Property '{parts[i]}' not found on {currentType.Name}");
+            currentType = prop.PropertyType;
+
+            if (currentType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(currentType))
+            {
+                string innerPath = string.Join(".", parts.Skip(i + 1));
+                string innerPredicate = op == "~=" ? $"{innerPath}.Contains(@{valueIndex})" : $"{innerPath} {op} @{valueIndex}";
+                return $"{parts[i]}.Any(x => {innerPredicate})";
+            }
+        }
+
+        return op == "~=" ? $"{propPath}.Contains(@{valueIndex})" : $"{propPath} {op} @{valueIndex}";
     }
 
 }

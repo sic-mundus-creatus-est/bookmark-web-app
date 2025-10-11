@@ -23,6 +23,8 @@ export function CommonSearchBox({
     } else {
       navigate(`${searchRoute}`);
     }
+
+    setSearch("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

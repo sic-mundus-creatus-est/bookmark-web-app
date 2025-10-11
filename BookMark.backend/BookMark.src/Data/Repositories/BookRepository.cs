@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 
 using BookMark.Models.Domain;
 using BookMark.Models.Relationships;
-using BookMark.Models;
 using AutoMapper;
 using BookMark.Models.DTOs;
 using AutoMapper.QueryableExtensions;
@@ -20,7 +19,10 @@ public class BookRepository : BaseRepository<Book>
                                                                             nameof(Book.OriginalLanguage),
                                                                             nameof(Book.PublicationYear),
                                                                             nameof(Book.PageCount),
-                                                                            nameof(Book.Description)
+                                                                            nameof(Book.Description),
+                                                                            "BookType.Name",
+                                                                            "Authors.Author.Name",
+                                                                            "Genres.Genre.Name",
                                                                         };
 
     public BookRepository(AppDbContext context, IMapper mapper) : base(context, mapper)
@@ -39,33 +41,6 @@ public class BookRepository : BaseRepository<Book>
         await _bookGenreDbSet.AddRangeAsync(bookToCreate.Genres);
 
         await _context.SaveChangesAsync();
-    }
-
-
-    public async Task<Page<BookLinkDTO>> GetConstrainedBooksAsync<BookLinkDTO>(int pageIndex,
-                                                            int pageSize,
-                                                            bool sortDescending = false,
-                                                            string? sortBy = null,
-                                                            Dictionary<string, string>? bookFilters = null,
-                                                            List<string>? bookTypeNames = null,
-                                                            List<string>? bookAuthorNames = null,
-                                                            List<string>? bookGenreNames = null) {
-        var query = _dbSet.AsNoTracking()
-                          .Include(b => b.BookType)
-                          .Include(b => b.Authors).ThenInclude(ba => ba.Author)
-                          .Include(b => b.Genres).ThenInclude(bg => bg.Genre)
-                          .AsQueryable();
-
-        if (bookTypeNames?.Count > 0)
-            query = query.Where(b => bookTypeNames.Any(bt => b.BookType.Name.Contains(bt)));
-
-        if (bookAuthorNames?.Count > 0)
-            query = query.Where(b => b.Authors.Any(ba => bookAuthorNames.Any(a => ba.Author.Name.Contains(a))));
-
-        if (bookGenreNames?.Count > 0)
-            query = query.Where(b => b.Genres.Any(bg => bookGenreNames.Any(g => bg.Genre.Name.Contains(g))));
-
-        return await GetConstrainedAsync<BookLinkDTO>(pageIndex, pageSize, sortDescending, sortBy, bookFilters, query);
     }
 
 
