@@ -52,7 +52,7 @@ export function getBookById(id: string): Promise<Book> {
 
 export function getConstrainedBooks(
   params: ConstrainedQueryParams
-): Promise<Page<BookLinkProps>> {
+): Promise<Page<BookLinkProps> | undefined> {
   const query = buildConstrainedQueryParams(params);
 
   return apiCall({

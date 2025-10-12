@@ -14,7 +14,7 @@ export function BooksPage() {
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
   //------------------------------------------------------------------------------
   const matches = useMatches();
-  const bookTypeName = (matches[1].handle as string) ?? undefined;
+  const bookTypeNameFromMatches = (matches[1].handle as string) ?? undefined;
   //------------------------------------------------------------------------------
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
@@ -32,10 +32,21 @@ export function BooksPage() {
     };
   }
 
-  if (bookTypeName != undefined) {
+  if (bookTypeNameFromMatches != undefined) {
     filters = {
       ...filters,
-      "BookType.Name==": bookTypeName,
+      "BookType.Name==": bookTypeNameFromMatches,
+    };
+  }
+  //------------------------------------------------------------------------------
+  const genreName = searchParams.get("genre") || undefined;
+  const bookTypeNameFromUrl = searchParams.get("bookType") || undefined;
+
+  if (genreName && bookTypeNameFromUrl) {
+    filters = {
+      ...filters,
+      "BookType.Name==": bookTypeNameFromUrl,
+      "Genres.Genre.Name==": genreName,
     };
   }
   //------------------------------------------------------------------------------

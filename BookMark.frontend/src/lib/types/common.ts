@@ -1,5 +1,5 @@
 export interface Page<T> {
-  items: T[] | null;
+  items?: T[];
   pageIndex: number;
   totalPages: number;
   hasPreviousPage: boolean;

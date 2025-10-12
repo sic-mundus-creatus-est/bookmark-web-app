@@ -148,8 +148,8 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
         if (filters?.Count > 0)
         {
-            var (predicates, values, filterTuples) = BuildFilters(filters);
-            query = query.Where(string.Join(" || ", predicates), [.. values]);
+            var (combinedPredicate, values, filterTuples) = BuildFilters(filters);
+            query = query.Where(combinedPredicate, [.. values]);
             query = ApplySorting(query, sortBy, sortDescending, filterTuples);
         }
         else query = ApplySorting(query, sortBy, sortDescending);
@@ -168,9 +168,10 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
     }
 
 
-    private (List<string> predicates, List<object> values, List<(string, string, object)> tuples) BuildFilters(Dictionary<string, string> filters)
+    private (string combinedPredicate, List<object> values, List<(string, string, object)> tuples) BuildFilters(Dictionary<string, string> filters)
     {
-        var predicates = new List<string>();
+        var orPredicates = new List<string>();    // OR for ~= operator
+        var andPredicates = new List<string>();   // AND for other operators  
         var values = new List<object>();
         var tuples = new List<(string, string, object)>();
 
@@ -186,12 +187,28 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
                 throw new KeyNotFoundException($"Invalid filter key '{filter.Key}'. Allowed: {string.Join(", ", FilterPropTypes.Keys)}");
 
             var value = Convert.ChangeType(filter.Value, FilterPropTypes[prop]);
-            predicates.Add(BuildPredicate(typeof(TModel), prop, op, values.Count));
+            var predicate = BuildPredicate(typeof(TModel), prop, op, values.Count);
+
             values.Add(value);
             tuples.Add((prop, op, value));
+
+            if (op == "~=")
+                orPredicates.Add(predicate);
+            else
+                andPredicates.Add(predicate);
         }
 
-        return (predicates, values, tuples);
+        // Combined: (OR_predicates) && (AND_predicates)
+        string combinedPredicate = "";
+
+        if (orPredicates.Count > 0 && andPredicates.Count > 0)
+            combinedPredicate = $"({string.Join(" || ", orPredicates)}) && {string.Join(" && ", andPredicates)}";
+        else if (orPredicates.Count > 0)
+            combinedPredicate = string.Join(" || ", orPredicates);
+        else if (andPredicates.Count > 0)
+            combinedPredicate = string.Join(" && ", andPredicates);
+
+        return (combinedPredicate, values, tuples);
     }
 
 

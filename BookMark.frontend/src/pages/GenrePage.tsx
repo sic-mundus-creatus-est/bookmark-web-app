@@ -16,7 +16,7 @@ import {
   useGenreById,
   useUpdateGenre,
 } from "@/lib/services/api-calls/hooks/useGenreApi";
-import { useBooksInGenre } from "@/lib/services/api-calls/hooks/useBookApi";
+import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 
 export function GenrePage() {
   //-------------------------------------------------------------
@@ -38,14 +38,28 @@ export function GenrePage() {
     data: genreBooks,
     isFetching: areGenreBooksFetching,
     error: genreBooksError,
-  } = useBooksInGenre(id);
+  } = useConstrainedBooks({
+    pageIndex: 1,
+    pageSize: 10,
+    filters: { "BookType.Name==": "book", "Genres.Genre.Name==": "fiction" },
+  });
+  const { data: genreComics } = useConstrainedBooks({
+    pageIndex: 1,
+    pageSize: 10,
+    filters: { "BookType.Name==": "comic", "Genres.Genre.Name==": "fiction" },
+  });
+  const { data: genreManga } = useConstrainedBooks({
+    pageIndex: 1,
+    pageSize: 10,
+    filters: { "BookType.Name==": "manga", "Genres.Genre.Name==": "fiction" },
+  });
   //-------------------------------------------------------------
   const genre = useMemo(() => {
     if (!genreData) return null;
 
     return {
       ...genreData,
-      books: genreBooks,
+      books: genreBooks?.items,
     };
   }, [genreData, genreBooks]);
   //-------------------------------------------------------------
@@ -124,73 +138,70 @@ export function GenrePage() {
           )}
         </button>
       </div>
-
-      <section id="genre-metadata">
-        {editMode ? (
+      {editMode ? (
+        <>
           <CommonTextInput
             value={watch("name")}
             onChange={(newName) => {
               setValue("name", newName, { shouldDirty: true });
             }}
           />
-        ) : null}
-        <div className="flex items-center text-sm text-accent/50 leading-tight mb-2">
-          <Tag className="mr-1 w-4 h-4 text-accent" />
-          <span className="hover:underline cursor-pointer">Genres</span>
-          <span className="mx-1">›</span>
-          <span className="text-popover font-semibold">
-            {editMode ? watch("name") : genre.name}
-          </span>
-        </div>
-        {editMode ? (
+          <div className="mt-4" />
           <CommonDescriptionInput
             value={watch("description")}
             onChange={(newDesc) => {
               setValue("description", newDesc, { shouldDirty: true });
             }}
           />
-        ) : (
-          <CommonDescription value={genre.description} />
-        )}
-      </section>
+          <div className="flex justify-end mt-2">
+            <CommonSubmitButton
+              label="Update"
+              onClick={handleSubmit(handleUpdateGenre)}
+              showCancel
+              onCancel={() => setEditMode((prev) => !prev)}
+              errorLabel={editFormError}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <section id="genre-metadata">
+            <h2 className="text-3xl font-bold">Fiction</h2>
+            <div className="flex items-center text-sm text-accent/50 leading-tight mb-2">
+              <Tag className="mr-1 w-4 h-4 text-accent" />
+              <span className="hover:underline cursor-pointer">Genres</span>
+              <span className="mx-1">›</span>
+              <span className="text-popover font-semibold">{genre.name}</span>
+            </div>
+            <CommonDescription value={genre.description} fontSize={17} />
+          </section>
+          <section id="genre-catalogs">
+            <GenreCatalogSection
+              key={`genre-book-catalog`}
+              label="Fiction Books"
+              genreName="fiction"
+              bookType="book"
+              books={genreBooks?.items}
+            />
 
-      {editMode ? null : (
-        <section id="genre-catalogs">
-          <GenreCatalogSection
-            name={genre.name}
-            type="Books"
-            books={genre.books}
-            review="Random featured review or message..."
-          />
+            <GenreCatalogSection
+              key={`genre-comics-catalog`}
+              label="Fiction Comics"
+              genreName="fiction"
+              bookType="comic"
+              books={genreComics?.items}
+            />
 
-          <GenreCatalogSection
-            name={genre.name}
-            type="Comics"
-            books={genre.books}
-            review="Another cool review or message..."
-            reverse
-          />
-
-          <GenreCatalogSection
-            name={genre.name}
-            type="Manga"
-            books={genre.books}
-            review="Reviews or insights text here."
-          />
-        </section>
+            <GenreCatalogSection
+              key={`genre-manga-catalog`}
+              label="Fiction Manga"
+              genreName="fiction"
+              bookType="manga"
+              books={genreManga?.items}
+            />
+          </section>
+        </>
       )}
-
-      {editMode ? (
-        <div className="flex justify-end mt-2">
-          <CommonSubmitButton
-            label="Update"
-            onClick={handleSubmit(handleUpdateGenre)}
-            showCancel
-            onCancel={() => setEditMode((prev) => !prev)}
-            errorLabel={editFormError}
-          />
-        </div>
-      ) : null}
     </div>
   );
 }

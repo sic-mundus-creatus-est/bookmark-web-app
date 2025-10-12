@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Tag, Tags, X } from "lucide-react";
+import { Plus, Tags, X } from "lucide-react";
 
 import { createGenre } from "@/lib/services/api-calls/genreApi";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
@@ -83,16 +83,7 @@ export function AddGenreModal() {
               maxLength={128}
               showCharCount
             />
-
-            <div className="flex items-center text-sm text-accent/50 leading-tight pb-2">
-              <Tag className="mr-1 w-4 h-4 text-accent" />
-              <span className="hover:underline cursor-pointer">Genres</span>
-              <span className="px-1">›</span>
-              <span className="text-popover font-semibold overflow-hidden">
-                {name}
-              </span>
-            </div>
-
+            <div className="mt-3" />
             <CommonDescriptionInput
               value={description}
               onChange={setDescription}
