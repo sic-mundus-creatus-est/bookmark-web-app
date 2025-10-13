@@ -4,18 +4,28 @@ import {
   deleteBookReview,
   getCurrentUserBookReview,
   getLatestBookReviews,
+  getUserById,
 } from "../userApi";
 import { ApiError } from "../api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page } from "@/lib/types/common";
-import { UserAuth } from "@/lib/types/user";
+import { User, UserAuth } from "@/lib/types/user";
 
+const KEY_USER = "user";
 const KEY_BOOK_REVIEW = "book_review";
 const KEY_BOOK_REVIEWS = "book_reviews";
 const KEY_BY_USER = "by_user";
 
 //--------------------------------------------------------------------------
 // QUERIES
+export function useUser(id: string) {
+  return useQuery<User, ApiError>({
+    queryKey: [KEY_USER, id],
+    queryFn: () => getUserById(id),
+    enabled: !!id,
+  });
+}
+
 export function useCurrentUserBookReview(
   bookId: string,
   currentUser?: UserAuth

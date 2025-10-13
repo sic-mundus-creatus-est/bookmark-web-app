@@ -1,6 +1,7 @@
 import { UserLinkProps } from "@/lib/types/user";
 import { CommonDescription } from "../common/common-description";
 import { BookRatingStars } from "./book-rating-stars";
+import { Link } from "react-router-dom";
 
 interface BookReviewCardProps {
   user?: UserLinkProps;
@@ -18,9 +19,12 @@ export function BookReviewCard({
     <div className="flex flex-col w-full px-1">
       <div className="flex flex-col">
         <h5 className="font-bold overflow-hidden text-lg">
-          <span className="text-accent hover:text-popover text-nowrap overflow-hidden cursor-pointer font-[Helvetica]">
+          <Link
+            to={`/user/${user?.id}`}
+            className="text-accent hover:text-popover text-nowrap overflow-hidden cursor-pointer font-[Helvetica]"
+          >
             @{user?.username}
-          </span>
+          </Link>
           :
         </h5>
         <div className="flex flex-row justify-between -mt-1 mb-1">

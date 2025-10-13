@@ -10,6 +10,7 @@ import { AddBookPage } from "@/pages/AddBookPage";
 import { GenrePage } from "@/pages/GenrePage";
 import { AuthorPage } from "@/pages/AuthorPage";
 import { SignUpPage } from "@/pages/SignUpPage";
+import { UserProfilePage } from "@/pages/UserProfilePage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -62,6 +63,10 @@ export const AppRouter = createBrowserRouter([
         path: "/manga",
         element: <BooksPage />,
         handle: ["manga"],
+      },
+      {
+        path: "/user/:id",
+        element: <UserProfilePage />,
       },
     ],
   },

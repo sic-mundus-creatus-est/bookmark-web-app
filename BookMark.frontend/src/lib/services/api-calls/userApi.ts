@@ -1,6 +1,11 @@
 import { BookReview } from "@/lib/types/book";
 import { apiCall, DELETE, GET, POST } from "./api";
 import { Page } from "@/lib/types/common";
+import { User } from "@/lib/types/user";
+
+export function getUserById(id: string): Promise<User> {
+  return apiCall({ method: GET, endpoint: `/api/users/get/${id}` });
+}
 
 export function createBookReview(data: {
   bookId: string;
