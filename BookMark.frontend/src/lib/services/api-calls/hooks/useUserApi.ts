@@ -4,6 +4,7 @@ import {
   deleteBookReview,
   getCurrentUserBookReview,
   getLatestBookReviews,
+  getLatestBookReviewsByUser,
   getUserById,
 } from "../userApi";
 import { ApiError } from "../api";
@@ -56,7 +57,7 @@ export function useLatestBookReviewsByUser(
 ) {
   return useQuery<Page<BookReview>, ApiError>({
     queryKey: [KEY_BOOK_REVIEWS, KEY_BY_USER, userId, pageIndex, pageSize],
-    queryFn: () => getLatestBookReviews(userId, pageIndex, pageSize),
+    queryFn: () => getLatestBookReviewsByUser(userId, pageIndex, pageSize),
     enabled: !!userId,
   });
 }

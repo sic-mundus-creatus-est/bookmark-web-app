@@ -50,7 +50,9 @@ public class MapperConfig : Profile
                 //_______________________________________________________________________________________________
 
                 //REVIEW_________________________________________________________________________________________
-                CreateMap<BookReview, BookReviewResponseDTO>();
+                CreateMap<BookReview, BookReviewResponseDTO>()
+                        .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))
+                        .ForMember(dest => dest.BookCoverImageUrl, opt => opt.MapFrom(src => src.Book.CoverImageUrl));
                 CreateMap<BookReviewCreateDTO, BookReview>();
                 //_______________________________________________________________________________________________
     }

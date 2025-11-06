@@ -73,6 +73,8 @@ export interface BookType {
 export interface BookReview {
   user: UserLinkProps;
   bookId: string;
+  bookTitle: string;
+  bookCoverImageUrl?: string;
   rating: number;
   content: string;
   createdAt: string;

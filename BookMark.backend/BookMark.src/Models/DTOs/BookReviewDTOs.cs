@@ -17,6 +17,8 @@ public record BookReviewResponseDTO
 {
     public required UserLinkDTO User { get; init; }
     public required string BookId { get; init; }
+    public required string BookTitle { get; init; }
+    public required string BookCoverImageUrl { get; set; }
     public int? Rating { get; init; }
     public string? Content { get; init; }
     public DateTime CreatedAt { get; init; }
