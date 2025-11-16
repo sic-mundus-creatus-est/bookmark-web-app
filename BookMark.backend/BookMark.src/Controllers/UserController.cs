@@ -125,6 +125,36 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
 
 
     [Authorize(Roles = UserRoles.RegularUser)]
+    [HttpPut("update-profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDTO dto)
+    {
+        User? user = null;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId != null)
+            user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+            return Problem( title: "Unauthorized",
+                            detail: "No authorized session found.",
+                            statusCode: StatusCodes.Status401Unauthorized );
+
+        if (dto.DisplayName != null)
+            user.DisplayName = dto.DisplayName;
+        if (dto.AboutMe != null)
+            user.AboutMe = dto.AboutMe;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+            return Problem( title: "Update Failed",
+                            detail: "Unable to update your profile. Try again later.",
+                            statusCode: StatusCodes.Status500InternalServerError );
+
+        return Ok();
+    }
+
+
+    [Authorize(Roles = UserRoles.RegularUser)]
     [HttpDelete("delete/{id}")]
     public override async Task<ActionResult> Delete([FromRoute] string id)
     {

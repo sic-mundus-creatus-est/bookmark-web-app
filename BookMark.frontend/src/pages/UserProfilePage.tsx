@@ -7,12 +7,16 @@ import { useLoading } from "@/lib/contexts/useLoading";
 import { API_FILE_RESOURCES_URL, ApiError } from "@/lib/services/api-calls/api";
 import {
   useLatestBookReviewsByUser,
+  useUpdateUserProfile,
   useUser,
 } from "@/lib/services/api-calls/hooks/useUserApi";
 import { BookReview } from "@/lib/types/book";
+import { UserUpdate } from "@/lib/types/user";
+import { getDirtyValues } from "@/lib/utils";
 import { SquarePen, SquareUserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export function UserProfilePage() {
   const navigate = useNavigate();
@@ -21,6 +25,9 @@ export function UserProfilePage() {
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
 
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [editFormError, setEditFormError] = useState<string>();
+
+  const updateUserProfile = useUpdateUserProfile(id);
 
   const {
     data: user,
@@ -29,6 +36,14 @@ export function UserProfilePage() {
   } = useUser(id);
 
   const { data: userReviews } = useLatestBookReviewsByUser(id, 1, 7);
+
+  const {
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { dirtyFields },
+  } = useForm<UserUpdate>();
 
   useEffect(() => {
     if (!id) {
@@ -41,6 +56,33 @@ export function UserProfilePage() {
     else hideLoadingScreen();
   }, [isUserFetching, showLoadingScreen, hideLoadingScreen]);
 
+  useEffect(() => {
+    if (editMode && user) {
+      reset(user);
+    } else if (!editMode) {
+      reset();
+      setEditFormError(undefined);
+    }
+  }, [editMode, user, reset]);
+
+  const handleUpdateUserProfile = async (allFields: UserUpdate) => {
+    const edits = getDirtyValues(allFields, dirtyFields);
+
+    console.log(edits);
+
+    if (Object.keys(edits).length <= 0)
+      return setEditFormError("You haven’t made any changes.");
+
+    updateUserProfile.mutate(edits, {
+      onError: (error: any) => {
+        setEditFormError(error?.message || "Failed to update profile.");
+      },
+      onSuccess: () => {
+        setEditMode(false);
+      },
+    });
+  };
+
   if (userError)
     return (
       <div className="text-center p-10 text-lg font-mono text-destructive">
@@ -50,9 +92,9 @@ export function UserProfilePage() {
       </div>
     );
   return (
-    <div className="mt-4">
-      <div className="w-full bg-accent flex flex-col items-center pt-7 pb-4 rounded-t-3xl rounded-b-sm px-4 sm:px-10 lg:px-40">
-        <div className="w-full flex justify-between items-center mb-4">
+    <div className="my-4">
+      <div className="w-full bg-accent flex flex-col pt-7 pb-4 rounded-t-3xl rounded-b-sm px-4 sm:px-10 lg:px-40">
+        <div className="w-full flex justify-between">
           <br />
           <button
             title={editMode ? "Cancel Editing" : "Edit"}
@@ -69,59 +111,97 @@ export function UserProfilePage() {
             )}
           </button>
         </div>
-        <SquareUserRound size={100} strokeWidth={1} className="text-popover" />
-        {editMode ? (
-          <>
-            <span className="text-muted">
+        <div className="flex flex-row items-center gap-2">
+          <SquareUserRound
+            size={100}
+            strokeWidth={1}
+            className="text-popover"
+          />
+          {editMode ? (
+            <div className="flex-col">
+              <h5 className="-mb-0.5 text-popover font-bold font-mono text-sm text-start">
+                Display Name
+              </h5>
               <CommonTextInput
                 placeholder="Display Name"
-                value={user?.displayName}
+                value={watch("displayName")}
+                onChange={(newName: string) => {
+                  setValue("displayName", newName, { shouldDirty: true });
+                }}
                 singleLine
                 fontSize={17}
               />
-            </span>
-            <h5 className="font-bold -mt-1 text-muted ">@{user?.username}</h5>
-            <div className="w-full mt-3">
-              <CommonDescriptionInput
-                placeholder="About Me"
-                value={user?.aboutMe}
-              />
             </div>
+          ) : (
+            <>
+              <div>
+                <h4 className="font-bold text-muted text-xl font-[Helvetica]">
+                  {user?.displayName ? user.displayName : `@${user?.username}`}
+                </h4>
+                {user?.displayName && (
+                  <h5 className="font-bold -mt-1 text-muted font-[Candara] italic text-[17px]">
+                    @{user.username}
+                  </h5>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+        {editMode ? (
+          <>
+            <h5 className="ml-3 -mb-1 text-popover font-bold font-mono text-sm">
+              About Me
+            </h5>
+            <CommonDescriptionInput
+              placeholder="About Me"
+              value={watch("aboutMe")}
+              onChange={(aboutMe: string) => {
+                setValue("aboutMe", aboutMe, { shouldDirty: true });
+              }}
+            />
             <div className="flex justify-end">
-              <CommonSubmitButton label="Update" showCancel />
+              <CommonSubmitButton
+                label="Update"
+                onClick={handleSubmit(handleUpdateUserProfile)}
+                showCancel
+                onCancel={() => setEditMode((prev) => !prev)}
+                errorLabel={editFormError}
+              />
             </div>
           </>
         ) : (
-          <>
-            <h4 className="font-bold text-muted ">{user?.displayName}</h4>
-            <h5 className="font-bold -mt-1 text-muted ">@{user?.username}</h5>
-            <br className="mt-2" />
-            <CommonDescription placeholder=". . ." value={user?.aboutMe} />
-          </>
+          <CommonDescription placeholder=". . ." value={user?.aboutMe} />
         )}
       </div>
 
       {!editMode && (
         <>
-          <h4 className="font-bold text-xl mb-2 mt-3 pl-3">Latest Reviews:</h4>
+          <h4 className="font-bold text-xl mb-2 mt-3 px-3 py-1 bg-popover rounded-sm text-muted font-[Candara] italic">
+            LATEST REVIEWS:
+          </h4>
 
           {userReviews?.items?.map((review: BookReview) => (
             <div
               className="border-2 border-b-4 rounded-lg mb-4 bg-muted"
               key={review.bookId}
             >
-              <h5 className="font-bold pl-2 text-lg">{review.bookTitle}</h5>
-              <div className="flex items-start gap-2 p-2">
-                <div className="aspect-[2/3] w-28">
-                  <img
-                    src={
-                      review?.bookCoverImageUrl
-                        ? `${API_FILE_RESOURCES_URL}${review.bookCoverImageUrl}`
-                        : "/cover_placeholder.jpg"
-                    }
-                    alt={`Cover of ${review?.bookTitle}`}
-                    className="w-full h-full rounded-sm border-t-2 border-x-2 border-accent bg-accent/95"
-                  />
+              <h5 className="font-bold px-2 pt-1 text-[20px] leading-tight tracking-tighter font-[Helvetica]">
+                {review.bookTitle}
+              </h5>
+              <hr className="border-t-2 border-accent pb-2 mx-1" />
+              <div className="flex items-start gap-2 px-2 pb-1">
+                <div className="aspect-[2/3] w-20 sm:w-28 flex-shrink-0">
+                  <Link to={`/book/${review.bookId}`}>
+                    <img
+                      src={
+                        review?.bookCoverImageUrl
+                          ? `${API_FILE_RESOURCES_URL}${review.bookCoverImageUrl}`
+                          : "/cover_placeholder.jpg"
+                      }
+                      alt={`Cover of ${review?.bookTitle}`}
+                      className="w-full h-full rounded-sm border-t-2 border-x-2 border-accent bg-accent/95"
+                    />
+                  </Link>
                 </div>
 
                 <BookReviewCard

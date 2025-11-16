@@ -1,7 +1,6 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 
-import { PrivateRoute } from "./PrivateRoute";
-import { HomePage } from "../pages/HomePage";
+// import { PrivateRoute } from "./PrivateRoute";
 import { SignInPage } from "@/pages/SignInPage";
 import { AppLayout } from "@/AppLayout";
 import { BooksPage } from "@/pages/BooksPage";
@@ -14,17 +13,12 @@ import { UserProfilePage } from "@/pages/UserProfilePage";
 
 export const AppRouter = createBrowserRouter([
   {
-    path: "/",
     element: <AppLayout />,
     children: [
-      {
-        path: "/private",
-        element: <PrivateRoute component={HomePage} />,
-      },
-      {
-        path: "/home",
-        element: <HomePage />,
-      },
+      // {
+      //   path: "/private",
+      //   element: <PrivateRoute component={Page} />,
+      // },
       {
         path: "/add-book",
         element: <AddBookPage />,
@@ -42,11 +36,7 @@ export const AppRouter = createBrowserRouter([
         element: <AuthorPage />,
       },
       {
-        path: "/",
-        element: <BooksPage />,
-      },
-      {
-        path: "/all",
+        path: "/home",
         element: <BooksPage />,
       },
       {
@@ -80,6 +70,6 @@ export const AppRouter = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/" />,
+    element: <Navigate to="/home" />,
   },
 ]);

@@ -6,11 +6,12 @@ import {
   getLatestBookReviews,
   getLatestBookReviewsByUser,
   getUserById,
+  updateUserProfile,
 } from "../userApi";
 import { ApiError } from "../api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Page } from "@/lib/types/common";
-import { User, UserAuth } from "@/lib/types/user";
+import { User, UserAuth, UserUpdate } from "@/lib/types/user";
 
 const KEY_USER = "user";
 const KEY_BOOK_REVIEW = "book_review";
@@ -65,6 +66,26 @@ export function useLatestBookReviewsByUser(
 
 //--------------------------------------------------------------------------
 // MUTATIONS
+
+export function useUpdateUserProfile(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UserUpdate) => updateUserProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [KEY_USER, userId] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEW],
+        refetchType: "all", // so that it updates on other pages too
+      });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEWS],
+        refetchType: "all",
+      });
+    },
+  });
+}
+
 export function useCreateBookReview() {
   const queryClient = useQueryClient();
 

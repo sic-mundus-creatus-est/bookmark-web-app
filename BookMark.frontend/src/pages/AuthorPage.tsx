@@ -163,7 +163,7 @@ export function AuthorPage() {
             />
           ) : (
             <div className="flex-shrink-0 flex justify-center sm:block -mt-4 sm:mt-0">
-              <h2 className="text-4xl font-semibold font-[Verdana]">
+              <h2 className="text-4xl font-semibold font-[Verdana] text-center sm:text-start">
                 {author.name}
               </h2>
             </div>
@@ -179,7 +179,7 @@ export function AuthorPage() {
                 }}
               />
             ) : (
-              <p className="text-muted-foreground mb-2 ml-2 font-[Georgia] text-xl">
+              <p className="text-muted-foreground mb-2 sm:ml-2 font-[Georgia] text-xl">
                 ({author.birthYear != 0 && <time>{author.birthYear}</time>} –{" "}
                 {author.deathYear != 0 && <time>{author.deathYear}</time>})
               </p>

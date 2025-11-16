@@ -134,9 +134,9 @@ export function CommonTextInput({
         {/* TR */}
         <span className="absolute -top-0.5 -right-0.5 w-2 h-2 border-t-2 border-r-2 border-accent group-focus-within:border-popover"></span>
         {/* BL */}
-        <span className="absolute bottom-0 -left-0.5 w-2 h-2 border-b-2 border-l-2 border-accent group-focus-within:border-popover"></span>
+        <span className="absolute -bottom-[1px] -left-0.5 w-2 h-2 border-b-2 border-l-2 border-accent group-focus-within:border-popover"></span>
         {/* BR */}
-        <span className="absolute bottom-0 -right-0.5 w-2 h-2 border-b-2 border-r-2 border-accent group-focus-within:border-popover"></span>
+        <span className="absolute -bottom-[1px] -right-0.5 w-2 h-2 border-b-2 border-r-2 border-accent group-focus-within:border-popover"></span>
       </div>
       {maxLength && showCharCount ? (
         <div className="px-2 text-sm text-accent/60 font-mono text-right -mt-1">

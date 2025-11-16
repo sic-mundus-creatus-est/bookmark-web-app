@@ -1,10 +1,18 @@
 import { BookReview } from "@/lib/types/book";
-import { apiCall, DELETE, GET, POST } from "./api";
+import { apiCall, DELETE, GET, POST, PUT } from "./api";
 import { Page } from "@/lib/types/common";
-import { User } from "@/lib/types/user";
+import { User, UserUpdate } from "@/lib/types/user";
 
 export function getUserById(id: string): Promise<User> {
   return apiCall({ method: GET, endpoint: `/api/users/get/${id}` });
+}
+
+export function updateUserProfile(data: UserUpdate): Promise<void> {
+  return apiCall({
+    method: PUT,
+    endpoint: "/api/users/update-profile",
+    body: data,
+  });
 }
 
 export function createBookReview(data: {

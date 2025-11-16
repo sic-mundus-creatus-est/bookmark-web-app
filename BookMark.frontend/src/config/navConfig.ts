@@ -11,7 +11,7 @@ interface INavItem {
 export const navConfig: { [key: string]: INavItem } = {
   Home: {
     title: "Home",
-    to: "/",
+    to: "/home",
   },
   Auth: {
     title: "Auth",

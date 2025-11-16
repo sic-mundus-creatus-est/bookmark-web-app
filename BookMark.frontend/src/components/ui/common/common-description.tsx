@@ -26,7 +26,7 @@ export function CommonDescription({
 
   return (
     <p
-      className={`w-full indent-4 font-[Georgia] rounded-lg break-words overflow-hidden whitespace-pre-line ${
+      className={`w-full indent-4 text-justify font-[Georgia] rounded-lg overflow-hidden whitespace-pre-wrap ${
         showBackground ? "p-2 border-2 border-b-4 border-accent bg-muted" : ""
       }`}
       style={{ cursor: isLong ? "pointer" : "default", fontSize: fontSize }}

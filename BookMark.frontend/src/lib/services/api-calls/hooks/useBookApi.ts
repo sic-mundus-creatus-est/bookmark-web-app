@@ -149,7 +149,10 @@ export function useUpdateBook() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [KEY_BOOK, variables.id] });
-      queryClient.invalidateQueries({ queryKey: [KEY_BOOKS] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOKS],
+        refetchType: "all",
+      });
     },
   });
 }

@@ -24,3 +24,8 @@ export interface UserLinkProps {
   username: string;
   displayName?: string;
 }
+
+export interface UserUpdate {
+  displayName?: string;
+  aboutMe?: string;
+}
