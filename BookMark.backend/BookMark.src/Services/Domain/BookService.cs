@@ -2,7 +2,15 @@ using BookMark.Models.Relationships;
 
 namespace BookMark.Services.Domain;
 
-public class BookService
+public interface IBookService
+{
+    ICollection<BookAuthor> AssembleBookAuthors(string bookId, List<string> authorIds);
+
+    ICollection<BookGenre> AssembleBookGenres(string bookId, List<string> genreIds);
+}
+
+
+public class BookService : IBookService
 {
     public BookService() { }
 

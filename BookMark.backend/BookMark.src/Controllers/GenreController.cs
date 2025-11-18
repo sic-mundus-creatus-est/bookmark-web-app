@@ -11,7 +11,7 @@ namespace BookMark.Controllers;
 [Route("api/genres")]
 public class GenreController : BaseController<Genre, GenreCreateDTO, GenreUpdateDTO, GenreResponseDTO, GenreLinkDTO>
 {
-    public GenreController(GenreRepository repository, IMapper mapper) : base(repository, mapper) { }
+    public GenreController(IBaseRepository<Genre> repository, IMapper mapper) : base(repository, mapper) { }
 
     [HttpGet("by/{authorId}")]
     public async Task<ActionResult<List<BookGenreResponseDTO>>> GetGenresByAuthor([FromRoute] string authorId)

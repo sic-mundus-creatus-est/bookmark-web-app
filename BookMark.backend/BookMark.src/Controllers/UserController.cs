@@ -26,13 +26,13 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
 
-    protected readonly BookReviewRepository _bookReviewRepository;
+    protected readonly IBookReviewRepository _bookReviewRepository;
 
     public UserController(UserManager<User> userManager,
                             RoleManager<IdentityRole> roleManager,
                             IConfiguration configuration,
-                            UserRepository repository,
-                            BookReviewRepository bookReviewRepository,
+                            IBaseRepository<User> repository,
+                            IBookReviewRepository bookReviewRepository,
                             IMapper mapper) : base(repository, mapper)
     {
         _userManager = userManager;

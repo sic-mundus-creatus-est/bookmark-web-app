@@ -7,7 +7,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookMark.Data.Repositories;
 
-public class BookReviewRepository
+public interface IBookReviewRepository
+{
+    Task CreateBookReviewAsync(BookReview review);
+
+    Task<BookReviewResponseDTO?> GetCurrentUserBookReviewAsync(string userId, string bookId);
+
+    Task<Page<BookReviewResponseDTO>> GetLatestBookReviewsAsync(string bookId, int pageIndex = 1, int pageSize = 5);
+
+    Task<Page<BookReviewResponseDTO>> GetLatestBookReviewsByUserAsync(string userId, int pageIndex = 1, int pageSize = 5);
+
+    Task DeleteBookReviewAsync(string userId, string bookId);
+}
+
+
+public class BookReviewRepository : IBookReviewRepository
 {
     protected readonly AppDbContext _context;
     protected readonly IMapper _mapper;

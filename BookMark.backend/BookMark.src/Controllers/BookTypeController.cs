@@ -11,6 +11,6 @@ namespace BookMark.Controllers;
 [Route("api/book-types")]
 public class BookTypeController : BaseController<BookType, BookTypeCreateUpdateDTO, BookTypeCreateUpdateDTO, BookTypeResponseDTO, BookTypeResponseDTO>
 {
-    public BookTypeController(BookTypeRepository repository, IMapper mapper) : base(repository, mapper) { }
+    public BookTypeController(IBaseRepository<BookType> repository, IMapper mapper) : base(repository, mapper) { }
 
 }

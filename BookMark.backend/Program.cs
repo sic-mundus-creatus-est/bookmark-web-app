@@ -15,6 +15,7 @@ using BookMark.Models.Domain;
 using BookMark.Services.Domain;
 using BookMark.Data.Repositories;
 using AutoMapper.Internal;
+using BookMark.Models.Relationships;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -24,7 +25,7 @@ ConfigurationManager configuration = builder.Configuration;
 //APP-DB-CONTEXT_______________________________________________________________________________________________
 builder.Services.AddDbContext<AppDbContext>( options => {
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-        options.EnableSensitiveDataLogging(); } );
+         } );
 //_____________________________________________________________________________________________________________
 
 //AUTO-MAPPER__________________________________________________________________________________________________
@@ -37,14 +38,14 @@ builder.Services.AddAutoMapper(cfg =>
 //BOOKMARK-SERVICES____________________________________________________________________________________________
 builder.Services.AddTransient<IFileService, FileService>();
 
-builder.Services.AddScoped<BookService>();
+builder.Services.AddScoped<IBookService, BookService>();
 
-builder.Services.AddScoped<BookRepository>();
-builder.Services.AddScoped<BookTypeRepository>();
-builder.Services.AddScoped<AuthorRepository>();
-builder.Services.AddScoped<GenreRepository>();
-builder.Services.AddScoped<UserRepository>();
-builder.Services.AddScoped<BookReviewRepository>();
+builder.Services.AddScoped<IBaseRepository<Book>, BookRepository>();
+builder.Services.AddScoped<IBaseRepository<BookType>, BookTypeRepository>();
+builder.Services.AddScoped<IBaseRepository<Author>, AuthorRepository>();
+builder.Services.AddScoped<IBaseRepository<Genre>, GenreRepository>();
+builder.Services.AddScoped<IBaseRepository<User>, UserRepository>();
+builder.Services.AddScoped<IBookReviewRepository, BookReviewRepository>();
 //_____________________________________________________________________________________________________________
 
 //CORS_________________________________________________________________________________________________________
@@ -63,7 +64,7 @@ builder.Services.AddCors( options => {
 //_____________________________________________________________________________________________________________
 
 //CONTROLLERS__________________________________________________________________________________________________
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddControllers().AddControllersAsServices().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.MaxDepth = 64;
 });
@@ -204,3 +205,5 @@ app.MapControllers();
 app.Run();
 
 #endregion
+
+public partial class Program { }

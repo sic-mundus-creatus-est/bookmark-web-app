@@ -13,7 +13,7 @@ namespace BookMark.Controllers;
 [Route("api/books")]
 public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO, BookResponseDTO, BookLinkDTO>
 {
-    protected readonly BookService _bookService;
+    protected readonly IBookService _bookService;
     protected readonly IFileService _fileService;
 
     private const int MAX_COVER_IMAGE_SIZE_MB = 10;
@@ -21,7 +21,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     public const int MAX_BOOK_AUTHORS = 16;
     public const int MAX_BOOK_GENRES = 16;
 
-    public BookController(BookRepository repository, IMapper mapper, BookService bookService, IFileService fileService) : base(repository, mapper)
+    public BookController(IBaseRepository<Book> repository, IMapper mapper, IBookService bookService, IFileService fileService) : base(repository, mapper)
     {
         _bookService = bookService;
         _fileService = fileService;
