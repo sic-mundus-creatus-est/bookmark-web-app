@@ -13,21 +13,10 @@ public class ExampleTest : PageTest
     [Test]
     public async Task HasTitle()
     {
-        await Page.GotoAsync("https://playwright.dev");
+        await Page.GotoAsync("http://localhost:5173/home");
 
         // Expect a title "to contain" a substring.
-        await Expect(Page).ToHaveTitleAsync(new Regex("Playwright"));
+        await Expect(Page).ToHaveTitleAsync(new Regex("BookMark"));
     }
-
-    [Test]
-    public async Task GetStartedLink()
-    {
-        await Page.GotoAsync("https://playwright.dev");
-
-        // Click the get started link.
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Get started" }).ClickAsync();
-
-        // Expects page to have a heading with the name of Installation.
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Installation" })).ToBeVisibleAsync();
-    } 
+    
 }
