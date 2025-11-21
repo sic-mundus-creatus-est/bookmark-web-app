@@ -7,7 +7,13 @@ import { BookRatingStars } from "./book-rating-stars";
 export function BookCard({ book }: { book: BookLinkProps }) {
   const navigate = useNavigate();
   return (
-    <Link to={`/book/${book.id}`} className="block w-full">
+    <Link
+      to={`/book/${book.id}`}
+      className="block w-full"
+      aria-label={`Book: ${book.title} by ${book.authors
+        .map((a) => a.name)
+        .join(", ")}`}
+    >
       <Card className="bg-accent rounded-lg flex flex-col relative border-2 border-b-4 border-accent hover:border-popover">
         {/* BookCover */}
         <img

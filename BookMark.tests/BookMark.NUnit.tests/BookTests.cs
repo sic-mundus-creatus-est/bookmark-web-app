@@ -2,7 +2,6 @@ using BookMark.Controllers;
 using BookMark.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -13,30 +12,20 @@ namespace BookMark.tests;
 [TestFixture]
 public class Tests
 {
-    private WebApplicationFactory<Program> _factory = null!;
-    private BookController _bookController = null!;
+   private BookController _controller;
     
     private const string TestBookId = "b28cb09a-0dfc-426b-afa6-289b140e8034";
 
-    [SetUp]
+    [OneTimeSetUp]
     public void Setup()
     {
-        _factory = new WebApplicationFactory<Program>();
-        var _scope = _factory.Services.CreateScope();
-        var services = _scope.ServiceProvider;
-        _bookController = services.GetRequiredService<BookController>();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _factory?.Dispose();
+        _controller = GlobalTestSetup.Services.GetRequiredService<BookController>();
     }
 
     [Test]
     public async Task Get_ReturnsOk_WhenABookExists()
     {
-        var result = (await _bookController.Get(TestBookId)).Result;
+        var result = (await _controller.Get(TestBookId)).Result;
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
         var dto = ((OkObjectResult)result!).Value as BookResponseDTO;
@@ -47,7 +36,7 @@ public class Tests
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsInvalid()
     {
-        var result = (await _bookController.Get("random-id")).Result;
+        var result = (await _controller.Get("random-id")).Result;
 
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
@@ -55,7 +44,7 @@ public class Tests
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsEmpty()
     {
-        var result = (await _bookController.Get("")).Result;
+        var result = (await _controller.Get("")).Result;
 
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }

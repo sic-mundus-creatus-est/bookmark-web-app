@@ -26,6 +26,7 @@ export function ContentRow() {
       {contentLinks?.map((item) => (
         <div key={item.title} className="flex items-center space-x-5">
           <NavLink
+            aria-label={item.title}
             to={item.to!}
             className={({ isActive }) =>
               `hover:scale-105 hover:text-popover ${

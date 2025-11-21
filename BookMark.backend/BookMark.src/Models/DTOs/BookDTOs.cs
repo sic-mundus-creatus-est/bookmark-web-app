@@ -80,6 +80,7 @@ public record BookLinkDTO
     public required string Id { get; init; }
     public required string Title { get; init; }
     public string? CoverImageUrl { get; init; }
+    public required BookTypeResponseDTO BookType { get; init; }
     public required List<BookAuthorResponseDTO> Authors { get; init; }
 
     public double? AverageRating { get; set; }

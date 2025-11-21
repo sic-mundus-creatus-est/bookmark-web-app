@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BookMark.backend\BookMark.backend.csproj" />
+    <ProjectReference Include="..\..\BookMark.backend\BookMark.backend.csproj" />
   </ItemGroup>
 
 </Project>
