@@ -30,7 +30,7 @@ export function getGenresByAuthor(authorId: string): Promise<GenreLinkProps[]> {
 export function updateGenre(
   id: string,
   editedData: GenreUpdate
-): Promise<void> {
+): Promise<Genre> {
   return apiCall({
     method: PATCH,
     endpoint: `/api/genres/update/${id}`,

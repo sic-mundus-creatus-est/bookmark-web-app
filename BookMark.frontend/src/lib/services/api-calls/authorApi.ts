@@ -52,7 +52,7 @@ export async function getAuthorSuggestions(
 export function updateAuthor(
   id: string,
   editedData: AuthorUpdate
-): Promise<void> {
+): Promise<Author> {
   return apiCall({
     method: PATCH,
     endpoint: `/api/authors/update/${id}`,

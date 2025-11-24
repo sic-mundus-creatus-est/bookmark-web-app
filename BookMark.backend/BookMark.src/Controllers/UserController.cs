@@ -126,7 +126,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
 
     [Authorize(Roles = UserRoles.RegularUser)]
     [HttpPut("update-profile")]
-    public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDTO dto)
+    public async Task<ActionResult<UserResponseDTO>> UpdateProfile([FromBody] UserUpdateDTO dto)
     {
         User? user = null;
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -149,8 +149,10 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
             return Problem( title: "Update Failed",
                             detail: "Unable to update your profile. Try again later.",
                             statusCode: StatusCodes.Status500InternalServerError );
+        
+        var response = _mapper.Map<UserResponseDTO>(user);
 
-        return Ok();
+        return Ok(response);
     }
 
 

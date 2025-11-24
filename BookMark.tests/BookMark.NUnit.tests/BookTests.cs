@@ -41,8 +41,8 @@ public class BookTests
         {
             BookTypeId = "book",
             Title = "Test Book",
-            AuthorIds = new List<string> { "tolkien" },
-            GenreIds = new List<string> { "fantasy" },
+            AuthorIds = ["tolkien"],
+            GenreIds = ["fantasy"],
             OriginalLanguage = "English",
             PageCount = 300,
             PublicationYear = 2024,
@@ -65,8 +65,8 @@ public class BookTests
         {
             BookTypeId = "nonexistent-type",
             Title = "Invalid Book",
-            AuthorIds = new List<string> { "no-such-author" },
-            GenreIds = new List<string> { "no-such-genre" },
+            AuthorIds = ["no-such-author"],
+            GenreIds = ["no-such-genre"],
             OriginalLanguage = "English",
             PageCount = 100,
             PublicationYear = 2024,
@@ -91,8 +91,8 @@ public class BookTests
         {
             BookTypeId = "book",
             Title = "Test Huge File",
-            AuthorIds = new List<string> { "tolkien" },
-            GenreIds = new List<string> { "fantasy" },
+            AuthorIds = ["tolkien"],
+            GenreIds = ["fantasy"],
             OriginalLanguage = "English",
             PageCount = 100,
             PublicationYear = 2024,
@@ -122,8 +122,8 @@ public class BookTests
         {
             Title = "Test Book",
             BookTypeId = "book",
-            AuthorIds = new List<string> { "tolkien" },
-            GenreIds = new List<string> { "fantasy" },
+            AuthorIds = ["tolkien"],
+            GenreIds = ["fantasy"],
             OriginalLanguage = "English",
             PageCount = 100,
             PublicationYear = 2024,
@@ -187,12 +187,9 @@ public class BookTests
         };
 
         var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
-        Assert.That(((OkResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(((OkObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
-        var returned = (await _controller.Get(_createdBookId!)).Result;
-        Assert.That(((ObjectResult)returned!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-
-        var updatedBook = ((OkObjectResult)returned!).Value as BookResponseDTO;
+        var updatedBook = ((OkObjectResult)result!).Value as BookResponseDTO;
         Assert.That(updatedBook, Is.Not.Null);
         Assert.Multiple(() =>
         {
@@ -213,12 +210,9 @@ public class BookTests
         };
 
         var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
-        Assert.That(((OkResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(((OkObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
-        var returned = (await _controller.Get(_createdBookId!)).Result;
-        Assert.That(((ObjectResult)returned!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-
-        var updatedBook = ((OkObjectResult)returned!).Value as BookResponseDTO;
+        var updatedBook = ((OkObjectResult)result!).Value as BookResponseDTO;
         Assert.That(updatedBook, Is.Not.Null);
         Assert.Multiple(() =>
         {

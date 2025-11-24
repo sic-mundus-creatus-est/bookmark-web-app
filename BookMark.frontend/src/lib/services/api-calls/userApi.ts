@@ -7,7 +7,7 @@ export function getUserById(id: string): Promise<User> {
   return apiCall({ method: GET, endpoint: `/api/users/get/${id}` });
 }
 
-export function updateUserProfile(data: UserUpdate): Promise<void> {
+export function updateUserProfile(data: UserUpdate): Promise<User> {
   return apiCall({
     method: PUT,
     endpoint: "/api/users/update-profile",

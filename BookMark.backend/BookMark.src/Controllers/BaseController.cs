@@ -79,7 +79,9 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
 
         await _repository.UpdateAsync(id, updateData!);
 
-        return Ok();
+        var updatedEntity = await _repository.GetByIdAsync<TResponseDTO>(id);
+
+        return Ok(updatedEntity);
     }
 
 

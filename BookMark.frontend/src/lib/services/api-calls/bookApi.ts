@@ -64,7 +64,7 @@ export function getConstrainedBooks(
 export function updateBookMetadata(
   id: string,
   metadata: BookMetadata
-): Promise<void> {
+): Promise<Book> {
   return apiCall({
     method: PATCH,
     endpoint: `/api/books/update/${id}`,
