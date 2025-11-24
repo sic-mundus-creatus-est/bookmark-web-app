@@ -2,6 +2,7 @@ using BookMark.Controllers;
 using BookMark.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -30,6 +31,9 @@ public class BookTests
         _scope.Dispose();
     }
 
+// ==============================================================================================================
+// CREATE
+
     [Test, Order(1)]
     public async Task Create_ReturnsOk_WhenValidBookDataProvided()
     {
@@ -54,6 +58,90 @@ public class BookTests
         _createdBookId = createdDto.Id;
     }
 
+    [Test]
+    public void Create_ThrowsDbUpdateException_WhenAuthorsOrGenresDoNotExist()
+    {
+        var dto = new BookCreateDTO
+        {
+            BookTypeId = "nonexistent-type",
+            Title = "Invalid Book",
+            AuthorIds = new List<string> { "no-such-author" },
+            GenreIds = new List<string> { "no-such-genre" },
+            OriginalLanguage = "English",
+            PageCount = 100,
+            PublicationYear = 2024,
+            Description = "Invalid references"
+        };
+
+        Assert.ThrowsAsync<DbUpdateException>(async () =>
+        {
+            await _controller.Create(dto);
+        });
+    }
+
+    [Test]
+    public void Create_ThrowsArgumentException_WhenCoverImageIsTooLarge()
+    {
+        var bigBytes = new byte[12 * 1024 * 1024]; // 12 MB
+        var stream = new MemoryStream(bigBytes);
+
+        var file = new FormFile(stream, 0, bigBytes.Length, "CoverImageFile", "big_image.jpg");
+
+        var dto = new BookCreateDTO
+        {
+            BookTypeId = "book",
+            Title = "Test Huge File",
+            AuthorIds = new List<string> { "tolkien" },
+            GenreIds = new List<string> { "fantasy" },
+            OriginalLanguage = "English",
+            PageCount = 100,
+            PublicationYear = 2024,
+            CoverImageFile = file
+        };
+
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+        {
+            await _controller.Create(dto);
+        });
+
+        Assert.That(ex!.Message, Does.Contain("exceedes the max file size"));
+    }
+
+    [Test]
+    public void Create_ReturnsBadRequest_WhenCoverImageHasZeroLength()
+    {
+        var emptyFile = new FormFile(
+            baseStream: new MemoryStream([]),
+            baseStreamOffset: 0,
+            length: 0,
+            name: "CoverImageFile",
+            fileName: "empty.jpg"
+        );
+
+        var dto = new BookCreateDTO
+        {
+            Title = "Test Book",
+            BookTypeId = "book",
+            AuthorIds = new List<string> { "tolkien" },
+            GenreIds = new List<string> { "fantasy" },
+            OriginalLanguage = "English",
+            PageCount = 100,
+            PublicationYear = 2024,
+            CoverImageFile = emptyFile
+        };
+
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+        {
+            await _controller.Create(dto);
+        });
+
+        Assert.That(ex.Message, Does.Contain("file").And.Contain("is empty"));
+    }
+// ==============================================================================================================
+
+// ==============================================================================================================
+// GET
+
     [Test, Order(2)]
     public async Task Get_ReturnsOk_WhenABookExists()
     {
@@ -72,14 +160,6 @@ public class BookTests
         });
     }
 
-    [Test, Order(3)]
-    public async Task Delete_ReturnsOk_WhenBookIsDeleted()
-    {
-        var deleteResult = await _controller.Delete(_createdBookId!);
-
-        Assert.That(((NoContentResult)deleteResult!).StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
-    }
-
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsInvalid()
     {
@@ -95,5 +175,91 @@ public class BookTests
 
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
+// ==============================================================================================================
+// UPDATE
+
+    [Test, Order(3)]
+    public async Task Update_UpdatesTitleOnly_WhenSingleFieldProvided()
+    {
+        var updateDto = new BookUpdateDTO
+        {
+            Title = "The Fellowship of the Ring - Corrected"
+        };
+
+        var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
+        Assert.That(((OkResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var returned = (await _controller.Get(_createdBookId!)).Result;
+        Assert.That(((ObjectResult)returned!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var updatedBook = ((OkObjectResult)returned!).Value as BookResponseDTO;
+        Assert.That(updatedBook, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(updatedBook!.Title, Is.EqualTo(updateDto.Title));
+            Assert.That(updatedBook.PageCount, Is.EqualTo(300));
+            Assert.That(updatedBook.Authors.Any(a => a.Id == "tolkien"), Is.True);
+            Assert.That(updatedBook.Genres.Any(g => g.Id == "fantasy"), Is.True);
+        });
+    }
+
+    [Test, Order(4)]
+    public async Task Update_UpdatesMultipleFields_WhenProvided()
+    {
+        var updateDto = new BookUpdateDTO
+        {
+            PublicationYear = 1955,
+            PageCount = 430
+        };
+
+        var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
+        Assert.That(((OkResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var returned = (await _controller.Get(_createdBookId!)).Result;
+        Assert.That(((ObjectResult)returned!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var updatedBook = ((OkObjectResult)returned!).Value as BookResponseDTO;
+        Assert.That(updatedBook, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(updatedBook.PublicationYear, Is.EqualTo(1955));
+            Assert.That(updatedBook.PageCount, Is.EqualTo(430));
+            Assert.That(updatedBook.Title, Is.EqualTo("The Fellowship of the Ring - Corrected"));
+        });
+    }
+
+    [Test]
+    public void Update_ReturnsDbUpdateException_WhenNewBookTypeIdDoesNotExist()
+    {
+        var updateDto = new BookUpdateDTO
+        {
+            BookTypeId = "nonexistent-type"
+        };
+
+        Assert.ThrowsAsync<DbUpdateException>(async () =>
+        {
+            await _controller.Update("monster", updateDto);
+        });
+    }
+
+// ==============================================================================================================
+// DELETE
+
+    [Test, Order(5)]
+    public async Task Delete_ReturnsOk_WhenBookIsDeleted()
+    {
+        var result = await _controller.Delete(_createdBookId!);
+
+        Assert.That(((NoContentResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
+    }
+
+    [Test]
+    public async Task Delete_ReturnsBadRequest_WhenIdIsInvalid()
+    {
+        var result = await _controller.Delete(_createdBookId!);
+
+        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+    }
+// ==============================================================================================================
 
 }
