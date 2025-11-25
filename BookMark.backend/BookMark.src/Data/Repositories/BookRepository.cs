@@ -71,24 +71,4 @@ public class BookRepository : BaseRepository<Book>
         await _context.SaveChangesAsync();
     }
 
-
-    public async Task<List<BookLinkDTO>> GetBooksByAuthorAsync(string authorId, int count)
-    {
-        return await _dbSet.Where(b => b.Authors.Any(ba => ba.AuthorId == authorId))
-                           .AsNoTracking()
-                           .Take(count)
-                           .ProjectTo<BookLinkDTO>(_mapper.ConfigurationProvider)
-                           .ToListAsync();
-    }
-    
-
-    public async Task<List<BookLinkDTO>> GetBooksInGenreAsync(string genreId, int count)
-    {
-        return await _dbSet.Where(b => b.Genres.Any(bg => bg.GenreId == genreId))
-                           .AsNoTracking()
-                           .Take(count)
-                           .ProjectTo<BookLinkDTO>(_mapper.ConfigurationProvider)
-                           .ToListAsync();
-    }
-
 }

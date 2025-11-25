@@ -119,16 +119,6 @@ export function getBooksByAuthor(
   });
 }
 
-export function getBooksInGenre(
-  genreId: string,
-  count: number
-): Promise<BookLinkProps[]> {
-  return apiCall({
-    method: GET,
-    endpoint: `/api/books/genre/${genreId}?count=${count}`,
-  });
-}
-
 export function getAllBookTypes(): Promise<BookType[]> {
   return apiCall({
     method: GET,

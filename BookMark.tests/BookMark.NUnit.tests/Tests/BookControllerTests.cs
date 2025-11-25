@@ -1,4 +1,5 @@
 using BookMark.Controllers;
+using BookMark.Models;
 using BookMark.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -187,7 +188,7 @@ public class BookControllerTests
         };
 
         var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
-        Assert.That(((OkObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
         var updatedBook = ((OkObjectResult)result!).Value as BookResponseDTO;
         Assert.That(updatedBook, Is.Not.Null);
@@ -210,7 +211,7 @@ public class BookControllerTests
         };
 
         var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
-        Assert.That(((OkObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
         var updatedBook = ((OkObjectResult)result!).Value as BookResponseDTO;
         Assert.That(updatedBook, Is.Not.Null);
@@ -255,5 +256,208 @@ public class BookControllerTests
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }
 // ==============================================================================================================
+
+// ==============================================================================================================
+// REPLACE_AUTHORS
+
+    [Test]
+    public async Task ReplaceAuthors_SuccessfullyReplacesAuthors()
+    {
+        var bookId = "lotr-fellowship";
+        var authors = new List<string> { "strugatsky" };
+
+        var result = await _controller.ReplaceAuthors(bookId, authors);
+
+        Assert.That(result, Is.InstanceOf<OkResult>());
+    }
+
+    [Test]
+    public void ReplaceAuthors_ReturnsNotFound_WhenBookDoesNotExist()
+    {
+        var invalidBookId = "does-not-exist";
+        var authors = new List<string> { "tolkien" };
+
+        Assert.ThrowsAsync<DbUpdateException>(async () =>
+        {
+            await _controller.ReplaceAuthors(invalidBookId, authors);
+        });
+    }
+
+    [Test]
+    public void ReplaceAuthors_ReturnsDbUpdateException_WhenAuthorDoesNotExist()
+    {
+        var existingBookId = "lotr-fellowship";
+        var authors = new List<string> { "tolkien", "unknown-author" };
+
+        Assert.ThrowsAsync<DbUpdateException>(async () =>
+        {
+            await _controller.ReplaceAuthors(existingBookId, authors);
+        });
+    }
+
+    [Test]
+    public async Task ReplaceAuthors_ReturnsBadRequest_WhenNoAuthorsProvided()
+    {
+        var result = await _controller.ReplaceAuthors("monster", new List<string>());
+
+        Assert.That(result, Is.InstanceOf<ObjectResult>());
+        var obj = (ObjectResult)result!;
+        Assert.That(obj.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+    }
+
+    [Test]
+    public async Task ReplaceAuthors_ReturnsBadRequest_WhenMoreThanMAXAuthorsProvided()
+    {
+        var tooManyAuthors = Enumerable.Range(1, BookController.MAX_BOOK_AUTHORS+1).Select(i => $"a{i}").ToList();
+
+        var result = await _controller.ReplaceAuthors("lotr-fellowship", tooManyAuthors);
+
+        var objectResult = result as ObjectResult;
+
+        Assert.That(objectResult, Is.Not.Null);
+        Assert.That(objectResult!.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+    }
+// ==============================================================================================================
+
+// ==============================================================================================================
+
+    [Test]
+    public async Task ReplaceGenres_ReturnsBadRequest_WhenNoGenresProvided()
+    {
+        var result = await _controller.ReplaceGenres("lotr-fellowship", []);
+
+        Assert.That(((ObjectResult)result).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+    }
+
+    [Test]
+    public async Task ReplaceGenres_ReturnsBadRequest_WhenMoreThanMaxGenresProvided()
+    {
+        var tooManyGenres = Enumerable.Range(1, BookController.MAX_BOOK_GENRES + 1).Select(i => $"g{i}").ToList();
+
+        var result = await _controller.ReplaceGenres("lotr-fellowship", tooManyGenres);
+
+        Assert.That(((ObjectResult)result).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+    }
+
+    [Test]
+    public async Task ReplaceGenres_ReturnsOk_WhenValidGenresProvided()
+    {
+        var validGenres = new List<string> { "fantasy", "thriller" };
+
+        var result = await _controller.ReplaceGenres("watchmen", validGenres);
+
+        Assert.That(result, Is.InstanceOf<OkResult>());
+    }
+
+// ==============================================================================================================
+
+    [Test]
+    public async Task GetConstrained_ReturnsCorrectPageSize()
+    {
+        var result = (await _controller.GetConstrained(pageIndex: 1, pageSize: 2)).Result;
+
+        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var page = ((OkObjectResult)result!).Value as Page<BookLinkDTO>;
+        Assert.That(page, Is.Not.Null);
+        Assert.That(page.Items, Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetConstrained_FiltersByTitleContains()
+    {
+        var filters = new Dictionary<string, string>
+        {
+            ["Title~="] = "ring"
+        };
+
+        var result = await _controller.GetConstrained(filters: filters);
+
+        var ok = result.Result as OkObjectResult;
+        var page = ok!.Value as Page<BookLinkDTO>;
+
+        Assert.That(page!.Items, Is.Not.Empty);
+        Assert.That(page!.Items.All(b => b.Title.Contains("ring", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Test]
+    public async Task GetConstrained_ReturnsEmpty_WhenNoMatch()
+    {
+        var filters = new Dictionary<string, string>
+        {
+            ["Title=="] = "this_title_does_not_exist_123"
+        };
+
+        var result = await _controller.GetConstrained(filters: filters);
+        var ok = result.Result as OkObjectResult;
+        var page = ok!.Value as Page<BookLinkDTO>;
+
+        Assert.That(page!.Items, Is.Empty);
+        Assert.That(page.TotalPages, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task GetConstrained_FiltersByPageCountGreaterOrEqual()
+    {
+        var filters = new Dictionary<string, string>
+        {
+            ["PageCount>="] = "300"
+        };
+
+        var result = await _controller.GetConstrained(filters: filters);
+        var ok = result.Result as OkObjectResult;
+        var page = ok!.Value as Page<BookLinkDTO>;
+
+        Assert.That(page!.Items, Is.Not.Empty);
+    }
+
+    [Test]
+    public async Task GetConstrained_SortsAscending()
+    {
+        var result = await _controller.GetConstrained(sortBy: "Title");
+
+        var ok = result.Result as OkObjectResult;
+        var page = ok!.Value as Page<BookLinkDTO>;
+
+        var titles = page!.Items!.Select(i => i.Title).ToList();
+        var sorted = titles.OrderBy(t => t).ToList();
+
+        Assert.That(titles, Is.EqualTo(sorted));
+    }
+
+    [Test]
+    public async Task GetConstrained_SortsDescending()
+    {
+        var result = await _controller.GetConstrained(sortBy: "Title", sortDescending: true);
+
+        var ok = result.Result as OkObjectResult;
+        var page = ok!.Value as Page<BookLinkDTO>;
+
+        var titles = page!.Items!.Select(i => i.Title).ToList();
+        var sorted = titles.OrderByDescending(t => t).ToList();
+
+        Assert.That(titles, Is.EqualTo(sorted));
+    }
+
+    [Test]
+    public async Task GetConstrained_CombinesMultipleFilters()
+    {
+        var filters = new Dictionary<string, string>
+        {
+            ["PublicationYear>="] = "1930",
+            ["PageCount<="] = "500",
+            ["Title~="] = "the"
+        };
+
+        var result = await _controller.GetConstrained(filters: filters);
+        var ok = result.Result as OkObjectResult;
+        var page = ok!.Value as Page<BookLinkDTO>;
+
+        Assert.That(page!.Items, Is.Not.Empty);
+        Assert.That(page!.Items.All(b =>
+
+            b.Title.Contains("the", StringComparison.OrdinalIgnoreCase)
+        ));
+    }
 
 }

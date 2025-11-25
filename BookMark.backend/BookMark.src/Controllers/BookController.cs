@@ -141,26 +141,4 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
         return NoContent();
     }
 
-
-    [HttpGet("by/{authorId}")]
-    public async Task<ActionResult<List<BookResponseDTO>>> GetBooksByAuthor([FromRoute] string authorId, [FromQuery] int count = 10)
-    {
-        var books = await ((BookRepository)_repository).GetBooksByAuthorAsync(authorId, count);
-
-        var response = _mapper.Map<List<BookLinkDTO>>(books);
-
-        return Ok(response);
-    }
-
-
-    [HttpGet("genre/{genreId}")]
-    public async Task<ActionResult<List<BookResponseDTO>>> GetBooksInGenre([FromRoute] string genreId, [FromQuery] int count = 10)
-    {
-        var books = await ((BookRepository)_repository).GetBooksInGenreAsync(genreId, count);
-
-        var response = _mapper.Map<List<BookLinkDTO>>(books);
-
-        return Ok(response);
-    }
-
 }

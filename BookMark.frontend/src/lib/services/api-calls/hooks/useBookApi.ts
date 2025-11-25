@@ -4,7 +4,6 @@ import {
   getAllBookTypes,
   getBookById,
   getBooksByAuthor,
-  getBooksInGenre,
   getConstrainedBooks,
   updateBookAuthors,
   updateBookCoverImage,
@@ -27,7 +26,6 @@ const KEY_BOOK = "book";
 const KEY_BOOKS = "books";
 const KEY_BOOKS_BY_AUTHOR = "by_author";
 const KEY_CONSTRAINED_BOOKS = "constrained";
-const KEY_BOOKS_IN_GENRE = "in_genre";
 const KEY_BOOK_TYPES = "book_types";
 //--------------------------------------------------------------------------
 
@@ -56,14 +54,6 @@ export function useBooksByAuthor(authorId: string, count: number) {
     queryKey: [KEY_BOOKS, KEY_BOOKS_BY_AUTHOR, authorId, count],
     queryFn: () => getBooksByAuthor(authorId, count),
     enabled: !!authorId,
-  });
-}
-
-export function useBooksInGenre(genreId: string, count: number = 10) {
-  return useQuery<BookLinkProps[], ApiError>({
-    queryKey: [KEY_BOOKS, KEY_BOOKS_IN_GENRE, genreId, count],
-    queryFn: () => getBooksInGenre(genreId, count),
-    enabled: !!genreId,
   });
 }
 
