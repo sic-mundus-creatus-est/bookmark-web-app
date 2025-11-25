@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace BookMark.tests;
+namespace BookMark.NUnit.tests;
 
 // [MethodName]_[ExpectedOutcome]_[Scenario/Condition]
 
 [TestFixture]
-public class BookTests
+public class BookControllerTests
 {
     private IServiceScope _scope;
     private BookController _controller;

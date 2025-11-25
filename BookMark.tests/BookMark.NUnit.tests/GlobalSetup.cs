@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace BookMark.tests;
+namespace BookMark.NUnit.tests;
 
 [SetUpFixture]
 public class GlobalTestSetup
