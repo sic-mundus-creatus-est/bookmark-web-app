@@ -9,46 +9,48 @@ import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 
 const PAGE_SIZE = 12;
 
+type FilterKey =
+  | "Title~="
+  | "Description~="
+  | "Authors.Author.Name~="
+  | "BookType.Name=="
+  | "Genres.Genre.Name=="
+  | "Authors.Author.Name==";
+
+type Filters = Partial<Record<FilterKey, string>>;
+
 export function BooksPage() {
   //------------------------------------------------------------------------------
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
   //------------------------------------------------------------------------------
   const matches = useMatches();
-  const bookTypeNameFromMatches = (matches[1].handle as string) ?? undefined;
+  const bookTypeNameMatch = (matches[1].handle as string) ?? undefined;
   //------------------------------------------------------------------------------
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const currentPage = isNaN(pageParam) ? 1 : Math.max(1, pageParam);
   //------------------------------------------------------------------------------
-  const searchQuery = searchParams.get("searchTerm") || undefined;
-  let filters = {};
+  const searchTermParam = searchParams.get("search-term") || undefined;
+  const genreNameParam = searchParams.get("genre") || undefined;
+  const bookTypeNameParam = searchParams.get("book-type") || undefined;
+  const authorNameParam = searchParams.get("author") || undefined;
 
-  if (searchQuery != undefined) {
-    filters = {
-      ...filters,
-      "Title~=": searchQuery,
-      "Description~=": searchQuery,
-      "Authors.Author.Name~=": searchQuery,
-    };
-  }
+  const filters: Filters = {};
 
-  if (bookTypeNameFromMatches != undefined) {
-    filters = {
-      ...filters,
-      "BookType.Name==": bookTypeNameFromMatches,
-    };
-  }
-  //------------------------------------------------------------------------------
-  const genreName = searchParams.get("genre") || undefined;
-  const bookTypeNameFromUrl = searchParams.get("bookType") || undefined;
+  const add = (key: FilterKey, value: string | undefined) => {
+    if (value !== undefined) {
+      filters[key] = value;
+    }
+  };
 
-  if (genreName && bookTypeNameFromUrl) {
-    filters = {
-      ...filters,
-      "BookType.Name==": bookTypeNameFromUrl,
-      "Genres.Genre.Name==": genreName,
-    };
+  if (searchTermParam !== undefined) {
+    add("Title~=", searchTermParam);
+    add("Description~=", searchTermParam);
+    add("Authors.Author.Name~=", searchTermParam);
   }
+  add("BookType.Name==", bookTypeNameMatch ?? bookTypeNameParam);
+  add("Genres.Genre.Name==", genreNameParam);
+  add("Authors.Author.Name==", authorNameParam);
   //------------------------------------------------------------------------------
   const {
     data: page,
@@ -100,12 +102,12 @@ export function BooksPage() {
       </div>
     );
   return (
-    <div className={`w-full pb-2 ${!searchQuery && "pt-2"}`}>
-      {searchQuery && (
+    <div className={`w-full pb-2 ${!searchTermParam && "pt-2"}`}>
+      {searchTermParam && (
         <h4 className="text-center text-lg font-semibold font-[Helvetica] overflow-hidden line-clamp-2">
           Search results for{" "}
           <span className="italic font-extrabold text-popover text-xl">
-            "{searchQuery}"
+            "{searchTermParam}"
           </span>
           :
         </h4>

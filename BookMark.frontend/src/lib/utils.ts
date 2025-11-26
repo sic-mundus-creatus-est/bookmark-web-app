@@ -55,20 +55,25 @@ export interface ConstrainedQueryParams {
 export function buildConstrainedQueryParams({
   pageIndex = 1,
   pageSize = 10,
-  sortBy = "",
-  sortDescending = false,
-  filters = {},
+  sortBy,
+  sortDescending,
+  filters,
 }: ConstrainedQueryParams): string {
   const queryParams = new URLSearchParams();
 
   queryParams.append("pageIndex", pageIndex.toString());
   queryParams.append("pageSize", pageSize.toString());
-  queryParams.append("sortBy", sortBy);
-  queryParams.append("sortDescending", sortDescending.toString());
+  if (sortBy !== undefined && sortBy !== "")
+    queryParams.append("sortBy", sortBy);
+  if (sortDescending !== undefined)
+    queryParams.append("sortDescending", sortDescending.toString());
 
-  for (const [key, value] of Object.entries(filters)) {
-    queryParams.append(`filters[${key}]`, value.toString());
-  }
+  if (filters)
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== null && value !== "") {
+        queryParams.append(`filters[${key}]`, value.toString());
+      }
+    }
 
   return queryParams.toString();
 }

@@ -19,7 +19,7 @@ export function CommonSearchBox({
   const handleSearch = () => {
     const trimmed = search.trim();
     if (trimmed.length > 0) {
-      navigate(`/${searchRoute}?searchTerm=${encodeURIComponent(trimmed)}`);
+      navigate(`${searchRoute}?search-term=${encodeURIComponent(trimmed)}`);
     } else {
       navigate(`${searchRoute}`);
     }

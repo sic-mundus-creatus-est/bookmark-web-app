@@ -19,7 +19,7 @@ import {
   useUpdateAuthor,
 } from "@/lib/services/api-calls/hooks/useAuthorApi";
 import { useGenresByAuthor } from "@/lib/services/api-calls/hooks/useGenreApi";
-import { useBooksByAuthor } from "@/lib/services/api-calls/hooks/useBookApi";
+import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 
 export function AuthorPage() {
   //--------------------------------------------------------------------------
@@ -46,7 +46,14 @@ export function AuthorPage() {
     data: authorBooks,
     isFetching: areBooksFetching,
     error: booksError,
-  } = useBooksByAuthor(id, 10);
+  } = useConstrainedBooks({
+    pageIndex: 1,
+    pageSize: 10,
+    filters: {
+      "Authors.Author.Name==": authorData?.name ?? "",
+    },
+  });
+
   //--------------------------------------------------------------------------
   const author = useMemo(() => {
     if (!authorData) return null;
@@ -179,10 +186,10 @@ export function AuthorPage() {
                 }}
               />
             ) : (
-              <p className="text-muted-foreground mb-2 sm:ml-2 font-[Georgia] text-xl">
+              <span className="text-muted-foreground mb-2 sm:ml-2 font-[Georgia] text-xl">
                 ({author.birthYear != 0 && <time>{author.birthYear}</time>} –{" "}
                 {author.deathYear != 0 && <time>{author.deathYear}</time>})
-              </p>
+              </span>
             )}
           </div>
 
@@ -210,19 +217,26 @@ export function AuthorPage() {
               }}
             />
           ) : (
-            <CommonDescription value={author.biography} />
+            <CommonDescription placeholder="" value={author.biography} />
           )}
         </div>
       </div>
 
       {editMode ? null : (
         <div className="mb-4 mt-4">
-          <h2 className="text-accent text-center text-2xl italic pb-1 font-[Verdana] font-bold">
-            Best From This Author:
+          <h2 className="text-accent text-center text-3xl italic pb-1 font-[Candara] font-bold">
+            From This Author:
           </h2>
           <div className="w-full flex justify-center flex-1 min-w-0">
-            <BookShowcase books={author.books} />
+            <BookShowcase books={author.books?.items} />
           </div>
+
+          <Link
+            to={`/all?author=${encodeURIComponent(author.name)}`}
+            className="flex justify-end font-bold italic font-[Candara] text-xl hover:text-popover cursor-pointer mr-4 mt-2"
+          >
+            ...see more
+          </Link>
         </div>
       )}
 

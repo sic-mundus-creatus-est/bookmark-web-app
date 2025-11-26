@@ -40,7 +40,7 @@ export function useBook(id: string) {
 }
 
 export function useConstrainedBooks(params: ConstrainedQueryParams) {
-  return useQuery<Page<BookLinkProps> | undefined, ApiError>({
+  return useQuery<Page<BookLinkProps>, ApiError>({
     queryKey: [KEY_BOOKS, KEY_CONSTRAINED_BOOKS, params],
     queryFn: () => getConstrainedBooks(params),
     enabled: !!params,

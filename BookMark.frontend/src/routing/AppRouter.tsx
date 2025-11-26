@@ -20,6 +20,10 @@ export const AppRouter = createBrowserRouter([
       //   element: <PrivateRoute component={Page} />,
       // },
       {
+        path: "/home",
+        element: <BooksPage />,
+      },
+      {
         path: "/add-book",
         element: <AddBookPage />,
       },
@@ -36,10 +40,6 @@ export const AppRouter = createBrowserRouter([
         element: <AuthorPage />,
       },
       {
-        path: "/home",
-        element: <BooksPage />,
-      },
-      {
         path: "/books",
         element: <BooksPage />,
         handle: ["book"],
@@ -53,6 +53,10 @@ export const AppRouter = createBrowserRouter([
         path: "/manga",
         element: <BooksPage />,
         handle: ["manga"],
+      },
+      {
+        path: "/all",
+        element: <BooksPage />,
       },
       {
         path: "/user/:id",

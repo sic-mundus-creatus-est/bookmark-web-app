@@ -18,7 +18,11 @@ export const GenreCatalogSection = ({
     <section className="flex justify-center mb-1">
       {books.length != 0 && (
         <div className="flex flex-col items-center gap-1 w-full">
-          <Link to={`/all?genre=${genreName}&bookType=${bookType}`}>
+          <Link
+            to={`/all?genre=${encodeURIComponent(
+              genreName
+            )}&book-type=${encodeURIComponent(bookType)}`}
+          >
             <h2 className="mt-2 text-2xl font-extrabold text-accent text-center hover:text-popover">
               {label}
             </h2>

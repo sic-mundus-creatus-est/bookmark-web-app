@@ -41,17 +41,26 @@ export function GenrePage() {
   } = useConstrainedBooks({
     pageIndex: 1,
     pageSize: 10,
-    filters: { "BookType.Name==": "book", "Genres.Genre.Name==": "fiction" },
+    filters: {
+      "BookType.Name==": "Book",
+      "Genres.Genre.Name==": genreData?.name ?? "",
+    },
   });
   const { data: genreComics } = useConstrainedBooks({
     pageIndex: 1,
     pageSize: 10,
-    filters: { "BookType.Name==": "comic", "Genres.Genre.Name==": "fiction" },
+    filters: {
+      "BookType.Name==": "Comic",
+      "Genres.Genre.Name==": genreData?.name ?? "",
+    },
   });
   const { data: genreManga } = useConstrainedBooks({
     pageIndex: 1,
     pageSize: 10,
-    filters: { "BookType.Name==": "manga", "Genres.Genre.Name==": "fiction" },
+    filters: {
+      "BookType.Name==": "Manga",
+      "Genres.Genre.Name==": genreData?.name ?? "",
+    },
   });
   //-------------------------------------------------------------
   const genre = useMemo(() => {
@@ -166,7 +175,7 @@ export function GenrePage() {
       ) : (
         <>
           <section id="genre-metadata">
-            <h2 className="text-3xl font-bold">Fiction</h2>
+            <h2 className="text-3xl font-bold">{genre.name}</h2>
             <div className="flex items-center text-sm text-accent/50 leading-tight mb-2">
               <Tag className="mr-1 w-4 h-4 text-accent" />
               <span className="hover:underline cursor-pointer">Genres</span>
@@ -178,24 +187,24 @@ export function GenrePage() {
           <section id="genre-catalogs">
             <GenreCatalogSection
               key={`genre-book-catalog`}
-              label="Fiction Books"
-              genreName="fiction"
+              label={`${genre.name} Books`}
+              genreName={genre.name}
               bookType="book"
               books={genreBooks?.items}
             />
 
             <GenreCatalogSection
               key={`genre-comics-catalog`}
-              label="Fiction Comics"
-              genreName="fiction"
+              label={`${genre.name} Comics`}
+              genreName={genre.name}
               bookType="comic"
               books={genreComics?.items}
             />
 
             <GenreCatalogSection
               key={`genre-manga-catalog`}
-              label="Fiction Manga"
-              genreName="fiction"
+              label={`${genre.name} Manga`}
+              genreName={genre.name}
               bookType="manga"
               books={genreManga?.items}
             />
