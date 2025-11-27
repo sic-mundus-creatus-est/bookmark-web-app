@@ -72,7 +72,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
     [HttpPatch("update/{id}")]
     public virtual async Task<ActionResult<TResponseDTO>> Update([FromRoute] string id, [FromBody] TUpdateDTO updateData)
     {
-        if (updateData == null)
+        if (updateData == null || IsDtoEmpty(updateData))
             return Problem( title: "Bad Request",
                             detail: $"Update data is empty. Nothing to update.",
                             statusCode: StatusCodes.Status400BadRequest );
@@ -82,6 +82,13 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
         var updatedEntity = await _repository.GetByIdAsync<TResponseDTO>(id);
 
         return Ok(updatedEntity);
+    }
+
+    private static bool IsDtoEmpty<T>(T dto)
+    {
+        return typeof(T)
+            .GetProperties()
+            .All(p => p.GetValue(dto) == null);
     }
 
 

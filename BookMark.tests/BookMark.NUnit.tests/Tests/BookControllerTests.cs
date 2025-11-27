@@ -251,7 +251,7 @@ public class BookControllerTests
     [Test]
     public async Task Delete_ReturnsBadRequest_WhenIdIsInvalid()
     {
-        var result = await _controller.Delete(_createdBookId!);
+        var result = await _controller.Delete("random-id");
 
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }

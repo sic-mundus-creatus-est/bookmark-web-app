@@ -13,8 +13,18 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
 {
     public AuthorController(IBaseRepository<Author> repository, IMapper mapper) : base(repository, mapper) { }
 
+    public override async Task<ActionResult<AuthorResponseDTO>> Create(AuthorCreateDTO createDto)
+    {
+        if(createDto.BirthYear > createDto.DeathYear)
+            return Problem(title: "Bad Request",
+                            detail: "Birth Year must come before Death Year.",
+                            statusCode: StatusCodes.Status400BadRequest);
+        
+        return await base.Create(createDto);
+    }
+
     [HttpGet("get-author-suggestions")]
-    public async Task<ActionResult<AuthorLinkDTO[]>> GetAuthorSuggestions([FromQuery] string searchTerm, [FromQuery] List<string>? skipIds, [FromQuery] int count = 5)
+    public async Task<ActionResult<List<AuthorLinkDTO>>> GetAuthorSuggestions([FromQuery] string searchTerm, [FromQuery] List<string>? skipIds = null, [FromQuery] int count = 5)
     {
         var authors = await ((AuthorRepository)_repository).GetAuthorSuggestionsAsync(searchTerm, skipIds, count);
 

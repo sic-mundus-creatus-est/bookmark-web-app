@@ -76,7 +76,9 @@ public class GlobalTestSetup
             new Author { Id = "urasawa", Name = "Naoki Urasawa" },
             new Author { Id = "king", Name = "Stephen King" },
             new Author { Id = "orwell", Name = "George Orwell" },
-            new Author { Id = "bradbury", Name = "Ray Bradbury" }
+            new Author { Id = "bradbury", Name = "Ray Bradbury" },
+            new Author { Id = "martin", Name = "George R. R. Martin" },
+            new Author { Id = "eliot", Name = "George Eliot" }
         );
 
         // ------------------------------

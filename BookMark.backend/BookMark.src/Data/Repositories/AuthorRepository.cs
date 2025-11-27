@@ -10,6 +10,7 @@ namespace BookMark.Data.Repositories;
 public class AuthorRepository : BaseRepository<Author>
 {
     protected DbSet<BookAuthor> _bookAuthorDbSet { get; set; }
+    protected DbSet<Book> _bookDbSet { get; set; }
 
     protected override IReadOnlySet<string> AllowedFilterProps { get; } = new HashSet<string>()
                                                                         {
@@ -19,7 +20,11 @@ public class AuthorRepository : BaseRepository<Author>
                                                                             nameof(Author.DeathYear)
                                                                         };
 
-    public AuthorRepository(AppDbContext context, IMapper mapper) : base(context, mapper) { _bookAuthorDbSet = context.Set<BookAuthor>(); }
+    public AuthorRepository(AppDbContext context, IMapper mapper) : base(context, mapper)
+    {
+        _bookAuthorDbSet = context.Set<BookAuthor>();
+        _bookDbSet = context.Set<Book>();
+    }
 
     public async Task<List<AuthorLinkDTO>> GetAuthorSuggestionsAsync(string searchTerm, List<string>? skipIds, int count)
     {
@@ -40,7 +45,35 @@ public class AuthorRepository : BaseRepository<Author>
             query = query.Where(a => !skipIds.Contains(a.Id.ToString()));
 
         return await query.Take(count)
-                          .ProjectTo<AuthorLinkDTO>(_mapper.ConfigurationProvider).ToListAsync();
+                          .ProjectTo<AuthorLinkDTO>(_mapper.ConfigurationProvider)
+                          .ToListAsync();
+    }
+
+    public override async Task DeleteAsync(string authorId)
+    {
+        var bookIds = await _bookAuthorDbSet.Where(ba => ba.AuthorId == authorId)
+                                            .Select(ba => ba.BookId)
+                                            .ToListAsync();
+
+        var authorToDelete = new Author { Id = authorId };
+        _dbSet.Attach(authorToDelete);
+        _dbSet.Remove(authorToDelete);
+
+        // (Cascade delete will remove all BookAuthor rows for this author on SaveChanges)
+
+        foreach (var bookId in bookIds)
+        {
+            bool hasOtherAuthors = await _bookAuthorDbSet.AnyAsync(ba => ba.BookId == bookId && ba.AuthorId != authorId);
+
+            if (!hasOtherAuthors)
+            {// removing books that end up with 0 authors
+                var book = new Book { Id = bookId };
+                _bookDbSet.Attach(book);
+                _bookDbSet.Remove(book);
+            }
+        }
+
+        await _context.SaveChangesAsync();
     }
 
 }
