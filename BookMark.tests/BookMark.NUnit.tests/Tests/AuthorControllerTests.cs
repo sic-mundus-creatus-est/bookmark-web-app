@@ -145,7 +145,7 @@ public class AuthorControllerTests
 #region UPDATE
 
     [Test, Order(3)]
-    public async Task Update_ReturnsUpdatedAuthor_WhenFieldsAreProvided()
+    public async Task Update_ReturnsUpdatedAuthor_WhenValidUpdateFieldsAreProvided()
     {
         var updateDto = new AuthorUpdateDTO
         {
@@ -177,7 +177,7 @@ public class AuthorControllerTests
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }
 
-    [Test]
+    [Test] // TODO: umesto ovoga mozda update sa datumom smrti koji je veci od datuma rodjenja
     public void Update_ReturnsDbUpdateConcurrencyException_WhenProvidedIdIsInvalid()
     {
         var updateDto = new AuthorUpdateDTO { Name = "Random Name" };
@@ -210,7 +210,7 @@ public class AuthorControllerTests
     }
 
     [Test]
-    public async Task Delete_RemovesAuthorAndTheirBooks()
+    public async Task Delete_RemovesAuthorAndOrphanBooks()
     {
         var context = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -237,17 +237,20 @@ public class AuthorControllerTests
 
         var result = await _controller.Delete(author.Id);
 
-        Assert.That(((NoContentResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
+        Assert.Multiple(() =>
+        {
+            Assert.That(((NoContentResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
 
-        // author is deleted
-        Assert.That(context.Authors.Any(a => a.Id == author.Id), Is.False);
+            // author is deleted
+            Assert.That(context.Authors.Any(a => a.Id == author.Id), Is.False);
 
-        // BookAuthor relations are removed
-        Assert.That(context.BookAuthors.Any(ba => ba.AuthorId == author.Id), Is.False);
+            // BookAuthor relations are removed
+            Assert.That(context.BookAuthors.Any(ba => ba.AuthorId == author.Id), Is.False);
 
-        // books that end up without authors are also deleted
-        Assert.That(context.Books.Any(b => b.Id == "book1"), Is.False);
-        Assert.That(context.Books.Any(b => b.Id == "book2"), Is.False);
+            // books that end up without authors are also deleted
+            Assert.That(context.Books.Any(b => b.Id == "book1"), Is.False);
+            Assert.That(context.Books.Any(b => b.Id == "book2"), Is.False);
+        });
     }
 
 #endregion

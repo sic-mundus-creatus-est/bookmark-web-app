@@ -11,14 +11,23 @@ namespace BookMark.Controllers;
 [Route("api/genres")]
 public class GenreController : BaseController<Genre, GenreCreateDTO, GenreUpdateDTO, GenreResponseDTO, GenreLinkDTO>
 {
-    public GenreController(IBaseRepository<Genre> repository, IMapper mapper) : base(repository, mapper) { }
+    private readonly IBaseRepository<Author> _authorRepository;
+    public GenreController(IBaseRepository<Genre> repository, IMapper mapper, IBaseRepository<Author> authorRepo) : base(repository, mapper)
+    {
+        _authorRepository = authorRepo;
+    }
 
     [HttpGet("by/{authorId}")]
-    public async Task<ActionResult<List<BookGenreResponseDTO>>> GetGenresByAuthor([FromRoute] string authorId)
+    public async Task<ActionResult<List<GenreLinkDTO>>> GetGenresByAuthor([FromRoute] string authorId)
     {
         var response = await ((GenreRepository)_repository).GetGenresByAuthorAsync(authorId);
 
-        return Ok(response);
+        if(response.Count == 0 && !await _authorRepository.ExistsAsync(authorId))
+            return Problem(title: "Bad Request",
+                            detail: $"Author with ID '{authorId}' does not exist.",
+                            statusCode: StatusCodes.Status400BadRequest);
+        else
+            return Ok(response);
     }
 
 }

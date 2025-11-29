@@ -84,9 +84,7 @@ public class BookReviewRepository : IBookReviewRepository
 
     public async Task DeleteBookReviewAsync(string userId, string bookId)
     {
-        var review = new BookReview { UserId = userId, BookId = bookId };
-        _dbSet.Attach(review);
-        _dbSet.Remove(review);
+        _dbSet.Remove(new BookReview { UserId = userId, BookId = bookId });
         await _context.SaveChangesAsync();
     }
 

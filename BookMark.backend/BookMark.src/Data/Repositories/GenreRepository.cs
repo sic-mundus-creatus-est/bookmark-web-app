@@ -1,5 +1,7 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using BookMark.Models.Domain;
+using BookMark.Models.DTOs;
 using BookMark.Models.Relationships;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,11 +22,12 @@ public class GenreRepository : BaseRepository<Genre>
                                                                         };
 
 
-    public async Task<List<Genre>> GetGenresByAuthorAsync(string authorId)
+    public async Task<List<GenreLinkDTO>> GetGenresByAuthorAsync(string authorId)
     {
         return await _bookAuthorDbSet.Where(ba => ba.AuthorId == authorId)
                                      .SelectMany(ba => ba.Book.Genres.Select(bg => bg.Genre))
                                      .Distinct()
+                                     .ProjectTo<GenreLinkDTO>(_mapper.ConfigurationProvider)
                                      .ToListAsync();
     }
     

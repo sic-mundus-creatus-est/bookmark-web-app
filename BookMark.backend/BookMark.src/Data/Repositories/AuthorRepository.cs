@@ -51,25 +51,32 @@ public class AuthorRepository : BaseRepository<Author>
 
     public override async Task DeleteAsync(string authorId)
     {
+        // Query 1: Getting all books connected to this author
         var bookIds = await _bookAuthorDbSet.Where(ba => ba.AuthorId == authorId)
                                             .Select(ba => ba.BookId)
                                             .ToListAsync();
 
-        var authorToDelete = new Author { Id = authorId };
-        _dbSet.Attach(authorToDelete);
-        _dbSet.Remove(authorToDelete);
+        // Delete the author (BookAuthor join rows will cascade-delete)
+        _dbSet.Remove(new Author { Id = authorId });
 
-        // (Cascade delete will remove all BookAuthor rows for this author on SaveChanges)
-
-        foreach (var bookId in bookIds)
+        if (bookIds.Count > 0)
         {
-            bool hasOtherAuthors = await _bookAuthorDbSet.AnyAsync(ba => ba.BookId == bookId && ba.AuthorId != authorId);
+            // Query 2: Books that still have other authors
+            var booksWithOtherAuthors = await _bookAuthorDbSet
+                .Where(ba => bookIds.Contains(ba.BookId) && ba.AuthorId != authorId)
+                .Select(ba => ba.BookId)
+                .Distinct()
+                .ToListAsync();
 
-            if (!hasOtherAuthors)
-            {// removing books that end up with 0 authors
-                var book = new Book { Id = bookId };
-                _bookDbSet.Attach(book);
-                _bookDbSet.Remove(book);
+            // Books that became orphaned = no remaining authors
+            var orphanedBookIds = bookIds
+                .Except(booksWithOtherAuthors)
+                .ToList();
+
+            // deleting orphaned books
+            foreach (var bookId in orphanedBookIds)
+            {
+                _bookDbSet.Remove(new Book { Id = bookId });
             }
         }
 

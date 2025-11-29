@@ -97,9 +97,7 @@ public abstract class BaseRepository<TModel> : IBaseRepository<TModel> where TMo
 
     public virtual async Task DeleteAsync(string id)
     {
-        TModel entityToDelete = new TModel { Id = id };
-        _dbSet.Attach(entityToDelete);
-        _dbSet.Remove(entityToDelete);
+        _dbSet.Remove(new TModel { Id = id });
         await _context.SaveChangesAsync();
     }
 
