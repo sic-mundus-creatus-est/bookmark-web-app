@@ -1,6 +1,8 @@
 using BookMark.Data;
 using BookMark.Models.Domain;
 using BookMark.Models.Relationships;
+using BookMark.Models.Roles;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -13,13 +15,13 @@ public class GlobalTestSetup
     public static WebApplicationFactory<Program> Factory;
 
     [OneTimeSetUp]
-    public void RunBeforeAnyTests()
+    public async Task RunBeforeAnyTests()
     {
         Factory = new WebApplicationFactory<Program>();
 
         using var scope = Factory.Services.CreateScope();
         var services = scope.ServiceProvider;
-        EnsureDatabaseCleanAndSeeded(services);
+        await EnsureDatabaseCleanAndSeeded(services);
     }
 
     [OneTimeTearDown]
@@ -28,7 +30,7 @@ public class GlobalTestSetup
         Factory?.Dispose();
     }
 
-    private void EnsureDatabaseCleanAndSeeded(IServiceProvider services)
+    private static async Task EnsureDatabaseCleanAndSeeded(IServiceProvider services)
     {
         var db = services.GetRequiredService<AppDbContext>();
 
@@ -37,9 +39,12 @@ public class GlobalTestSetup
         db.Database.EnsureCreated();
 
         SeedDatabase(db);
+
+        await CreateUserRolesAsync(services);
+        await CreateAdminUserAsync(services);
     }
 
-    private void SeedDatabase(AppDbContext db)
+    private static void SeedDatabase(AppDbContext db)
     {
         // ------------------------------
         // BOOK TYPES
@@ -222,6 +227,46 @@ public class GlobalTestSetup
         db.BookAuthors.AddRange(bookAuthors);
 
         db.SaveChanges();
+    }
+
+    private static async Task CreateUserRolesAsync(IServiceProvider services)
+    {
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        string[] roles = [UserRoles.Admin, UserRoles.RegularUser];
+
+        foreach (var role in roles)
+            if (!await roleManager.RoleExistsAsync(role))
+                await roleManager.CreateAsync(new IdentityRole(role));
+    }
+
+    private static async Task CreateAdminUserAsync(IServiceProvider services)
+    {
+        var userManager = services.GetRequiredService<UserManager<User>>();
+
+        string adminUsername = "admin";
+        string adminEmail = "admin@example.com";
+        string adminPassword = "Admin123!";
+
+        if (await userManager.FindByEmailAsync(adminEmail) == null)
+        {
+            var adminUser = new User
+            {
+                DisplayName = adminUsername,
+                UserName = adminUsername,
+                Email = adminEmail,
+            };
+
+            var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
+                await userManager.AddToRoleAsync(adminUser, UserRoles.RegularUser);
+            }
+            else
+                throw new Exception($"Failed to create default admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
     }
 
 }

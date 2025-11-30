@@ -45,11 +45,6 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     [HttpPost("create")]
     public override async Task<ActionResult<UserResponseDTO>> Create([FromBody] UserCreateDTO creationData)
     {
-        if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
-            await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-        if (!await _roleManager.RoleExistsAsync(UserRoles.RegularUser))
-            await _roleManager.CreateAsync(new IdentityRole(UserRoles.RegularUser));
-
         var usernameExists = await _userManager.Users.AnyAsync(u => u.UserName == creationData.Username);
         var emailExists = await _userManager.Users.AnyAsync(u => u.Email == creationData.Email);
 
