@@ -32,51 +32,49 @@ public class BookControllerTests
         _scope.Dispose();
     }
 
-// ==============================================================================================================
-// CREATE
+#region CREATE
 
     [Test, Order(1)]
-    public async Task Create_ReturnsOk_WhenValidBookDataProvided()
+    public async Task Create_ReturnsCreatedBook_WhenRequiredDataIsProvided()
     {
-        var createDto = new BookCreateDTO
+        var creationData = new BookCreateDTO
         {
             BookTypeId = "book",
             Title = "Test Book",
             AuthorIds = ["tolkien"],
             GenreIds = ["fantasy"],
             OriginalLanguage = "English",
-            PageCount = 300,
-            PublicationYear = 2024,
-            Description = "A book created during test."
+            PageCount = 67,
+            PublicationYear = 1967
         };
 
-        var createResult = (await _controller.Create(createDto)).Result;
+        var result = (await _controller.Create(creationData)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
 
-        Assert.That(((ObjectResult)createResult!).StatusCode, Is.EqualTo(StatusCodes.Status201Created));
-
-        var createdDto = ((ObjectResult)createResult!).Value as BookResponseDTO;
-        Assert.That(createdDto, Is.Not.Null);
-        _createdBookId = createdDto.Id;
+        var createdBook = result!.Value as BookResponseDTO;
+        Assert.That(createdBook, Is.Not.Null);
+        _createdBookId = createdBook.Id;
     }
 
     [Test]
-    public void Create_ThrowsDbUpdateException_WhenAuthorsOrGenresDoNotExist()
+    public void Create_ThrowsDbUpdateException_WhenBookTypeOrAuthorsOrGenresDoNotExist()
     {
-        var dto = new BookCreateDTO
+        var creationData = new BookCreateDTO
         {
-            BookTypeId = "nonexistent-type",
+            BookTypeId = "this-book-type-does-not-exist",
             Title = "Invalid Book",
-            AuthorIds = ["no-such-author"],
-            GenreIds = ["no-such-genre"],
+            AuthorIds = ["this-author-does-not-exist"],
+            GenreIds = ["this-genre-does-not-exist"],
             OriginalLanguage = "English",
-            PageCount = 100,
-            PublicationYear = 2024,
+            PageCount = 67,
+            PublicationYear = 1967,
             Description = "Invalid references"
         };
 
         Assert.ThrowsAsync<DbUpdateException>(async () =>
         {
-            await _controller.Create(dto);
+            await _controller.Create(creationData);
         });
     }
 
@@ -84,14 +82,17 @@ public class BookControllerTests
     public void Create_ThrowsArgumentException_WhenCoverImageIsTooLarge()
     {
         var bigBytes = new byte[12 * 1024 * 1024]; // 12 MB
-        var stream = new MemoryStream(bigBytes);
-
-        var file = new FormFile(stream, 0, bigBytes.Length, "CoverImageFile", "big_image.jpg");
+        var file = new FormFile(
+            baseStream: new MemoryStream(bigBytes),
+            baseStreamOffset: 0, 
+            length: bigBytes.Length,
+            name: "CoverImageFile",
+            fileName: "large_image.jpg");
 
         var dto = new BookCreateDTO
         {
             BookTypeId = "book",
-            Title = "Test Huge File",
+            Title = "Large File Test",
             AuthorIds = ["tolkien"],
             GenreIds = ["fantasy"],
             OriginalLanguage = "English",
@@ -104,19 +105,18 @@ public class BookControllerTests
         {
             await _controller.Create(dto);
         });
-
-        Assert.That(ex!.Message, Does.Contain("exceedes the max file size"));
+        Assert.That(ex.Message, Does.Contain("exceedes the max file size"));
     }
 
     [Test]
-    public void Create_ReturnsBadRequest_WhenCoverImageHasZeroLength()
+    public void Create_ReturnsBadRequest_WhenCoverImageIsEmpty()
     {
         var emptyFile = new FormFile(
             baseStream: new MemoryStream([]),
             baseStreamOffset: 0,
             length: 0,
             name: "CoverImageFile",
-            fileName: "empty.jpg"
+            fileName: "empty_image.jpg"
         );
 
         var dto = new BookCreateDTO
@@ -135,112 +135,116 @@ public class BookControllerTests
         {
             await _controller.Create(dto);
         });
-
         Assert.That(ex.Message, Does.Contain("file").And.Contain("is empty"));
     }
-// ==============================================================================================================
 
-// ==============================================================================================================
-// GET
+#endregion
+
+#region GET
 
     [Test, Order(2)]
-    public async Task Get_ReturnsOk_WhenABookExists()
+    public async Task Get_ReturnsOkAndBook_WhenBookExists()
     {
-        var result = (await _controller.Get(_createdBookId!)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        var result = (await _controller.Get(_createdBookId!)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
-        var dto = ((OkObjectResult)result!).Value as BookResponseDTO;
-        Assert.That(dto, Is.Not.Null);
+        var book = result.Value as BookResponseDTO;
+        Assert.That(book, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(dto!.Id, Is.EqualTo(_createdBookId));
-            Assert.That(dto!.Title, Is.EqualTo("Test Book"));
-            Assert.That(dto.Authors.Any(a => a.Id == "tolkien"), Is.True);
-            Assert.That(dto.Genres.Any(g => g.Id == "fantasy"), Is.True);
-            Assert.That(dto.BookType.Id, Is.EqualTo("book"));
+            Assert.That(book.Id, Is.EqualTo(_createdBookId));
+            Assert.That(book.Title, Is.EqualTo("Test Book"));
+            Assert.That(book.Authors.Any(a => a.Id == "tolkien"), Is.True);
+            Assert.That(book.Genres.Any(g => g.Id == "fantasy"), Is.True);
+            Assert.That(book.BookType.Id, Is.EqualTo("book"));
         });
     }
 
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsInvalid()
     {
-        var result = (await _controller.Get("random-id")).Result;
-
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+        var result = (await _controller.Get(id: "this-book-does-not-exist")).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
 
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsEmpty()
     {
-        var result = (await _controller.Get("")).Result;
-
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+        var result = (await _controller.Get(string.Empty)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
-// ==============================================================================================================
-// UPDATE
+
+#endregion
+
+#region UPDATE
 
     [Test, Order(3)]
-    public async Task Update_UpdatesTitleOnly_WhenSingleFieldProvided()
+    public async Task Update_UpdatesOnlyProvidedFields()
     {
-        var updateDto = new BookUpdateDTO
+        var bookBeforeUpdate = ((await _controller.Get(_createdBookId!)).Result as ObjectResult)!.Value as BookResponseDTO;
+
+        var update = new BookUpdateDTO
         {
-            Title = "The Fellowship of the Ring - Corrected"
+            Title = "Test Book - (Updated Title)",
+            Description = "This book has been updated"
         };
 
-        var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+        var result = (await _controller.Update(_createdBookId!, update)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
-        var updatedBook = ((OkObjectResult)result!).Value as BookResponseDTO;
-        Assert.That(updatedBook, Is.Not.Null);
+        var bookAfterUpdate = result.Value as BookResponseDTO;
+        Assert.That(bookAfterUpdate, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(updatedBook!.Title, Is.EqualTo(updateDto.Title));
-            Assert.That(updatedBook.PageCount, Is.EqualTo(300));
-            Assert.That(updatedBook.Authors.Any(a => a.Id == "tolkien"), Is.True);
-            Assert.That(updatedBook.Genres.Any(g => g.Id == "fantasy"), Is.True);
+            // updated fields
+            Assert.That(bookAfterUpdate.Title, Is.EqualTo(update.Title));
+            Assert.That(bookAfterUpdate.Description, Is.EqualTo(update.Description));
+
+            // unchanged fields
+            Assert.That(bookAfterUpdate.BookType.Id, Is.EqualTo(bookBeforeUpdate!.BookType.Id));
+            Assert.That(bookAfterUpdate.OriginalLanguage, Is.EqualTo(bookBeforeUpdate.OriginalLanguage));
+            Assert.That(bookAfterUpdate.PublicationYear, Is.EqualTo(bookBeforeUpdate.PublicationYear));
+            Assert.That(bookAfterUpdate.PageCount, Is.EqualTo(bookBeforeUpdate.PageCount));
         });
     }
 
     [Test, Order(4)]
-    public async Task Update_UpdatesMultipleFields_WhenProvided()
-    {
-        var updateDto = new BookUpdateDTO
-        {
-            PublicationYear = 1955,
-            PageCount = 430
-        };
-
-        var result = (await _controller.Update(_createdBookId!, updateDto)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-
-        var updatedBook = ((OkObjectResult)result!).Value as BookResponseDTO;
-        Assert.That(updatedBook, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(updatedBook.PublicationYear, Is.EqualTo(1955));
-            Assert.That(updatedBook.PageCount, Is.EqualTo(430));
-            Assert.That(updatedBook.Title, Is.EqualTo("The Fellowship of the Ring - Corrected"));
-        });
-    }
-
-    [Test]
     public void Update_ReturnsDbUpdateException_WhenNewBookTypeIdDoesNotExist()
     {
-        var updateDto = new BookUpdateDTO
+        var update = new BookUpdateDTO
         {
-            BookTypeId = "nonexistent-type"
+            BookTypeId = "this-book-type-does-not-exist"
         };
 
         Assert.ThrowsAsync<DbUpdateException>(async () =>
         {
-            await _controller.Update("monster", updateDto);
+            await _controller.Update(_createdBookId!, update);
         });
     }
 
-// ==============================================================================================================
-// DELETE
+    [Test]
+    public void Update_ThrowsDbUpdateConcurrencyException_WhenBookDoesNotExist()
+    {
+        var update = new BookUpdateDTO
+        {
+            Description = "It doesn't matter what's in the update because the book doesn't exist..."
+        };
 
-    [Test, Order(5)]
+        Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
+        {
+            await _controller.Update(id: "this-book-does-not-exist", update);
+        });
+    }
+
+#endregion
+
+#region DELETE
+
+    [Test, Order(7)]
     public async Task Delete_ReturnsOk_WhenBookIsDeleted()
     {
         var result = await _controller.Delete(_createdBookId!);
@@ -255,10 +259,10 @@ public class BookControllerTests
 
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }
-// ==============================================================================================================
 
-// ==============================================================================================================
-// REPLACE_AUTHORS
+#endregion
+
+#region REPLACE-AUTHORS
 
     [Test]
     public async Task ReplaceAuthors_SuccessfullyReplacesAuthors()
@@ -317,9 +321,10 @@ public class BookControllerTests
         Assert.That(objectResult, Is.Not.Null);
         Assert.That(objectResult!.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }
-// ==============================================================================================================
 
-// ==============================================================================================================
+#endregion
+
+#region REPLACE-GENRES
 
     [Test]
     public async Task ReplaceGenres_ReturnsBadRequest_WhenNoGenresProvided()
@@ -349,7 +354,9 @@ public class BookControllerTests
         Assert.That(result, Is.InstanceOf<OkResult>());
     }
 
-// ==============================================================================================================
+#endregion
+
+#region GET-CONSTRAINED
 
     [Test]
     public async Task GetConstrained_ReturnsCorrectPageSize()
@@ -458,6 +465,54 @@ public class BookControllerTests
 
             b.Title.Contains("the", StringComparison.OrdinalIgnoreCase)
         ));
+    }
+
+#endregion
+
+#region UPDATE-COVER-IMAGE
+
+    [Test]
+    public async Task UpdateCoverImage_ReturnsBadRequest_WhenBookDoesNotExist()
+    {
+        var result = await _controller.UpdateCoverImage(bookId: "this-book-does-not-exist", newCover: null) as ObjectResult;
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+    }
+
+    [Test, Order(6)]
+    public async Task UpdateCoverImage_RemovesCover_WhenNewCoverIsNull()
+    {
+        var result = await _controller.UpdateCoverImage(_createdBookId!, null);
+
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
+    }
+
+    [Test, Order(5)]
+    public async Task UpdateCoverImage_ReplacesCover_WhenValidFileProvided()
+    {
+        var testImage = CreateTinyPngFile();
+
+        var result = await _controller.UpdateCoverImage(_createdBookId!, testImage);
+
+        Assert.That(result, Is.InstanceOf<OkResult>());
+    }
+
+#endregion
+
+    private static FormFile CreateTinyPngFile(string fileName = "cover.png")
+    {
+        byte[] pngBytes = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAn8B9p6nXQAAAABJRU5ErkJggg=="
+        );
+
+        var stream = new MemoryStream(pngBytes);
+
+        return new FormFile(stream, 0, stream.Length, "newCover", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "image/png"
+        };
     }
 
 }
