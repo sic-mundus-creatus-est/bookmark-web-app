@@ -82,6 +82,7 @@ public record BookLinkDTO
     public string? CoverImageUrl { get; init; }
     public required BookTypeResponseDTO BookType { get; init; }
     public required List<BookAuthorResponseDTO> Authors { get; init; }
+    public string? Description { get; init; }
 
     public double? AverageRating { get; set; }
     public int? ReviewCount { get; set; }
