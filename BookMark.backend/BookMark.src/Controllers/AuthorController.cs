@@ -31,4 +31,14 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
         return Ok(authors);
     }
 
+    public override async Task<ActionResult<AuthorResponseDTO>> Update([FromRoute] string id, [FromBody] AuthorUpdateDTO updateData)
+    {
+        if(updateData.BirthYear > updateData.DeathYear)
+            return Problem(title: "Bad Request",
+                            detail: "Birth Year must come before Death Year.",
+                            statusCode: StatusCodes.Status400BadRequest);
+        
+        return await base.Update(id, updateData);
+    }
+
 }

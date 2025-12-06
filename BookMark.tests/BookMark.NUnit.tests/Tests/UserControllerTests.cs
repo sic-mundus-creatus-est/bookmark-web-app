@@ -23,7 +23,7 @@ public class UserControllerTests
     private IServiceScope _scope;
     private UserController _controller;
 
-    private static string? _createdUserId;
+    private static UserResponseDTO? _userCreatedFromTest;
     
     [SetUp]
     public void Setup()
@@ -67,7 +67,7 @@ public class UserControllerTests
             Assert.That(createdUser.AboutMe, Is.Null);
         });
 
-        _createdUserId = createdUser.Id;
+        _userCreatedFromTest = createdUser;
     }
 
     [Test]
@@ -185,7 +185,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                 ], "TestAuth"))
             }
@@ -263,7 +263,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser)
                 ], "TestAuth"))
             }
@@ -285,13 +285,13 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser)
                 ], "TestAuth"))
             }
         };
 
-        var result = await _controller.Delete(_createdUserId!);
+        var result = await _controller.Delete(_userCreatedFromTest.Id);
         Assert.That(((NoContentResult)result).StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
     }
 
@@ -357,7 +357,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                 ], "TestAuth"))
             }
@@ -371,7 +371,7 @@ public class UserControllerTests
         Assert.That(savedReview, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(savedReview.User.Id, Is.EqualTo(_createdUserId));
+            Assert.That(savedReview.User.Id, Is.EqualTo(_userCreatedFromTest.Id));
             Assert.That(savedReview.BookId, Is.EqualTo(reviewData.BookId));
             Assert.That(savedReview.Rating, Is.EqualTo(reviewData.Rating));
             Assert.That(savedReview.Content, Is.EqualTo(reviewData.Content));
@@ -394,7 +394,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                 ], "TestAuth"))
             }
@@ -421,7 +421,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                 ], "TestAuth"))
             }
@@ -447,7 +447,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                 ], "TestAuth"))
             }
@@ -461,7 +461,7 @@ public class UserControllerTests
         Assert.That(review, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(review.User.Id, Is.EqualTo(_createdUserId));
+            Assert.That(review.User.Id, Is.EqualTo(_userCreatedFromTest.Id));
             Assert.That(review.BookId, Is.EqualTo(bookId));
             Assert.That(review.Rating, Is.EqualTo(5));
             Assert.That(review.Content, Is.EqualTo("Amazing book!"));
@@ -493,7 +493,7 @@ public class UserControllerTests
                 User = new ClaimsPrincipal(
                     new ClaimsIdentity(
                     [
-                        new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                        new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                         new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                     ], "TestAuth"))
             }
@@ -528,7 +528,7 @@ public class UserControllerTests
                 User = new ClaimsPrincipal(
                     new ClaimsIdentity(
                     [
-                        new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                        new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                         new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                     ], "TestAuth"))
             }
@@ -586,11 +586,11 @@ public class UserControllerTests
     {
         var repo = _scope.ServiceProvider.GetRequiredService<IBookReviewRepository>();
 
-        await repo.CreateBookReviewAsync(new BookReview { UserId = _createdUserId!, BookId = "lotr-fellowship", Content = "Old", CreatedAt = DateTime.UtcNow.AddHours(1) });
-        await repo.CreateBookReviewAsync(new BookReview { UserId = _createdUserId!, BookId = "lotr-return", Content = "Middle", CreatedAt = DateTime.UtcNow.AddHours(2) });
-        await repo.CreateBookReviewAsync(new BookReview { UserId = _createdUserId!, BookId = "monster", Content = "New", CreatedAt = DateTime.UtcNow.AddHours(3) });
+        await repo.CreateBookReviewAsync(new BookReview { UserId = _userCreatedFromTest!.Id, BookId = "lotr-fellowship", Content = "Old", CreatedAt = DateTime.UtcNow.AddHours(1) });
+        await repo.CreateBookReviewAsync(new BookReview { UserId = _userCreatedFromTest.Id, BookId = "lotr-return", Content = "Middle", CreatedAt = DateTime.UtcNow.AddHours(2) });
+        await repo.CreateBookReviewAsync(new BookReview { UserId = _userCreatedFromTest.Id, BookId = "monster", Content = "New", CreatedAt = DateTime.UtcNow.AddHours(3) });
 
-        var result = (await _controller.GetLatestBookReviewsByUser(_createdUserId!, pageIndex: 1, pageSize: 3)).Result as ObjectResult;
+        var result = (await _controller.GetLatestBookReviewsByUser(_userCreatedFromTest.Id, pageIndex: 1, pageSize: 3)).Result as ObjectResult;
         Assert.That(result, Is.Not.Null);
 
         var page = result.Value as Page<BookReviewResponseDTO>;
@@ -649,13 +649,13 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser)
                 ], "TestAuth"))
             }
         };
 
-        var result = await _controller.DeleteBookReview(_createdUserId!, bookId: "monster");
+        var result = await _controller.DeleteBookReview(_userCreatedFromTest.Id, bookId: "monster");
         Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
 
@@ -678,7 +678,7 @@ public class UserControllerTests
             }
         };
 
-        var result = await _controller.DeleteBookReview(_createdUserId!, bookId: "1984");
+        var result = await _controller.DeleteBookReview(_userCreatedFromTest!.Id, bookId: "1984");
         Assert.That(result, Is.InstanceOf<NoContentResult>());
     }
 
@@ -691,7 +691,7 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, _createdUserId!),
+                    new Claim(ClaimTypes.NameIdentifier, _userCreatedFromTest!.Id),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser)
                 ], "TestAuth"))
             }

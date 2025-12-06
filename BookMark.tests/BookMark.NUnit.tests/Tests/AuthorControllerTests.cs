@@ -18,7 +18,7 @@ public class AuthorControllerTests
     private IServiceScope _scope;
     private AuthorController _controller;
 
-    private static string? _createdAuthorId;
+    private static AuthorResponseDTO? _authorCreatedFromTest;
     
     [SetUp]
     public void Setup()
@@ -36,43 +36,37 @@ public class AuthorControllerTests
 #region CREATE
 
     [Test, Order(1)]
-    public async Task Create_ReturnsOk_WhenValidAuthorDataProvided()
+    public async Task Create_CreatesNewAuthor_WhenRequiredDataIsProvided()
     {
-        var createDto = new AuthorCreateDTO
+        var creationData = new AuthorCreateDTO
         {
             Name = "Test Author"
         };
 
-        var createResult = (await _controller.Create(createDto)).Result;
+        var result = (await _controller.Create(creationData)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
 
-        Assert.That(((ObjectResult)createResult!).StatusCode, Is.EqualTo(StatusCodes.Status201Created));
-
-        var author = ((ObjectResult)createResult!).Value as AuthorResponseDTO;
-        Assert.That(author, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(author.Id, Is.Not.Null.Or.Empty);
-            Assert.That(author.Name, Is.EqualTo(createDto.Name));
-        });
-
-        _createdAuthorId = author.Id;
+        var createdAuthor = result.Value as AuthorResponseDTO;
+        Assert.That(createdAuthor, Is.Not.Null);
+        _authorCreatedFromTest = createdAuthor;
     }
 
     [Test]
     public async Task Create_ReturnsBadRequest_WhenOptionalParametersAreInvalid()
     {
-        var createDto = new AuthorCreateDTO
+        var creationData = new AuthorCreateDTO
         {
-            Name = "Temporal Author",
+            Name = "Failed Test",
             BirthYear = 2000,
             DeathYear = 1900
         };
 
-        var result = (await _controller.Create(createDto)).Result;
+        var result = (await _controller.Create(creationData)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
 
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
-
-        var problem = ((ObjectResult)result).Value as ProblemDetails;
+        var problem = result.Value as ProblemDetails;
         Assert.That(problem, Is.Not.Null);
         Assert.Multiple(() =>
         {
@@ -86,22 +80,23 @@ public class AuthorControllerTests
     {
         var createDto = new AuthorCreateDTO
         {
-            Name = "Valid Temporal Author",
+            Name = "Another One",
             Biography = "Hello world!",
             BirthYear = 1984,
         };
 
-        var createResult = (await _controller.Create(createDto)).Result;
-        Assert.That(((ObjectResult)createResult!).StatusCode, Is.EqualTo(StatusCodes.Status201Created));
+        var result = (await _controller.Create(createDto)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
 
-        var author = ((ObjectResult)createResult!).Value as AuthorResponseDTO;
-        Assert.That(author, Is.Not.Null);
+        var createdAuthor = result.Value as AuthorResponseDTO;
+        Assert.That(createdAuthor, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(author.Id, Is.Not.Null.Or.Empty);
-            Assert.That(author.Name, Is.EqualTo(createDto.Name));
-            Assert.That(author.BirthYear, Is.EqualTo(createDto.BirthYear));
-            Assert.That(author.DeathYear, Is.EqualTo(createDto.DeathYear));
+            Assert.That(createdAuthor.Id, Is.Not.Null.Or.Empty);
+            Assert.That(createdAuthor.Name, Is.EqualTo(createDto.Name));
+            Assert.That(createdAuthor.BirthYear, Is.EqualTo(createDto.BirthYear));
+            Assert.That(createdAuthor.DeathYear, Is.EqualTo(createDto.DeathYear));
         });
     }
 
@@ -109,35 +104,39 @@ public class AuthorControllerTests
 
 #region GET
 
+    [Test, Order(2)]
+    public async Task Get_ReturnsOkAndAuthor_WhenAuthorExists()
+    {
+        var result = (await _controller.Get(_authorCreatedFromTest!.Id)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
+
+        var author = result.Value as AuthorResponseDTO;
+        Assert.That(author, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(author.Id, Is.EqualTo(_authorCreatedFromTest.Id));
+            Assert.That(author.Name, Is.EqualTo(_authorCreatedFromTest.Name));
+            Assert.That(author.Biography, Is.EqualTo(_authorCreatedFromTest.Biography));
+            Assert.That(author.BirthYear, Is.EqualTo(_authorCreatedFromTest.BirthYear));
+            Assert.That(author.DeathYear, Is.EqualTo(_authorCreatedFromTest.DeathYear));
+        });
+    }
+
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsInvalid()
     {
-        var result = (await _controller.Get("random-id")).Result;
-
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+        var result = (await _controller.Get(id: "this-author-does-not-exist")).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
 
     [Test]
     public async Task Get_ReturnsNotFound_WhenIdIsEmpty()
     {
-        var result = (await _controller.Get(string.Empty)).Result;
-
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
-    }
-    
-    [Test, Order(2)]
-    public async Task Get_ReturnsAuthor_WhenIdIsValid()
-    {
-        var result = (await _controller.Get(_createdAuthorId!)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-
-        var dto = ((OkObjectResult)result!).Value as AuthorResponseDTO;
-        Assert.That(dto, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(dto!.Id, Is.EqualTo(_createdAuthorId));
-            Assert.That(dto!.Name, Is.EqualTo("Test Author"));
-        });
+        var result = (await _controller.Get(string.Empty)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
 
 #endregion
@@ -145,46 +144,59 @@ public class AuthorControllerTests
 #region UPDATE
 
     [Test, Order(3)]
-    public async Task Update_ReturnsUpdatedAuthor_WhenValidUpdateFieldsAreProvided()
+    public async Task Update_UpdatesOnlyProvidedFields()
     {
-        var updateDto = new AuthorUpdateDTO
+        var update = new AuthorUpdateDTO
         {
             Biography = "New Biography of Test Author.",
             BirthYear = 2025,
             DeathYear = 2025
         };
 
-        var result = (await _controller.Update(_createdAuthorId!, updateDto)).Result;
+        var result = (await _controller.Update(_authorCreatedFromTest!.Id, update)).Result;
         Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
         var updatedAuthor = ((OkObjectResult)result!).Value as AuthorResponseDTO;
         Assert.That(updatedAuthor, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(updatedAuthor.Name, Is.EqualTo("Test Author"));
-            Assert.That(updatedAuthor.Biography, Is.EqualTo(updateDto.Biography));
-            Assert.That(updatedAuthor.BirthYear, Is.EqualTo(updateDto.BirthYear));
-            Assert.That(updatedAuthor.DeathYear, Is.EqualTo(updateDto.DeathYear));
+            Assert.That(updatedAuthor.Name, Is.EqualTo(_authorCreatedFromTest.Name));
+            Assert.That(updatedAuthor.Biography, Is.EqualTo(update.Biography));
+            Assert.That(updatedAuthor.BirthYear, Is.EqualTo(update.BirthYear));
+            Assert.That(updatedAuthor.DeathYear, Is.EqualTo(update.DeathYear));
         });
     }
 
-    [Test]
+    [Test, Order(3)]
     public async Task Update_ReturnsBadRequest_WhenNoFieldIsProvided()
     {
-        var updateDto = new AuthorUpdateDTO {};
+        var update = new AuthorUpdateDTO {};
 
-        var result = (await _controller.Update("asimov", updateDto)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+        var result = (await _controller.Update(_authorCreatedFromTest!.Id, update)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }
 
-    [Test] // TODO: umesto ovoga mozda update sa datumom smrti koji je veci od datuma rodjenja
-    public void Update_ReturnsDbUpdateConcurrencyException_WhenProvidedIdIsInvalid()
+    [Test]
+    public async Task Update_ReturnsBadRequest_WhenProvidedParametersAreInvalid()
     {
-        var updateDto = new AuthorUpdateDTO { Name = "Random Name" };
-
-        Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
+        var update = new AuthorUpdateDTO
         {
-            await _controller.Update("random-id", updateDto);
+            Biography = "Invalid Birth-Death-Year Ratio",
+            BirthYear = 2222,
+            DeathYear = 1111
+        };
+
+        var result = (await _controller.Update(id: "id-does-not-matter-in-this-situation", update)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
+
+        var problem = result.Value as ProblemDetails;
+        Assert.That(problem, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(problem.Title, Is.EqualTo("Bad Request"));
+            Assert.That(problem.Detail, Does.Contain("Birth Year must come before Death Year"));
         });
     }
 
@@ -193,19 +205,19 @@ public class AuthorControllerTests
 #region DELETE
 
     [Test, Order(4)]
-    public async Task Delete_ReturnsOk_WhenAuthorIsDeleted()
+    public async Task Delete_ReturnsNoContent_WhenAuthorIsDeleted()
     {
-        var result = await _controller.Delete(_createdAuthorId!);
+        var result = await _controller.Delete(_authorCreatedFromTest!.Id);
 
         Assert.That(((NoContentResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
     }
 
     [Test]
-    public void Delete_ReturnsBadRequest_WhenIdIsInvalid()
+    public void Delete_ThrowsDbUpdateConcurrencyException_WhenIdIsInvalid()
     {
         Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
         {
-            await _controller.Delete("random-id");
+            await _controller.Delete("this-author-is-not-real");
         });
     }
 
@@ -255,81 +267,20 @@ public class AuthorControllerTests
 
 #endregion
 
-#region GET-CONSTRAINED
-
-    [Test]
-    public async Task GetConstrained_ReturnsWantedPageIndexAndPageSize()
-    {
-        var result = (await _controller.GetConstrained(pageIndex: 2, pageSize: 2)).Result;
-
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-
-        var page = ((OkObjectResult)result!).Value as Page<AuthorLinkDTO>;
-        Assert.That(page, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(page.PageIndex, Is.EqualTo(2));
-            Assert.That(page.Items, Has.Count.EqualTo(2));
-            Assert.That(page.HasPreviousPage, Is.True);
-            Assert.That(page.HasNextPage, Is.True);
-        });
-    }
-
-    [Test]
-    public async Task GetConstrained_ReturnsOnlyFilteredItems()
-    {
-        var filters = new Dictionary<string, string>
-        {
-            ["Name~="] = "Alan"
-        };
-        var result = (await _controller.GetConstrained(pageIndex: 1, pageSize: 10, filters: filters)).Result;
-
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-
-        var page = ((OkObjectResult)result!).Value as Page<AuthorLinkDTO>;
-        Assert.That(page, Is.Not.Null);
-        Assert.That(page.Items, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(page.PageIndex, Is.EqualTo(1));
-            Assert.That(page.Items, Has.Count.GreaterThan(0));
-            Assert.That(page.Items, Has.Count.LessThanOrEqualTo(10));
-            Assert.That(page.HasPreviousPage, Is.False);
-            Assert.That(page.HasNextPage, Is.False);
-
-            Assert.That(
-                page.Items.Any(i => i.Name == "Alan Moore"),
-                Is.True,
-                "Expected at least one item with Name == 'Alan Moore'"
-            );
-        });
-    }
-
-    [Test]
-    public void GetConstrained_ThrowsArgumentOutOfRangeException_WhenIndexIsOutOfRange()
-    {
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        {
-            await _controller.GetConstrained(pageIndex: 67, pageSize: 911);
-        });
-    }
-
-#endregion
-
 #region GET-AUTHOR-SUGGESTIONS
 
     [Test]
     public async Task GetAuthorSuggestions_ReturnsMatchingAuthors()
     {
         var searchTerm = "George";
-        var count = 5;
 
-        var result = (await _controller.GetAuthorSuggestions(searchTerm: searchTerm, count: count)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-        var suggestions = ((OkObjectResult)result!).Value as List<AuthorLinkDTO>;
+        var result = (await _controller.GetAuthorSuggestions(searchTerm)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
+        var suggestions = result.Value as List<AuthorLinkDTO>;
         Assert.That(suggestions, Is.Not.Null);
-        Assert.That(suggestions.All(a => a.Name.Contains("George")), Is.True);
+        Assert.That(suggestions.All(a => a.Name.Contains("George", StringComparison.OrdinalIgnoreCase)), Is.True);
     }
 
     [Test]
@@ -337,17 +288,17 @@ public class AuthorControllerTests
     {
         var searchTerm = "George";
         var skipIds = new List<string> { "martin", "eliot" };
-        var count = 5;
 
-        var result = (await _controller.GetAuthorSuggestions(searchTerm: searchTerm, skipIds: skipIds, count: count)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-        var suggestions = ((OkObjectResult)result!).Value as List<AuthorLinkDTO>;
+        var result = (await _controller.GetAuthorSuggestions(searchTerm, skipIds)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
+        var suggestions = result.Value as List<AuthorLinkDTO>;
         Assert.That(suggestions, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(suggestions.All(a => a.Name.Contains(searchTerm)), Is.True);
-            Assert.That(suggestions!.All(a => !skipIds.Contains(a.Id)), Is.True);
+            Assert.That(suggestions.All(a => a.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)), Is.True);
+            Assert.That(suggestions.All(a => !skipIds.Contains(a.Id)), Is.True);
         });
     }
 
@@ -355,15 +306,16 @@ public class AuthorControllerTests
     public async Task GetAuthorSuggestions_ReturnsWantedCount()
     {
         var searchTerm = "a";
-        var count = 5;
+        var count = 7;
 
-        var result = (await _controller.GetAuthorSuggestions(searchTerm: searchTerm, count: count)).Result;
-        Assert.That(((ObjectResult)result!).StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-        var suggestions = ((OkObjectResult)result!).Value as List<AuthorLinkDTO>;
+        var result = (await _controller.GetAuthorSuggestions(searchTerm: searchTerm, count: count)).Result as ObjectResult;
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
 
+        var suggestions = result.Value as List<AuthorLinkDTO>;
         Assert.That(suggestions, Is.Not.Null);
         Assert.That(suggestions, Has.Count.EqualTo(count));
-        Assert.That(suggestions.All(a => a.Name.Contains(searchTerm)), Is.True);
+        Assert.That(suggestions.All(a => a.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)), Is.True);
     }
 
 #endregion

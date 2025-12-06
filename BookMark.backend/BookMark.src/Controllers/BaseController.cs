@@ -77,18 +77,18 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
                             detail: $"Update data is empty. Nothing to update.",
                             statusCode: StatusCodes.Status400BadRequest );
 
-        await _repository.UpdateAsync(id, updateData!);
+        await _repository.UpdateAsync(id, updateData);
 
         var updatedEntity = await _repository.GetByIdAsync<TResponseDTO>(id);
 
         return Ok(updatedEntity);
     }
 
+    [NonAction]
     private static bool IsDtoEmpty<T>(T dto)
     {
-        return typeof(T)
-            .GetProperties()
-            .All(p => p.GetValue(dto) == null);
+        return typeof(T).GetProperties()
+                        .All(p => p.GetValue(dto) == null);
     }
 
 
