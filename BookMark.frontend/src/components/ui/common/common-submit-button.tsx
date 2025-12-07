@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 
 interface CommonSubmitButtonProps {
   label: string;
@@ -6,6 +6,7 @@ interface CommonSubmitButtonProps {
   showCancel?: boolean;
   onClick?: () => void;
   onCancel?: () => void;
+  loading?: boolean;
 }
 export function CommonSubmitButton({
   label = "Submit",
@@ -13,6 +14,7 @@ export function CommonSubmitButton({
   showCancel = false,
   onClick,
   onCancel,
+  loading = false,
 }: CommonSubmitButtonProps) {
   return (
     <div className="flex flex-col">
@@ -38,8 +40,14 @@ export function CommonSubmitButton({
           onClick={onClick}
           className="flex justify-center w-full gap-1 px-3 py-2 bg-accent text-background font-bold rounded-lg transition border-b-4 border-popover hover:text-popover"
         >
-          <Plus className="text-popover" strokeWidth={3} />
-          {label}
+          {loading ? (
+            <Loader2 className="animate-spin text-popover" strokeWidth={3} />
+          ) : (
+            <>
+              <Plus className="text-popover" strokeWidth={3} />
+              {label}
+            </>
+          )}
         </button>
       </div>
     </div>

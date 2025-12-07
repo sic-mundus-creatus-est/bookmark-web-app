@@ -7,6 +7,7 @@ import { CommonSubmitButton } from "@/components/ui/common/common-submit-button"
 import { Footer } from "@/components/layouts/footer";
 import { UserCreate } from "@/lib/types/user";
 import { useAuth } from "@/lib/contexts/useAuth";
+import { ApiError } from "@/lib/services/api-calls/api";
 
 export function SignUpPage() {
   //--------------------------------
@@ -23,6 +24,8 @@ export function SignUpPage() {
     confirmPassword: "",
   });
   //-------------------------------------------------------------
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>();
 
   useEffect(() => {
     if (auth.user) {
@@ -32,11 +35,26 @@ export function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(newUserData);
 
-    const successfulSignUp = await auth.signUp(newUserData);
+    const allEmpty = Object.values(newUserData).every(
+      (val) => !val || !val.trim()
+    );
+    if (allEmpty) {
+      setError("Please fill in all fields before signing up.");
+      return;
+    }
 
-    if (successfulSignUp) navigate("/signin");
+    setLoading(true);
+    setError(undefined);
+    try {
+      await auth.signUp(newUserData);
+      navigate("/sign-in");
+    } catch (err: any) {
+      if (err instanceof ApiError) setError(err.detail);
+      else setError("Unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -116,7 +134,11 @@ export function SignUpPage() {
               noBreaks
             />
             <div className="flex flex-col">
-              <CommonSubmitButton label="Create Account" />
+              <CommonSubmitButton
+                label="Create Account"
+                errorLabel={error}
+                loading={loading}
+              />
               <h4 className="text-accent italic text-end select-none">
                 By creating an account, you agree to the BookMark Terms of
                 Service and Privacy Policy.

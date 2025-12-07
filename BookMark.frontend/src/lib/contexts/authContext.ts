@@ -7,8 +7,8 @@ export interface IAuthContext {
   signIn: (credentials: {
     usernameOrEmail: string;
     password: string;
-  }) => Promise<boolean>;
-  signUp: (data: UserCreate) => Promise<boolean>;
+  }) => Promise<void>;
+  signUp: (data: UserCreate) => Promise<void>;
   signOut: () => void;
   loading: boolean;
 }

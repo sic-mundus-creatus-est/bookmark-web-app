@@ -20,32 +20,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     usernameOrEmail: string;
     password: string;
   }) => {
-    try {
-      const response = await signInUser(credentials);
-      if (response.token) {
-        localStorage.setItem("token", response.token);
+    const response = await signInUser(credentials);
+    localStorage.setItem("token", response.token);
 
-        const decoded = decodeToken(response.token);
-        if (decoded) {
-          setUser(decoded);
-          return true;
-        }
-      }
-      return false;
-    } catch (err) {
-      console.error("SignIn failed:", err);
-      return false;
-    }
+    const decoded = decodeToken(response.token);
+    setUser(decoded);
   };
   // ----------------------------
   const signUp: IAuthContext["signUp"] = async (data: UserCreate) => {
-    try {
-      await createUser(data);
-      return true;
-    } catch (err) {
-      console.error("SignUp failed:", err);
-      return false;
-    }
+    await createUser(data);
   };
   // -----------------------------
   const signOut: IAuthContext["signOut"] = () => {

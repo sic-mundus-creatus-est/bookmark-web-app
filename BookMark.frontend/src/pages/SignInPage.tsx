@@ -6,11 +6,13 @@ import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 import { Footer } from "@/components/layouts/footer";
 import { useAuth } from "@/lib/contexts/useAuth";
+import { ApiError } from "@/lib/services/api-calls/api";
 
 export function SignInPage() {
   //--------------------------------
   const auth = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState<string>();
   //--------------------------------
 
   //-----------------------------------------------
@@ -19,17 +21,32 @@ export function SignInPage() {
     password: "",
   });
   //-----------------------------------------------
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const successfulSignIn = await auth.signIn(credentials);
 
-    if (successfulSignIn) navigate("/home");
+    if (!credentials.usernameOrEmail.trim() || !credentials.password.trim()) {
+      setError("Please enter both your username/email and password.");
+      return;
+    }
+
+    setLoading(true);
+    setError(undefined);
+    try {
+      await auth.signIn(credentials);
+      navigate("/home");
+    } catch (err: any) {
+      if (err instanceof ApiError) setError(err.detail);
+      else setError("Unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-muted">
-      <div className="bg-muted flex flex-col items-center flex-grow m-2">
+      <div className="bg-muted flex flex-col items-center flex-grow m-2 mb-10">
         <div className="mb-6 mt-10 scale-125 -ml-3">
           <Logo />
         </div>
@@ -67,7 +84,11 @@ export function SignInPage() {
                 noBreaks
               />
               <div>
-                <CommonSubmitButton label="Sign In" />
+                <CommonSubmitButton
+                  label="Sign In"
+                  errorLabel={error}
+                  loading={loading}
+                />
                 <h4 className="text-accent italic text-end leading-tight select-none">
                   By signing in, you agree to the BookMark Terms of Service and
                   Privacy Policy.
