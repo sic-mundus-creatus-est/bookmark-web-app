@@ -35,7 +35,7 @@ export function useCurrentUserBookReview(
   return useQuery<BookReview, ApiError>({
     queryKey: [KEY_BOOK_REVIEW, bookId],
     queryFn: () => getCurrentUserBookReview(bookId),
-    enabled: !!bookId && bookId.trim() !== "" && !!currentUser,
+    enabled: !!bookId && !!currentUser,
   });
 }
 
@@ -45,7 +45,7 @@ export function useLatestBookReviews(
   pageSize: number
 ) {
   return useQuery<Page<BookReview>, ApiError>({
-    queryKey: [KEY_BOOK_REVIEWS, bookId, pageIndex, pageSize],
+    queryKey: [KEY_BOOK_REVIEWS, bookId, pageIndex],
     queryFn: () => getLatestBookReviews(bookId, pageIndex, pageSize),
     enabled: !!bookId,
   });
@@ -86,7 +86,7 @@ export function useUpdateUserProfile(userId: string) {
   });
 }
 
-export function useCreateBookReview() {
+export function useCreateBookReview(bookId: string) {
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -97,7 +97,12 @@ export function useCreateBookReview() {
     mutationFn: (data: { bookId: string; rating?: number; content?: string }) =>
       createBookReview(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [KEY_BOOK_REVIEWS] });
+      queryClient.invalidateQueries({ queryKey: [KEY_BOOK_REVIEW, bookId] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEWS, bookId],
+        exact: false,
+      });
+      queryClient.invalidateQueries({ queryKey: ["book", bookId] });
     },
   });
 }

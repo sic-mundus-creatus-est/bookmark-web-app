@@ -65,11 +65,11 @@ export const AppRouter = createBrowserRouter([
     ],
   },
   {
-    path: "/signin",
+    path: "/sign-in",
     element: <SignInPage />,
   },
   {
-    path: "/signup",
+    path: "/sign-up",
     element: <SignUpPage />,
   },
   {

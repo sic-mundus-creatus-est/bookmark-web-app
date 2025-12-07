@@ -124,7 +124,7 @@ export function SignUpPage() {
             </div>
             <h5 className="text-accent text-md text-end font-semibold font-[Helvetica] select-none">
               ➔ Already have an account?{" "}
-              <Link to="/signin">
+              <Link to="/sign-in">
                 <span
                   className="inline-block font-normal text-popover underline italic decoration-2 cursor-pointer
                    hover:scale-105"

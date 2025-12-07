@@ -58,7 +58,7 @@ export function BookPage() {
     content?: string;
   }>();
 
-  const createBookReview = useCreateBookReview();
+  const createBookReview = useCreateBookReview(id);
   //------------------------------------------------------------------------------
   const {
     data: book,

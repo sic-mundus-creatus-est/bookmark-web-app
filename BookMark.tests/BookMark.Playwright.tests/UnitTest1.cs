@@ -46,5 +46,17 @@ public class ExampleTest : PageTest
             await Expect(card).ToHaveAttributeAsync("data-book-type", expectedType);
         }
     }
-    
+
+    [Test]
+    public async Task SignIn_WithValidCredentials_NavigatesToHome()
+    {
+        await Page.GotoAsync("http://localhost:5173/sign-in");
+
+        await Page.GetByLabel("Username/E-mail").FillAsync("admin");
+        await Page.GetByLabel("Password").FillAsync("Admin123!");
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = "Sign In" }).ClickAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex("/home"));
+    }
+
 }

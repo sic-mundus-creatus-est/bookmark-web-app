@@ -24,7 +24,7 @@ export function SignInPage() {
     e.preventDefault();
     const successfulSignIn = await auth.signIn(credentials);
 
-    if (successfulSignIn) navigate("/");
+    if (successfulSignIn) navigate("/home");
   };
 
   return (
@@ -75,7 +75,7 @@ export function SignInPage() {
               </div>
               <h5 className="text-accent text-md text-end font-semibold font-[Helvetica] select-none">
                 ➔ New to BookMark?{" "}
-                <Link to="/signup">
+                <Link to="/sign-up">
                   <span
                     className="inline-block font-normal text-popover underline italic decoration-2 cursor-pointer
                    hover:scale-105"

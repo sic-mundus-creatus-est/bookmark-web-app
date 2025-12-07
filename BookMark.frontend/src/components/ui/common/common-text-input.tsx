@@ -91,12 +91,16 @@ export function CommonTextInput({
 
   return (
     <div className="flex flex-col">
-      <h6 className="text-accent text-xs font-mono font-bold select-none">
+      <label
+        htmlFor={label}
+        className="text-accent text-xs font-mono font-bold select-none"
+      >
         {label}
-      </h6>
+      </label>
       <div className="relative flex-col items-center group">
         <div className={`relative ${isSecret ? "pr-10" : ""}`}>
           <textarea
+            id={label}
             ref={textareaRef}
             title={title}
             placeholder={placeholder}
