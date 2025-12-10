@@ -3,7 +3,14 @@ import { navConfig } from "@/config/navConfig";
 import { NavLink } from "react-router-dom";
 import { CommonSearchBox } from "../ui/common/common-search-box";
 
-export function DesktopNavbar() {
+interface DesktopNavbarProps {
+  searchTerm: string;
+  setSearchTerm: (val: string) => void;
+}
+export function DesktopNavbar({
+  searchTerm,
+  setSearchTerm,
+}: DesktopNavbarProps) {
   return (
     <div className="hidden lg:flex flex-1 items-center justify-between">
       <div className="flex flex-col -ml-1.5">
@@ -13,7 +20,11 @@ export function DesktopNavbar() {
         </div>
       </div>
 
-      <CommonSearchBox className="-mt-3.5" />
+      <CommonSearchBox
+        className="-mt-3.5"
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+      />
     </div>
   );
 }

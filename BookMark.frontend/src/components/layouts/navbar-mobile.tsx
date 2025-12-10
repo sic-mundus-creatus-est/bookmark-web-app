@@ -6,7 +6,11 @@ import { Logo } from "@/components/logo";
 import { NavLink } from "react-router-dom";
 import { CommonSearchBox } from "../ui/common/common-search-box";
 
-export function MobileNavbar() {
+interface MobileNavbarProps {
+  searchTerm: string;
+  setSearchTerm: (val: string) => void;
+}
+export function MobileNavbar({ searchTerm, setSearchTerm }: MobileNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -77,7 +81,7 @@ export function MobileNavbar() {
         )}
       </div>
 
-      <CommonSearchBox />
+      <CommonSearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
     </div>
   );
 }

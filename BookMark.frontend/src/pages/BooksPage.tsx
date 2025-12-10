@@ -105,13 +105,26 @@ export function BooksPage() {
     <div className={`w-full pb-2 ${!searchTermParam && "pt-2"}`}>
       {searchTermParam && (
         <h4 className="text-center text-lg font-semibold font-[Helvetica] overflow-hidden line-clamp-2">
-          Search results for{" "}
-          <span className="italic font-extrabold text-popover text-xl">
-            "{searchTermParam}"
-          </span>
-          :
+          {page?.items && page.items.length > 0 ? (
+            <>
+              Search results for{" "}
+              <span className="italic font-extrabold text-popover text-xl">
+                "{searchTermParam}"
+              </span>
+              :
+            </>
+          ) : (
+            <>
+              No results found for{" "}
+              <span className="italic font-extrabold text-popover text-xl">
+                "{searchTermParam}"
+              </span>
+              .
+            </>
+          )}
         </h4>
       )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4 mb-2">
         {page?.items?.map((book: BookLinkProps) => (
           <div

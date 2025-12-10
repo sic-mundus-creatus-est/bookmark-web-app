@@ -25,7 +25,7 @@ public class ExampleTest : PageTest
     [TestCase("Books", "/books", "Book")]
     [TestCase("Comics", "/comics", "Comic")]
     [TestCase("Manga", "/manga", "Manga")]
-    public async Task ClickingNavLink_ShowsOnlyCorrectBookType( string navLinkName,
+    public async Task ClickingNavLink_ShowsOnlyExpectedBookType( string navLinkName,
                                                                 string expectedUrl,
                                                                 string expectedType )
     {
@@ -50,7 +50,7 @@ public class ExampleTest : PageTest
     }
 
     [Test]
-    public async Task SignIn_WithValidCredentials_NavigatesToHome()
+    public async Task SignIn_SignsUserInAndNavigatesToHome_WhenCredentialsAreValid()
     {
         await Page.GotoAsync($"{BaseUrl}/sign-in");
 
@@ -62,7 +62,7 @@ public class ExampleTest : PageTest
     }
 
     [Test]
-    public async Task SignIn_WithInvalidCredentials_DisplaysErrorMessage()
+    public async Task SignIn_ShowsErrorMessage_WhenCredentialsAreInvalid()
     {
         await Page.GotoAsync($"{BaseUrl}/sign-in");
 
@@ -75,10 +75,10 @@ public class ExampleTest : PageTest
                          .ToBeVisibleAsync();
     }
 
-    [TestCase("", "", TestName = "SignIn_BothFieldsEmpty_DisplaysErrorMessage")]
-    [TestCase("admin", "", TestName = "SignIn_PasswordEmpty_DisplaysErrorMessage")]
-    [TestCase("", "Admin123!", TestName = "SignIn_UsernameEmpty_DisplaysErrorMessage")]
-    public async Task SignIn_WithEmptyCredentials_DisplaysErrorMessage(string usernameOrEmail, string password)
+    [TestCase("", "", TestName = "SignIn_ShowsErrorMessage_WhenBothFieldsAreEmpty")]
+    [TestCase("admin", "", TestName = "SignIn_ShowsErrorMessage_WhenPasswordIsEmpty")]
+    [TestCase("", "Admin123!", TestName = "SignIn_ShowsErrorMessage_WhenUsernameIsEmpty")]
+    public async Task SignIn_ShowsErrorMessage_WhenFormIsNotFull(string usernameOrEmail, string password)
     {
         await Page.GotoAsync($"{BaseUrl}/sign-in");
 
@@ -90,6 +90,28 @@ public class ExampleTest : PageTest
         await Expect(Page).ToHaveURLAsync(new Regex("/sign-in"));
         await Expect(Page.GetByText("Please enter both your username/email and password."))
                          .ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task Search_ShowsNoResults_WhenSearchTermHasNoMatches()
+    {
+        var searchTerm = "test";
+        await Page.GotoAsync($"{BaseUrl}");
+
+        await Page.GetByLabel("Search Term Input")
+                    .Locator("visible=true") // since both navbars, mobile&desktop, are in DOM and we need only the visible one (one is always hidden)
+                    .FillAsync(searchTerm);
+        await Page.GetByLabel("Submit Search")
+                    .Locator("visible=true")
+                    .ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync($"{BaseUrl}/all?search-term=test");
+
+        await Expect(Page.GetByText($"No results found for \"{searchTerm}\"."))
+                         .ToBeVisibleAsync();
+
+        var cardsLocator = Page.GetByTestId("book-card");
+        await Expect(cardsLocator).ToHaveCountAsync(0);
     }
 
 }

@@ -5,13 +5,17 @@ import { MobileNavbar } from "@/components/layouts/navbar-mobile";
 import { navConfig } from "@/config/navConfig";
 import { useAuth } from "@/lib/contexts/useAuth";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export function Navbar() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   return (
     <nav className="sticky md:top-0 w-full bg-background z-40">
       <AuthRow />
       <div className="flex items-center justify-between">
-        <DesktopNavbar /> <MobileNavbar />
+        <DesktopNavbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <MobileNavbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       </div>
     </nav>
   );
