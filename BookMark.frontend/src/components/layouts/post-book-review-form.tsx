@@ -2,7 +2,7 @@ import { BookRatingInput } from "../ui/book/book-rating-input";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { CommonSubmitButton } from "../ui/common/common-submit-button";
 
-interface PostReviewFormProps {
+interface PostBookReviewFormProps {
   subjectTitle?: string;
   rating?: number;
   content?: string;
@@ -10,14 +10,14 @@ interface PostReviewFormProps {
   onContentChange?: (value: string) => void;
   onSubmit?: () => void;
 }
-export function PostReviewForm({
+export function PostBookReviewForm({
   subjectTitle = "it",
   rating,
   content,
   onRatingChange,
   onContentChange,
   onSubmit,
-}: PostReviewFormProps) {
+}: PostBookReviewFormProps) {
   return (
     <div className="p-2 px-3 rounded-b-xl rounded-t-md border-b-8 border-2 border-accent bg-muted">
       <h5 className="text-xl font-semibold leading-tight">

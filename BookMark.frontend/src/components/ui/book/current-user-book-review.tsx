@@ -1,5 +1,5 @@
 import { BookReview } from "@/lib/types/book";
-import { BookReviewCard } from "./ui/book/book-review-card";
+import { BookReviewCard } from "./book-review-card";
 
 interface CurrentUserBookReviewProps {
   review: BookReview;

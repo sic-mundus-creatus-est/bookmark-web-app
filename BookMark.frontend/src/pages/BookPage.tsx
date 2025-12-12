@@ -1,5 +1,4 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { BookUpdate } from "@/lib/types/book";
@@ -13,10 +12,6 @@ import {
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
 import { BookAuthorInput } from "@/components/ui/book/book-author-input";
-import { BookGenreEntries } from "@/components/ui/book/book-genre-entries";
-import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
-import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
-import { BookLanguageInput } from "@/components/ui/book/book-language-input";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 
 import { useForm } from "react-hook-form";
@@ -31,8 +26,7 @@ import {
 } from "@/lib/services/api-calls/hooks/useBookApi";
 import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
 import { CommonDescription } from "@/components/ui/common/common-description";
-import { BookReviewCard } from "@/components/ui/book/book-review-card";
-import { PostReviewForm } from "@/components/layouts/post-review-form";
+import { PostBookReviewForm } from "@/components/layouts/post-book-review-form";
 import {
   useCreateBookReview,
   useCurrentUserBookReview,
@@ -40,8 +34,10 @@ import {
   useLatestBookReviews,
 } from "@/lib/services/api-calls/hooks/useUserApi";
 import { useAuth } from "@/lib/contexts/useAuth";
-import { Pagination } from "@/components/pagination";
-import { CurrentUserBookReview } from "@/components/current-user-book-review";
+import { CurrentUserBookReview } from "@/components/ui/book/current-user-book-review";
+import { BookCommunityReviewsPage } from "@/components/ui/book/book-community-reviews-page";
+import { BookMetadata } from "@/components/ui/book/book-metadata";
+import { BookMetadataEditForm } from "@/components/ui/book/book-metadata-edit";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -350,100 +346,16 @@ export function BookPage() {
               )}
             </div>
           </div>
-          <div className="rounded-lg border-2 border-b-4 border-accent bg-muted px-2 sm:px-4 py-6 space-y-6">
-            {/* Genres */}
-            {editMode ? (
-              <BookGenreEntries
-                initialGenres={watch("genres")}
-                allGenres={allGenres}
-                onChange={(updatedGenres) => {
-                  setValue("genres", [...updatedGenres], { shouldDirty: true });
-                }}
-              />
-            ) : (
-              <div className="flex flex-wrap items-start gap-3 text-sm font-[Verdana] pl-2">
-                <div className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
-                  Genres:
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {book?.genres!.map((bg) => (
-                    <Link to={`/genre/${bg.id}`} key={bg.id}>
-                      <Badge className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover">
-                        {bg.name}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+          {editMode ? (
+            <BookMetadataEditForm
+              watch={watch}
+              setValue={setValue}
+              allGenres={allGenres}
+            />
+          ) : (
+            <BookMetadata book={book} />
+          )}
 
-            {/* Book Metadata */}
-            <div className="grid gap-y-3 text-sm font-[Verdana]">
-              {editMode ? (
-                <>
-                  <PublicationYearSelector
-                    value={watch("publicationYear")}
-                    onChange={(year) =>
-                      setValue("publicationYear", year, {
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-
-                  <BookPageCountInput
-                    value={watch("pageCount")}
-                    onChange={(newCount) =>
-                      setValue("pageCount", newCount, {
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-
-                  <BookLanguageInput
-                    value={watch("originalLanguage")}
-                    onChange={(language) =>
-                      setValue("originalLanguage", language, {
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-                </>
-              ) : (
-                <>
-                  <div className="col-span-2 bg-background px-2 py-1 rounded">
-                    <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
-                      <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
-                        Published in:
-                      </div>
-                      <div className="text-lg text-accent font-[Georgia]">
-                        {book?.publicationYear}.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center px-2">
-                    <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
-                      Pages:
-                    </div>
-                    <div className="text-lg text-accent font-[Georgia]">
-                      {book?.pageCount}
-                    </div>
-                  </div>
-
-                  <div className="col-span-2 bg-background px-2 py-2 rounded">
-                    <div className="grid grid-cols-[auto_1fr] gap-x-4 items-center">
-                      <div className="uppercase text-accent font-bold tracking-wider whitespace-nowrap">
-                        Written in:
-                      </div>
-                      <span className="uppercase text-accent overflow-hidden font-sans font-semibold">
-                        {book?.originalLanguage}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
           {editMode ? (
             <CommonDescriptionInput
               value={watch("description")}
@@ -476,7 +388,7 @@ export function BookPage() {
           {!editMode && (
             <div className="flex flex-col gap-4">
               {currentUser && !currentUserReview && (
-                <PostReviewForm
+                <PostBookReviewForm
                   subjectTitle={book?.title}
                   rating={newReview?.rating}
                   content={newReview?.content}
@@ -497,29 +409,13 @@ export function BookPage() {
                       onDelete={handleDeleteReview}
                     />
                   )}
-                  <div className="flex flex-col">
-                    <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4 rounded-b-sm">
-                      Community Reviews
-                    </h4>
-                  </div>
-                  {bookReviews?.items?.map((review) => (
-                    <BookReviewCard
-                      key={`${review.user.id}-${review.bookId}`}
-                      rating={review.rating}
-                      content={review.content}
-                      user={review.user}
-                      postedOn={new Date(review.createdAt)}
-                    />
-                  ))}
-                  {bookReviews && (
-                    <Pagination
-                      currentPage={reviewPageIndex}
-                      totalPages={bookReviews.totalPages}
-                      onPageChange={(page) => {
-                        setReviewPageIndex(page);
-                      }}
-                    />
-                  )}
+                  <BookCommunityReviewsPage
+                    reviews={bookReviews}
+                    currentPage={reviewPageIndex}
+                    onPageChange={(page) => {
+                      setReviewPageIndex(page);
+                    }}
+                  />
                 </>
               )}
             </div>
