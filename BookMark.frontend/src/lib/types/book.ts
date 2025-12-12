@@ -29,7 +29,7 @@ export interface Book {
   genres: GenreLinkProps[];
 
   averageRating?: number;
-  reviewCount?: number;
+  ratingsCount?: number;
 }
 
 export interface BookLinkProps {
@@ -41,7 +41,6 @@ export interface BookLinkProps {
   bookType: BookType;
 
   averageRating?: number;
-  reviewCount?: number;
 }
 
 export interface BookUpdate {

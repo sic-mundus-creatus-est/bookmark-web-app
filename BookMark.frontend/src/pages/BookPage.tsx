@@ -36,10 +36,12 @@ import { PostReviewForm } from "@/components/layouts/post-review-form";
 import {
   useCreateBookReview,
   useCurrentUserBookReview,
+  useDeleteBookReview,
   useLatestBookReviews,
 } from "@/lib/services/api-calls/hooks/useUserApi";
 import { useAuth } from "@/lib/contexts/useAuth";
 import { Pagination } from "@/components/pagination";
+import { CurrentUserBookReview } from "@/components/current-user-book-review";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -58,7 +60,8 @@ export function BookPage() {
     content?: string;
   }>();
 
-  const createBookReview = useCreateBookReview(id);
+  const createBookReview = useCreateBookReview();
+  const deleteBookReview = useDeleteBookReview();
   //------------------------------------------------------------------------------
   const {
     data: book,
@@ -77,16 +80,11 @@ export function BookPage() {
   } = useAllGenres();
   const { data: currentUserReview } = useCurrentUserBookReview(id, currentUser);
 
-  const reviewPageIndex = 1;
-  const reviewPageSize = 5;
-  const hasReviews = (book?.reviewCount ?? 0) > 0;
-  let reviewDisplayText = "No reviews yet";
+  const [reviewPageIndex, setReviewPageIndex] = useState(1);
 
-  if (hasReviews && book?.reviewCount) {
-    const start = (reviewPageIndex - 1) * reviewPageSize + 1;
-    const end = Math.min(reviewPageIndex * reviewPageSize, book.reviewCount);
-    reviewDisplayText = `Displaying ${start}–${end} of ${book.reviewCount.toLocaleString()} reviews`;
-  }
+  const reviewPageSize = 5;
+  const hasReviews = (book?.ratingsCount ?? 0) > 0;
+
   const { data: bookReviews } = useLatestBookReviews(
     id,
     reviewPageIndex,
@@ -154,7 +152,15 @@ export function BookPage() {
   const handleCreateReview = async () => {
     if (!book) return;
 
-    console.log(newReview);
+    if (book!.ratingsCount! >= 0 && newReview?.rating && newReview.rating > 0) {
+      const totalRatingBefore = book!.averageRating! * book!.ratingsCount!;
+      book!.ratingsCount!++;
+      const totalRatingAfter = totalRatingBefore + newReview.rating;
+      book!.averageRating = totalRatingAfter / book!.ratingsCount!;
+    } else {
+      book!.ratingsCount = 1;
+      book!.averageRating = newReview?.rating ?? 0;
+    }
 
     createBookReview.mutate(
       { bookId: book.id, ...newReview },
@@ -165,6 +171,25 @@ export function BookPage() {
       }
     );
   };
+
+  const handleDeleteReview = () => {
+    setNewReview(undefined);
+    book!.ratingsCount!--;
+    if (book!.ratingsCount! > 0 && currentUserReview!.rating > 0) {
+      const totalRatingBefore =
+        book!.averageRating! * (book!.ratingsCount! + 1);
+      const totalRatingAfter = totalRatingBefore - currentUserReview!.rating;
+      book!.averageRating = totalRatingAfter / book!.ratingsCount!;
+    } else {
+      book!.averageRating = 0;
+    }
+
+    deleteBookReview.mutate({
+      userId: currentUserReview!.user.id,
+      bookId: currentUserReview!.bookId,
+    });
+  };
+
   //==============================================================================
 
   if (error)
@@ -237,15 +262,15 @@ export function BookPage() {
                     showEmptyStars
                   />
                   <span className="text-[32px] font-bold text-muted font-[Candara] leading-tight">
-                    {book?.averageRating != null
+                    {book?.averageRating != null && book?.averageRating != 0
                       ? book.averageRating.toFixed(2)
                       : "N/A"}
                   </span>
                 </span>
 
                 <h5 className="pl-1 -mt-1 text-[14px] font-mono text-background text-start">
-                  {(book?.reviewCount ?? 18587).toLocaleString("en-US")}{" "}
-                  review/s
+                  {(book?.ratingsCount ?? 18587).toLocaleString("en-US")}{" "}
+                  ratings
                 </h5>
               </div>
             )}
@@ -467,30 +492,15 @@ export function BookPage() {
               {hasReviews && (
                 <>
                   {currentUser && currentUserReview && (
-                    <div className="border-2 border-accent p-0.5 rounded-lg bg-muted">
-                      <h5 className="font-semibold font-mono pl-0.5 cursor-default text-center">
-                        - YOUR REVIEW -
-                      </h5>
-                      <BookReviewCard
-                        rating={currentUserReview.rating}
-                        content={currentUserReview.content}
-                        user={currentUserReview.user}
-                        postedOn={new Date(currentUserReview.createdAt)}
-                      />
-                      <div className="flex justify-end pr-5 underline font-semibold cursor-pointer font-mono">
-                        Delete Review
-                      </div>
-                    </div>
+                    <CurrentUserBookReview
+                      review={currentUserReview}
+                      onDelete={handleDeleteReview}
+                    />
                   )}
                   <div className="flex flex-col">
                     <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4 rounded-b-sm">
                       Community Reviews
                     </h4>
-                    <h6 className="pl-3 italic -mt-0.5 font-sans">
-                      <span className="text-sm text-muted-foreground">
-                        {reviewDisplayText}
-                      </span>
-                    </h6>
                   </div>
                   {bookReviews?.items?.map((review) => (
                     <BookReviewCard
@@ -505,8 +515,8 @@ export function BookPage() {
                     <Pagination
                       currentPage={reviewPageIndex}
                       totalPages={bookReviews.totalPages}
-                      onPageChange={() => {
-                        console.log("imagine a page change");
+                      onPageChange={(page) => {
+                        setReviewPageIndex(page);
                       }}
                     />
                   )}

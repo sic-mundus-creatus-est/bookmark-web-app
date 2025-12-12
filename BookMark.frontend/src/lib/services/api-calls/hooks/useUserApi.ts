@@ -86,7 +86,7 @@ export function useUpdateUserProfile(userId: string) {
   });
 }
 
-export function useCreateBookReview(bookId: string) {
+export function useCreateBookReview() {
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -97,12 +97,17 @@ export function useCreateBookReview(bookId: string) {
     mutationFn: (data: { bookId: string; rating?: number; content?: string }) =>
       createBookReview(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [KEY_BOOK_REVIEW, bookId] });
       queryClient.invalidateQueries({
-        queryKey: [KEY_BOOK_REVIEWS, bookId],
-        exact: false,
+        queryKey: [KEY_BOOK_REVIEW],
       });
-      queryClient.invalidateQueries({ queryKey: ["book", bookId] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEWS],
+        refetchType: "all",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["books"],
+        refetchType: "all",
+      });
     },
   });
 }
@@ -113,7 +118,17 @@ export function useDeleteBookReview() {
   return useMutation<void, ApiError, { userId: string; bookId: string }>({
     mutationFn: ({ userId, bookId }) => deleteBookReview(userId, bookId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [KEY_BOOK_REVIEWS] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEW],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEWS],
+        refetchType: "all",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["books"],
+        refetchType: "all",
+      });
     },
   });
 }

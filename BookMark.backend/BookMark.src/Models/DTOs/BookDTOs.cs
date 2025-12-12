@@ -71,7 +71,7 @@ public record BookResponseDTO
     public required List<BookGenreResponseDTO> Genres { get; init; }
 
     public double? AverageRating { get; set; }
-    public int? ReviewCount { get; set; }
+    public int? RatingsCount { get; set; }
 }
 
 
@@ -85,7 +85,6 @@ public record BookLinkDTO
     public string? Description { get; init; }
 
     public double? AverageRating { get; set; }
-    public int? ReviewCount { get; set; }
 }
 
 
