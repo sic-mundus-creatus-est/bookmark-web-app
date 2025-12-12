@@ -83,11 +83,20 @@ export function useUpdateBook() {
 
   return useMutation<void, Error, { id: string; edits: BookUpdate }>({
     mutationFn: async ({ id, edits }) => {
-      const { coverImageFile, genres, authors, ...metadata } = edits;
+      const { coverImageFile, genres, authors, bookType, ...rest } = edits;
+
+      const metadata = {
+        ...rest,
+        ...(bookType ? { bookTypeId: bookType.id } : {}),
+      };
+
+      const hasMetadataUpdates = Object.values(metadata).some(
+        (v) => v !== undefined
+      );
 
       const tasks: { name: string; promise: Promise<unknown> }[] = [];
 
-      if (metadata) {
+      if (hasMetadataUpdates) {
         tasks.push({
           name: "Metadata",
           promise: updateBookMetadata(id, metadata),

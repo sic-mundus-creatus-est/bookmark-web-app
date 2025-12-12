@@ -1,21 +1,11 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BookUpdate } from "@/lib/types/book";
-import { API_FILE_RESOURCES_URL, ApiError } from "@/lib/services/api-calls/api";
-import { BookRatingStars } from "@/components/ui/book/book-rating-stars";
+import { ApiError } from "@/lib/services/api-calls/api";
 import { SquarePen, X } from "lucide-react";
-import {
-  BookCoverImageUpload,
-  UploadLabel,
-} from "@/components/ui/book/book-cover-image-upload";
-import { CommonTextInput } from "@/components/ui/common/common-text-input";
-import { BookAuthorEntries } from "@/components/ui/book/book-author-entries";
-import { BookAuthorInput } from "@/components/ui/book/book-author-input";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 
 import { useForm } from "react-hook-form";
-import { BookTypePicker } from "@/components/ui/book/book-type-selector";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { getDirtyValues } from "@/lib/utils";
 import { useLoading } from "@/lib/contexts/useLoading";
@@ -38,6 +28,10 @@ import { CurrentUserBookReview } from "@/components/ui/book/current-user-book-re
 import { BookCommunityReviewsPage } from "@/components/ui/book/book-community-reviews-page";
 import { BookMetadata } from "@/components/ui/book/book-metadata";
 import { BookMetadataEditForm } from "@/components/ui/book/book-metadata-edit";
+import { BookPageCoverCard } from "@/components/ui/book/book-page-cover-card";
+import { BookPageCoverCardEdit } from "@/components/ui/book/book-page-cover-card-edit";
+import { BookMainMetadataEdit } from "@/components/ui/book/book-main-metadata-edit";
+import { BookMainMetadata } from "@/components/ui/book/book-main-metadata";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -215,212 +209,88 @@ export function BookPage() {
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 pt-2 pb-10">
-        {/* Cover */}
-        <Card className="rounded-b-lg w-full mx-auto bg-accent rounded-t-lg md:sticky md:top-36 lg:top-28 self-start">
-          <CardContent
-            className="p-0 bg-background rounded-t-lg"
-            style={{ aspectRatio: "2 / 3" }}
-          >
-            {editMode ? (
-              <BookCoverImageUpload
-                value={
-                  book?.coverImageUrl
-                    ? `${API_FILE_RESOURCES_URL}${book.coverImageUrl}`
-                    : null
-                }
-                onChange={(coverImageFile) => {
-                  setValue("coverImageFile", coverImageFile, {
+        {editMode ? (
+          <>
+            <BookPageCoverCardEdit book={book} setValue={setValue} />
+            <div className="flex flex-col gap-5 min-w-0">
+              <BookMainMetadataEdit
+                allBookTypes={allBookTypes}
+                watch={watch}
+                setValue={setValue}
+              />
+              <BookMetadataEditForm
+                watch={watch}
+                setValue={setValue}
+                allGenres={allGenres}
+              />
+              <CommonDescriptionInput
+                value={watch("description")}
+                rows={8}
+                onChange={(newDesc) =>
+                  setValue("description", newDesc, {
                     shouldDirty: true,
-                  });
-                }}
-              />
-            ) : (
-              <img
-                src={
-                  book?.coverImageUrl
-                    ? `${API_FILE_RESOURCES_URL}${book.coverImageUrl}`
-                    : "/cover_placeholder.jpg"
+                  })
                 }
-                alt={`Cover of ${book?.title}`}
-                className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
               />
-            )}
-          </CardContent>
-          <CardFooter className="pb-2 flex flex-col px-4">
-            {editMode ? (
-              <UploadLabel />
-            ) : (
-              <div className="py-2">
-                <span className="inline-flex gap-5">
-                  <BookRatingStars
-                    value={book?.averageRating}
-                    size={30}
-                    showEmptyStars
-                  />
-                  <span className="text-[32px] font-bold text-muted font-[Candara] leading-tight">
-                    {book?.averageRating != null && book?.averageRating != 0
-                      ? book.averageRating.toFixed(2)
-                      : "N/A"}
-                  </span>
-                </span>
-
-                <h5 className="pl-1 -mt-1 text-[14px] font-mono text-background text-start">
-                  {(book?.ratingsCount ?? 18587).toLocaleString("en-US")}{" "}
-                  ratings
-                </h5>
+              <div className="flex justify-end">
+                <CommonSubmitButton
+                  label="Update"
+                  errorLabel={editFormError}
+                  onClick={handleSubmit(handleUpdateBook)}
+                  showCancel
+                  onCancel={() => setEditMode((prev) => !prev)}
+                />
               </div>
-            )}
-          </CardFooter>
-        </Card>
-
-        {/* Book Info */}
-        <div className="flex flex-col gap-5 min-w-0">
-          <div className="w-full">
-            {editMode ? (
-              <>
-                <CommonTextInput
-                  value={watch("title")}
-                  onChange={(newTitle) => {
-                    setValue("title", newTitle, { shouldDirty: true });
-                  }}
-                  maxLength={128}
-                  showCharCount
-                />
-                <BookTypePicker
-                  value={watch("bookType")}
-                  allBookTypes={allBookTypes}
-                  onChange={(newBookType) => {
-                    setValue("bookType", newBookType, {
-                      shouldDirty: true,
-                    });
-                  }}
-                />
-              </>
-            ) : (
-              <h1 className="text-2xl sm:text-2xl md:text-4xl lg:text-4xl w-full font-[Verdana] font-bold text-accent leading-tight overflow-hidden">
-                {book?.title}
-              </h1>
-            )}
-
-            <div
-              className="text-lg font-serif text-accent pl-4 px-1 pt-2 mt-0.5"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.074), rgba(0,0,0,0.0))",
-              }}
-            >
-              {editMode ? (
-                <>
-                  <BookAuthorEntries
-                    entries={watch("authors")}
-                    onChange={(updatedAuthors) => {
-                      setValue("authors", [...updatedAuthors], {
-                        shouldDirty: true,
-                      });
+            </div>
+          </>
+        ) : (
+          <>
+            <BookPageCoverCard book={book} />
+            <div className="flex flex-col gap-5 min-w-0">
+              <BookMainMetadata book={book} />
+              <BookMetadata book={book} />
+              <CommonDescription
+                value={book?.description}
+                showBackground={false}
+                fontSize={18}
+                maxPreviewLength={500}
+              />
+              <div className="flex flex-col gap-4">
+                {currentUser && !currentUserReview && (
+                  <PostBookReviewForm
+                    subjectTitle={book?.title}
+                    rating={newReview?.rating}
+                    content={newReview?.content}
+                    onRatingChange={(rating) => {
+                      setNewReview({ ...newReview, rating: rating });
                     }}
+                    onContentChange={(content) => {
+                      setNewReview({ ...newReview, content: content });
+                    }}
+                    onSubmit={handleCreateReview}
                   />
-                  <div className="mt-2">
-                    <BookAuthorInput
-                      placeholder="Start typing to find an author"
-                      entries={watch("authors")}
-                      onChange={(updatedAuthors) => {
-                        setValue("authors", updatedAuthors, {
-                          shouldDirty: true,
-                        });
+                )}
+                {hasReviews && (
+                  <>
+                    {currentUser && currentUserReview && (
+                      <CurrentUserBookReview
+                        review={currentUserReview}
+                        onDelete={handleDeleteReview}
+                      />
+                    )}
+                    <BookCommunityReviewsPage
+                      reviews={bookReviews}
+                      currentPage={reviewPageIndex}
+                      onPageChange={(page) => {
+                        setReviewPageIndex(page);
                       }}
                     />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span className="italic">by </span>
-                  {book?.authors.map((ba, i) => (
-                    <Link to={`/author/${ba.id}`} key={ba.id}>
-                      <span className="text-xl hover:text-popover">
-                        {ba.name}
-                        {i < book.authors.length - 1 ? ", " : ""}
-                      </span>
-                    </Link>
-                  ))}
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          {editMode ? (
-            <BookMetadataEditForm
-              watch={watch}
-              setValue={setValue}
-              allGenres={allGenres}
-            />
-          ) : (
-            <BookMetadata book={book} />
-          )}
-
-          {editMode ? (
-            <CommonDescriptionInput
-              value={watch("description")}
-              rows={8}
-              onChange={(newDesc) =>
-                setValue("description", newDesc, {
-                  shouldDirty: true,
-                })
-              }
-            />
-          ) : (
-            <CommonDescription
-              value={book?.description}
-              showBackground={false}
-              fontSize={18}
-              maxPreviewLength={500}
-            />
-          )}
-          {editMode && (
-            <div className="flex justify-end">
-              <CommonSubmitButton
-                label="Update"
-                errorLabel={editFormError}
-                onClick={handleSubmit(handleUpdateBook)}
-                showCancel
-                onCancel={() => setEditMode((prev) => !prev)}
-              />
-            </div>
-          )}
-          {!editMode && (
-            <div className="flex flex-col gap-4">
-              {currentUser && !currentUserReview && (
-                <PostBookReviewForm
-                  subjectTitle={book?.title}
-                  rating={newReview?.rating}
-                  content={newReview?.content}
-                  onRatingChange={(rating) => {
-                    setNewReview({ ...newReview, rating: rating });
-                  }}
-                  onContentChange={(content) => {
-                    setNewReview({ ...newReview, content: content });
-                  }}
-                  onSubmit={handleCreateReview}
-                />
-              )}
-              {hasReviews && (
-                <>
-                  {currentUser && currentUserReview && (
-                    <CurrentUserBookReview
-                      review={currentUserReview}
-                      onDelete={handleDeleteReview}
-                    />
-                  )}
-                  <BookCommunityReviewsPage
-                    reviews={bookReviews}
-                    currentPage={reviewPageIndex}
-                    onPageChange={(page) => {
-                      setReviewPageIndex(page);
-                    }}
-                  />
-                </>
-              )}
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
