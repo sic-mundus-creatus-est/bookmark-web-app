@@ -14,7 +14,7 @@ public class MapperConfig : Profile
                 CreateMap<BookCreateDTO, Book>();
                 CreateMap<Book, BookResponseDTO>()
                         .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Reviews.Where(r => r.Rating != null).Average(r => (double?)r.Rating)))
-                        .ForMember(dest => dest.RatingsCount, opt => opt.MapFrom(src => src.Reviews.Count(r => r.Rating != 0)));
+                        .ForMember(dest => dest.RatingsCount, opt => opt.MapFrom(src => src.Reviews.Count(r => r.Rating.HasValue && r.Rating.Value != 0)));
                 CreateMap<BookAuthor, BookAuthorResponseDTO>()
                         .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Author.Id))
                         .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Author.Name));

@@ -1,4 +1,5 @@
 import { BookReviewCard } from "@/components/ui/book/book-review-card";
+import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
@@ -6,6 +7,7 @@ import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { useLoading } from "@/lib/contexts/useLoading";
 import { API_FILE_RESOURCES_URL, ApiError } from "@/lib/services/api-calls/api";
 import {
+  useDeleteUser,
   useLatestBookReviewsByUser,
   useUpdateUserProfile,
   useUser,
@@ -81,6 +83,18 @@ export function UserProfilePage() {
         setEditMode(false);
       },
     });
+  };
+
+  const deleteUser = useDeleteUser(id);
+  const handleDeleteUser = () => {
+    deleteUser.mutate(
+      { userId: id },
+      {
+        onSuccess: () => {
+          navigate("/home");
+        },
+      }
+    );
   };
 
   if (userError)
@@ -159,7 +173,11 @@ export function UserProfilePage() {
                 setValue("aboutMe", aboutMe, { shouldDirty: true });
               }}
             />
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <CommonDeleteButton
+                onClick={handleDeleteUser}
+                className="text-muted"
+              />
               <CommonSubmitButton
                 label="Update"
                 onClick={handleSubmit(handleUpdateUserProfile)}

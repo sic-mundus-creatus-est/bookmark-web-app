@@ -1,15 +1,16 @@
-import { apiCall, GET, POST, PATCH } from "@/lib/services/api-calls/api";
+import {
+  apiCall,
+  GET,
+  POST,
+  PATCH,
+  DELETE,
+} from "@/lib/services/api-calls/api";
 import {
   Author,
   AuthorCreate,
   AuthorLinkProps,
   AuthorUpdate,
 } from "@/lib/types/author";
-import { Page } from "@/lib/types/common";
-import {
-  buildConstrainedQueryParams,
-  ConstrainedQueryParams,
-} from "@/lib/utils";
 
 export function createAuthor(data: AuthorCreate): Promise<Author> {
   return apiCall({
@@ -23,15 +24,15 @@ export function getAuthorById(id: string): Promise<Author> {
   return apiCall({ method: GET, endpoint: `/api/authors/get/${id}` });
 }
 
-export function getConstrainedAuthors(
-  params: ConstrainedQueryParams
-): Promise<Page<AuthorLinkProps>> {
-  const query = buildConstrainedQueryParams(params);
-  return apiCall({
-    method: GET,
-    endpoint: `/api/authors/get-constrained?${query}`,
-  });
-}
+// export function getConstrainedAuthors(
+//   params: ConstrainedQueryParams
+// ): Promise<Page<AuthorLinkProps>> {
+//   const query = buildConstrainedQueryParams(params);
+//   return apiCall({
+//     method: GET,
+//     endpoint: `/api/authors/get-constrained?${query}`,
+//   });
+// }
 
 export async function getAuthorSuggestions(
   searchTerm: string,
@@ -57,5 +58,12 @@ export function updateAuthor(
     method: PATCH,
     endpoint: `/api/authors/update/${id}`,
     body: editedData,
+  });
+}
+
+export function deleteAuthor(authorId: string) {
+  return apiCall({
+    method: DELETE,
+    endpoint: `/api/authors/delete/${authorId}`,
   });
 }

@@ -1,4 +1,11 @@
-import { apiCall, GET, POST, PATCH, PUT } from "@/lib/services/api-calls/api";
+import {
+  apiCall,
+  GET,
+  POST,
+  PATCH,
+  PUT,
+  DELETE,
+} from "@/lib/services/api-calls/api";
 import {
   Book,
   BookCreate,
@@ -15,7 +22,7 @@ import {
 export async function createBook(data: BookCreate): Promise<Book> {
   const formData = new FormData();
 
-  formData.append("BookTypeId", data.bookType.id);
+  formData.append("BookTypeId", data.bookType?.id);
 
   formData.append("Title", data.title);
   formData.append("OriginalLanguage", data.originalLanguage);
@@ -123,5 +130,12 @@ export function getAllBookTypes(): Promise<BookType[]> {
   return apiCall({
     method: GET,
     endpoint: "/api/book-types/get-all",
+  });
+}
+
+export function deleteBook(bookId: string) {
+  return apiCall({
+    method: DELETE,
+    endpoint: `/api/books/delete/${bookId}`,
   });
 }

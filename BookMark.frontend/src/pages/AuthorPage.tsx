@@ -16,6 +16,7 @@ import { getDirtyValues } from "@/lib/utils";
 import { useLoading } from "@/lib/contexts/useLoading";
 import {
   useAuthor,
+  useDeleteAuthor,
   useUpdateAuthor,
 } from "@/lib/services/api-calls/hooks/useAuthorApi";
 import { useGenresByAuthor } from "@/lib/services/api-calls/hooks/useGenreApi";
@@ -129,7 +130,20 @@ export function AuthorPage() {
         },
       }
     );
-  }; //==============================================================================
+  };
+
+  const deleteAuthor = useDeleteAuthor(id);
+  const handleDeleteAuthor = () => {
+    deleteAuthor.mutate(
+      { authorId: id },
+      {
+        onSuccess: () => {
+          navigate("/home");
+        },
+      }
+    );
+  };
+  //==============================================================================
 
   if (error || !author)
     return (
@@ -183,7 +197,7 @@ export function AuthorPage() {
                 }}
               />
               <div className="flex justify-between mt-2">
-                <CommonDeleteButton onClick={() => {}} />
+                <CommonDeleteButton onClick={handleDeleteAuthor} />
                 <CommonSubmitButton
                   label="Update"
                   onClick={handleSubmit(handleUpdateAuthor)}

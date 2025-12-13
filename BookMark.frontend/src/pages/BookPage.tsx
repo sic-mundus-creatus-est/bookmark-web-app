@@ -11,6 +11,7 @@ import { useLoading } from "@/lib/contexts/useLoading";
 import {
   useAllBookTypes,
   useBook,
+  useDeleteBook,
   useUpdateBook,
 } from "@/lib/services/api-calls/hooks/useBookApi";
 import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
@@ -45,6 +46,7 @@ export function BookPage() {
   const [editFormError, setEditFormError] = useState<string>();
   //------------------------------------------------------------------------------
   const updateBook = useUpdateBook();
+  const deleteBook = useDeleteBook(id);
 
   const [newReview, setNewReview] = useState<{
     rating?: number;
@@ -52,7 +54,7 @@ export function BookPage() {
   }>();
 
   const createBookReview = useCreateBookReview();
-  const deleteBookReview = useDeleteBookReview();
+  const deleteBookReview = useDeleteBookReview(id);
   //------------------------------------------------------------------------------
   const {
     data: book,
@@ -74,7 +76,6 @@ export function BookPage() {
   const [reviewPageIndex, setReviewPageIndex] = useState(1);
 
   const reviewPageSize = 5;
-  const hasReviews = (book?.ratingsCount ?? 0) > 0;
 
   const { data: bookReviews } = useLatestBookReviews(
     id,
@@ -143,19 +144,20 @@ export function BookPage() {
   const handleCreateReview = async () => {
     if (!book) return;
 
-    if (book!.ratingsCount! >= 0 && newReview?.rating && newReview.rating > 0) {
-      const totalRatingBefore = book!.averageRating! * book!.ratingsCount!;
-      book!.ratingsCount!++;
-      const totalRatingAfter = totalRatingBefore + newReview.rating;
-      book!.averageRating = totalRatingAfter / book!.ratingsCount!;
-    } else {
-      book!.ratingsCount = 1;
-      book!.averageRating = newReview?.rating ?? 0;
-    }
-
     createBookReview.mutate(
       { bookId: book.id, ...newReview },
       {
+        onSuccess: () => {
+          if (newReview?.rating && newReview.rating > 0) {
+            const oldCount = book!.ratingsCount!;
+            const totalRatingBefore = book!.averageRating! * oldCount;
+
+            const totalRatingAfter = totalRatingBefore + newReview.rating;
+            book!.ratingsCount = oldCount + 1;
+
+            book!.averageRating = totalRatingAfter / book!.ratingsCount!;
+          }
+        },
         onError: (error: any) => {
           console.log(error.message);
         },
@@ -164,21 +166,41 @@ export function BookPage() {
   };
 
   const handleDeleteReview = () => {
-    setNewReview(undefined);
-    book!.ratingsCount!--;
-    if (book!.ratingsCount! > 0 && currentUserReview!.rating > 0) {
-      const totalRatingBefore =
-        book!.averageRating! * (book!.ratingsCount! + 1);
-      const totalRatingAfter = totalRatingBefore - currentUserReview!.rating;
-      book!.averageRating = totalRatingAfter / book!.ratingsCount!;
-    } else {
-      book!.averageRating = 0;
-    }
+    deleteBookReview.mutate(
+      {
+        userId: currentUserReview!.user.id,
+        bookId: currentUserReview!.bookId,
+      },
+      {
+        onSuccess: () => {
+          setNewReview(undefined);
+          if (currentUserReview?.rating && currentUserReview.rating > 0) {
+            const oldCount = book!.ratingsCount!;
+            const totalRatingBefore = book!.averageRating! * oldCount;
 
-    deleteBookReview.mutate({
-      userId: currentUserReview!.user.id,
-      bookId: currentUserReview!.bookId,
-    });
+            const totalRatingAfter =
+              totalRatingBefore - currentUserReview.rating;
+            book!.ratingsCount = oldCount - 1;
+
+            book!.averageRating =
+              book!.ratingsCount! > 0
+                ? totalRatingAfter / book!.ratingsCount!
+                : 0;
+          }
+        },
+      }
+    );
+  };
+
+  const handleDeleteBook = () => {
+    deleteBook.mutate(
+      { bookId: id },
+      {
+        onSuccess: () => {
+          navigate("/home");
+        },
+      }
+    );
   };
 
   //==============================================================================
@@ -224,7 +246,7 @@ export function BookPage() {
               />
 
               <div className="flex justify-between items-center">
-                <CommonDeleteButton onClick={() => {}} />
+                <CommonDeleteButton onClick={handleDeleteBook} />
                 <CommonSubmitButton
                   label="Update"
                   errorLabel={editFormError}
@@ -262,23 +284,21 @@ export function BookPage() {
                     onSubmit={handleCreateReview}
                   />
                 )}
-                {hasReviews && (
-                  <>
-                    {currentUser && currentUserReview && (
-                      <CurrentUserBookReview
-                        review={currentUserReview}
-                        onDelete={handleDeleteReview}
-                      />
-                    )}
-                    <BookCommunityReviewsPage
-                      reviews={bookReviews}
-                      currentPage={reviewPageIndex}
-                      onPageChange={(page) => {
-                        setReviewPageIndex(page);
-                      }}
+                <>
+                  {currentUser && currentUserReview && (
+                    <CurrentUserBookReview
+                      review={currentUserReview}
+                      onDelete={handleDeleteReview}
                     />
-                  </>
-                )}
+                  )}
+                  <BookCommunityReviewsPage
+                    reviews={bookReviews}
+                    currentPage={reviewPageIndex}
+                    onPageChange={(page) => {
+                      setReviewPageIndex(page);
+                    }}
+                  />
+                </>
               </div>
             </div>
           </>

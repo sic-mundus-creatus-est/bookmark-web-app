@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createBook,
+  deleteBook,
   getAllBookTypes,
   getBookById,
   getBooksByAuthor,
@@ -73,7 +74,10 @@ export function useCreateBook() {
   return useMutation<Book, ApiError, BookCreate>({
     mutationFn: (data) => createBook(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [KEY_BOOKS] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOKS],
+        refetchType: "all",
+      });
     },
   });
 }
@@ -148,6 +152,21 @@ export function useUpdateBook() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [KEY_BOOK, variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOKS],
+        refetchType: "all",
+      });
+    },
+  });
+}
+
+export function useDeleteBook(bookId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, ApiError, { bookId: string }>({
+    mutationFn: ({ bookId }) => deleteBook(bookId),
+    onSuccess: () => {
+      queryClient.setQueryData([KEY_BOOK, bookId], undefined);
       queryClient.invalidateQueries({
         queryKey: [KEY_BOOKS],
         refetchType: "all",

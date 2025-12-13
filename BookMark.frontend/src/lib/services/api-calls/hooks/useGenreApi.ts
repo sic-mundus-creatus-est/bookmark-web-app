@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createGenre,
+  deleteGenre,
   getAllGenres,
   getGenreById,
   getGenresByAuthor,
@@ -57,12 +58,27 @@ export function useCreateGenre() {
 export function useUpdateGenre() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, ApiError, { id: string; data: GenreUpdate }>({
+  return useMutation<Genre, ApiError, { id: string; data: GenreUpdate }>({
     mutationFn: ({ id, data }) => updateGenre(id, data),
     onSuccess: (_, variables) => {
       const { id } = variables;
       queryClient.invalidateQueries({ queryKey: [KEY_GENRE, id] });
       queryClient.invalidateQueries({ queryKey: [KEY_GENRES] });
+    },
+  });
+}
+
+export function useDeleteGenre(genreId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, ApiError, { genreId: string }>({
+    mutationFn: ({ genreId }) => deleteGenre(genreId),
+    onSuccess: () => {
+      queryClient.setQueryData([KEY_GENRE, genreId], undefined);
+      queryClient.invalidateQueries({
+        queryKey: [KEY_GENRES],
+        refetchType: "all",
+      });
     },
   });
 }

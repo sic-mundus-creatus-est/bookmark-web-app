@@ -100,7 +100,7 @@ export function AddBookPage() {
   return (
     <div className="container mx-auto flex-grow">
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 items-start pt-4">
-        <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg">
+        <Card className="shadow-md rounded-b-lg w-full mx-auto bg-accent rounded-t-lg text-muted hover:text-popover">
           <CardContent
             className="p-0 bg-background rounded-t-lg"
             style={{ aspectRatio: "2 / 3" }}

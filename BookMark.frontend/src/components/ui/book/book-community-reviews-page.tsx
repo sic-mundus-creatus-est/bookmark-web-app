@@ -18,15 +18,22 @@ export function BookCommunityReviewsPage({
       <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4 rounded-b-sm">
         Community Reviews
       </h4>
-      {reviews?.items?.map((review) => (
-        <BookReviewCard
-          key={`${review.user.id}-${review.bookId}`}
-          rating={review.rating}
-          content={review.content}
-          user={review.user}
-          postedOn={new Date(review.createdAt)}
-        />
-      ))}
+      {(reviews?.items?.length ?? 0) > 0 ? (
+        reviews!.items!.map((review) => (
+          <BookReviewCard
+            key={`${review.user.id}-${review.bookId}`}
+            rating={review.rating}
+            content={review.content}
+            user={review.user}
+            postedOn={new Date(review.createdAt)}
+          />
+        ))
+      ) : (
+        <p className="text-end text-xl text-accent/75 italic">
+          Be the first one to leave a review!
+        </p>
+      )}
+
       {reviews && (
         <Pagination
           currentPage={currentPage}

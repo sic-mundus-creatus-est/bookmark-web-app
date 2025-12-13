@@ -3,8 +3,8 @@ import {
   getAuthorSuggestions,
   createAuthor,
   getAuthorById,
-  getConstrainedAuthors,
   updateAuthor,
+  deleteAuthor,
 } from "../authorApi";
 import {
   Author,
@@ -12,13 +12,11 @@ import {
   AuthorLinkProps,
   AuthorUpdate,
 } from "@/lib/types/author";
-import { ConstrainedQueryParams } from "@/lib/utils";
 import { ApiError } from "../api";
-import { Page } from "@/lib/types/common";
 
 const KEY_AUTHOR = "author";
 const KEY_AUTHORS = "authors";
-const KEY_CONSTRAINED_AUTHORS = "constrained";
+// const KEY_CONSTRAINED_AUTHORS = "constrained";
 
 //--------------------------------------------------------------------------
 // QUERIES
@@ -30,13 +28,13 @@ export function useAuthor(id: string) {
   });
 }
 
-export function useConstrainedAuthors(params: ConstrainedQueryParams) {
-  return useQuery<Page<AuthorLinkProps>, ApiError>({
-    queryKey: [KEY_AUTHORS, KEY_CONSTRAINED_AUTHORS, params],
-    queryFn: () => getConstrainedAuthors(params),
-    enabled: !!params,
-  });
-}
+// export function useConstrainedAuthors(params: ConstrainedQueryParams) {
+//   return useQuery<Page<AuthorLinkProps>, ApiError>({
+//     queryKey: [KEY_AUTHORS, KEY_CONSTRAINED_AUTHORS, params],
+//     queryFn: () => getConstrainedAuthors(params),
+//     enabled: !!params,
+//   });
+// }
 
 export function useAuthorSuggestions(
   searchTerm: string,
@@ -73,12 +71,27 @@ export function useCreateAuthor() {
 export function useUpdateAuthor() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, ApiError, { id: string; data: AuthorUpdate }>({
+  return useMutation<Author, ApiError, { id: string; data: AuthorUpdate }>({
     mutationFn: ({ id, data }) => updateAuthor(id, data),
     onSuccess: (_, variables) => {
       const { id } = variables;
       queryClient.invalidateQueries({ queryKey: [KEY_AUTHOR, id] });
       queryClient.invalidateQueries({ queryKey: [KEY_AUTHORS] });
+    },
+  });
+}
+
+export function useDeleteAuthor(authorId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, ApiError, { authorId: string }>({
+    mutationFn: ({ authorId }) => deleteAuthor(authorId),
+    onSuccess: () => {
+      queryClient.setQueryData([KEY_AUTHOR, authorId], undefined);
+      queryClient.invalidateQueries({
+        queryKey: [KEY_AUTHORS],
+        refetchType: "all",
+      });
     },
   });
 }

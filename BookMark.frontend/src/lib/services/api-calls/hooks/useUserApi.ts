@@ -2,6 +2,7 @@ import { BookReview } from "@/lib/types/book";
 import {
   createBookReview,
   deleteBookReview,
+  deleteUser,
   getCurrentUserBookReview,
   getLatestBookReviews,
   getLatestBookReviewsByUser,
@@ -14,7 +15,7 @@ import { Page } from "@/lib/types/common";
 import { User, UserAuth, UserUpdate } from "@/lib/types/user";
 
 const KEY_USER = "user";
-const KEY_BOOK_REVIEW = "book_review";
+const KEY_CURRENT_USER_BOOK_REVIEW = "current_user_book_review";
 const KEY_BOOK_REVIEWS = "book_reviews";
 const KEY_BY_USER = "by_user";
 
@@ -33,7 +34,7 @@ export function useCurrentUserBookReview(
   currentUser?: UserAuth
 ) {
   return useQuery<BookReview, ApiError>({
-    queryKey: [KEY_BOOK_REVIEW, bookId],
+    queryKey: [KEY_CURRENT_USER_BOOK_REVIEW, bookId],
     queryFn: () => getCurrentUserBookReview(bookId),
     enabled: !!bookId && !!currentUser,
   });
@@ -75,7 +76,7 @@ export function useUpdateUserProfile(userId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [KEY_USER, userId] });
       queryClient.invalidateQueries({
-        queryKey: [KEY_BOOK_REVIEW],
+        queryKey: [KEY_CURRENT_USER_BOOK_REVIEW],
         refetchType: "all", // so that it updates on other pages too
       });
       queryClient.invalidateQueries({
@@ -98,7 +99,7 @@ export function useCreateBookReview() {
       createBookReview(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [KEY_BOOK_REVIEW],
+        queryKey: [KEY_CURRENT_USER_BOOK_REVIEW],
       });
       queryClient.invalidateQueries({
         queryKey: [KEY_BOOK_REVIEWS],
@@ -112,14 +113,14 @@ export function useCreateBookReview() {
   });
 }
 
-export function useDeleteBookReview() {
+export function useDeleteBookReview(bookId: string) {
   const queryClient = useQueryClient();
 
   return useMutation<void, ApiError, { userId: string; bookId: string }>({
     mutationFn: ({ userId, bookId }) => deleteBookReview(userId, bookId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [KEY_BOOK_REVIEW],
+      queryClient.removeQueries({
+        queryKey: [KEY_CURRENT_USER_BOOK_REVIEW, bookId],
       });
       queryClient.invalidateQueries({
         queryKey: [KEY_BOOK_REVIEWS],
@@ -127,6 +128,25 @@ export function useDeleteBookReview() {
       });
       queryClient.invalidateQueries({
         queryKey: ["books"],
+        refetchType: "all",
+      });
+    },
+  });
+}
+
+export function useDeleteUser(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, ApiError, { userId: string }>({
+    mutationFn: ({ userId }) => deleteUser(userId),
+    onSuccess: () => {
+      queryClient.setQueryData([KEY_USER, userId], undefined);
+      queryClient.invalidateQueries({
+        queryKey: [KEY_BOOK_REVIEWS],
+        refetchType: "all",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [KEY_CURRENT_USER_BOOK_REVIEW],
         refetchType: "all",
       });
     },

@@ -13,6 +13,7 @@ import { getDirtyValues } from "@/lib/utils";
 import { GenreCatalogSection } from "@/components/ui/genre/genre-catalog-section";
 import { useLoading } from "@/lib/contexts/useLoading";
 import {
+  useDeleteGenre,
   useGenreById,
   useUpdateGenre,
 } from "@/lib/services/api-calls/hooks/useGenreApi";
@@ -126,7 +127,20 @@ export function GenrePage() {
         },
       }
     );
-  }; //================================================================
+  };
+
+  const deleteGenre = useDeleteGenre(id);
+  const handleDeleteGenre = () => {
+    deleteGenre.mutate(
+      { genreId: id },
+      {
+        onSuccess: () => {
+          navigate("/home");
+        },
+      }
+    );
+  };
+  //================================================================
 
   if (error || !genre)
     return (
@@ -157,7 +171,7 @@ export function GenrePage() {
             }}
           />
           <div className="flex justify-between mt-2">
-            <CommonDeleteButton onClick={() => {}} />
+            <CommonDeleteButton onClick={handleDeleteGenre} />
             <CommonSubmitButton
               label="Update"
               onClick={handleSubmit(handleUpdateGenre)}

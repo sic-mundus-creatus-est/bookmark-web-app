@@ -62,3 +62,10 @@ export function deleteBookReview(userId: string, bookId: string) {
     endpoint: `/api/users/delete-book-review/${userId}/${bookId}`,
   });
 }
+
+export function deleteUser(userId: string) {
+  return apiCall({
+    method: DELETE,
+    endpoint: `/api/users/delete/${userId}`,
+  });
+}

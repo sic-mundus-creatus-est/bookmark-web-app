@@ -1,5 +1,5 @@
 import { Genre, GenreLinkProps, GenreUpdate } from "@/lib/types/genre";
-import { apiCall, GET, PATCH, POST } from "./api";
+import { apiCall, DELETE, GET, PATCH, POST } from "./api";
 
 export function createGenre(data: {
   name: string;
@@ -35,5 +35,12 @@ export function updateGenre(
     method: PATCH,
     endpoint: `/api/genres/update/${id}`,
     body: editedData,
+  });
+}
+
+export function deleteGenre(genreId: string) {
+  return apiCall({
+    method: DELETE,
+    endpoint: `/api/genres/delete/${genreId}`,
   });
 }
