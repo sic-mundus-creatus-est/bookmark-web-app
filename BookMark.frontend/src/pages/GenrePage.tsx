@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { SquarePen, Tag, X } from "lucide-react";
+import { Tag } from "lucide-react";
 
 import { GenreUpdate } from "@/lib/types/genre";
 import { CommonDescription } from "@/components/ui/common/common-description";
@@ -17,6 +17,8 @@ import {
   useUpdateGenre,
 } from "@/lib/services/api-calls/hooks/useGenreApi";
 import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
+import { CommonEditButton } from "@/components/ui/common/common-edit-button";
+import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 
 export function GenrePage() {
   //-------------------------------------------------------------
@@ -134,22 +136,14 @@ export function GenrePage() {
     );
   return (
     <div className="my-2 font-sans text-accent">
-      <div className="flex justify-end mx-0 md:mx-2 pt-2">
-        <button
-          title={editMode ? "Cancel Editing" : "Edit"}
-          onClick={() => setEditMode((prev) => !prev)}
-          className="text-accent hover:text-popover"
-        >
-          {editMode ? (
-            <X size={24} strokeWidth={5} />
-          ) : (
-            <SquarePen size={24} strokeWidth={3} />
-          )}
-        </button>
-      </div>
+      <CommonEditButton
+        value={editMode}
+        onClick={() => setEditMode((prev) => !prev)}
+      />
       {editMode ? (
         <>
           <CommonTextInput
+            fontSize={22}
             value={watch("name")}
             onChange={(newName) => {
               setValue("name", newName, { shouldDirty: true });
@@ -162,7 +156,8 @@ export function GenrePage() {
               setValue("description", newDesc, { shouldDirty: true });
             }}
           />
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-between mt-2">
+            <CommonDeleteButton onClick={() => {}} />
             <CommonSubmitButton
               label="Update"
               onClick={handleSubmit(handleUpdateGenre)}
@@ -178,7 +173,7 @@ export function GenrePage() {
             <h2 className="text-3xl font-bold">{genre.name}</h2>
             <div className="flex items-center text-sm text-accent/50 leading-tight mb-2">
               <Tag className="mr-1 w-4 h-4 text-accent" />
-              <span className="hover:underline cursor-pointer">Genres</span>
+              <span>Genres</span>
               <span className="mx-1">›</span>
               <span className="text-popover font-semibold">{genre.name}</span>
             </div>

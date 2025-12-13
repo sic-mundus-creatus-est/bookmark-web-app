@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { CircleUserRound, SquarePen, X } from "lucide-react";
+import { CircleUserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
@@ -20,6 +20,8 @@ import {
 } from "@/lib/services/api-calls/hooks/useAuthorApi";
 import { useGenresByAuthor } from "@/lib/services/api-calls/hooks/useGenreApi";
 import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
+import { CommonEditButton } from "@/components/ui/common/common-edit-button";
+import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 
 export function AuthorPage() {
   //--------------------------------------------------------------------------
@@ -137,19 +139,10 @@ export function AuthorPage() {
     );
   return (
     <div className="flex-grow max-w-full container mx-auto sm:px-16 lg:px-24 xl:px-32 my-4 sm:mt-10">
-      <div className="flex justify-end mx-0 md:mx-2 mt-2 pt-2">
-        <button
-          title={editMode ? "Cancel Editing" : "Edit"}
-          onClick={() => setEditMode((prev) => !prev)}
-          className="text-accent hover:text-popover"
-        >
-          {editMode ? (
-            <X size={24} strokeWidth={5} />
-          ) : (
-            <SquarePen size={24} strokeWidth={3} />
-          )}
-        </button>
-      </div>
+      <CommonEditButton
+        value={editMode}
+        onClick={() => setEditMode((prev) => !prev)}
+      />
       <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 text-accent justify-center">
         <div className="flex-shrink-0 flex flex-col items-center">
           <CircleUserRound
@@ -161,68 +154,77 @@ export function AuthorPage() {
         </div>
         <div className="w-full">
           {editMode ? (
-            <CommonTextInput
-              placeholder="Name"
-              value={watch("name")}
-              onChange={(newName) => {
-                setValue("name", newName, { shouldDirty: true });
-              }}
-            />
-          ) : (
-            <div className="flex-shrink-0 flex justify-center sm:block -mt-4 sm:mt-0">
-              <h2 className="text-4xl font-semibold font-[Verdana] text-center sm:text-start">
-                {author.name}
-              </h2>
-            </div>
-          )}
-          <div className="flex-shrink-0 flex justify-center sm:block">
-            {editMode ? (
-              <AuthorLifeRangeInput
-                birthYear={watch("birthYear")}
-                deathYear={watch("deathYear")}
-                onChange={({ birthYear, deathYear }) => {
-                  setValue("birthYear", birthYear, { shouldDirty: true });
-                  setValue("deathYear", deathYear, { shouldDirty: true });
+            <>
+              <CommonTextInput
+                fontSize={28}
+                maxLength={64}
+                showCharCount
+                placeholder="Name"
+                value={watch("name")}
+                onChange={(newName) => {
+                  setValue("name", newName, { shouldDirty: true });
                 }}
               />
-            ) : (
-              <span className="text-muted-foreground mb-2 sm:ml-2 font-[Georgia] text-xl">
-                ({author.birthYear != 0 && <time>{author.birthYear}</time>} –{" "}
-                {author.deathYear != 0 && <time>{author.deathYear}</time>})
-              </span>
-            )}
-          </div>
-
-          {editMode ? null : (
-            <div className="flex items-center gap-2 flex-wrap mb-3 justify-center sm:justify-start">
-              {author.genres?.map((genre) => (
-                <Link to={`/genre/${genre.id}`} key={genre.id}>
-                  <Badge
-                    key={`${genre.id}`}
-                    className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover"
-                  >
-                    {genre.name}
-                  </Badge>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {editMode ? (
-            <CommonDescriptionInput
-              placeholder="Biography..."
-              value={watch("biography")}
-              onChange={(newBiography) => {
-                setValue("biography", newBiography, { shouldDirty: true });
-              }}
-            />
+              <div className="flex-shrink-0 flex justify-center sm:block">
+                <AuthorLifeRangeInput
+                  birthYear={watch("birthYear")}
+                  deathYear={watch("deathYear")}
+                  onChange={({ birthYear, deathYear }) => {
+                    setValue("birthYear", birthYear, { shouldDirty: true });
+                    setValue("deathYear", deathYear, { shouldDirty: true });
+                  }}
+                />
+              </div>
+              <CommonDescriptionInput
+                placeholder="Biography..."
+                value={watch("biography")}
+                onChange={(newBiography) => {
+                  setValue("biography", newBiography, { shouldDirty: true });
+                }}
+              />
+              <div className="flex justify-between mt-2">
+                <CommonDeleteButton onClick={() => {}} />
+                <CommonSubmitButton
+                  label="Update"
+                  onClick={handleSubmit(handleUpdateAuthor)}
+                  showCancel
+                  onCancel={() => setEditMode((prev) => !prev)}
+                  errorLabel={editFormError}
+                />
+              </div>
+            </>
           ) : (
-            <CommonDescription placeholder="" value={author.biography} />
+            <>
+              <div className="flex-shrink-0 flex justify-center sm:block -mt-4 sm:mt-0">
+                <h2 className="text-4xl font-semibold font-[Verdana] text-center sm:text-start">
+                  {author.name}
+                </h2>
+              </div>
+              <div className="flex-shrink-0 flex justify-center sm:block">
+                <span className="text-muted-foreground mb-2 sm:ml-2 font-[Georgia] text-xl">
+                  ({author.birthYear != 0 && <time>{author.birthYear}</time>} –{" "}
+                  {author.deathYear != 0 && <time>{author.deathYear}</time>})
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap mb-3 justify-center sm:justify-start">
+                {author.genres?.map((genre) => (
+                  <Link to={`/genre/${genre.id}`} key={genre.id}>
+                    <Badge
+                      key={`${genre.id}`}
+                      className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover"
+                    >
+                      {genre.name}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+              <CommonDescription placeholder="" value={author.biography} />
+            </>
           )}
         </div>
       </div>
 
-      {editMode ? null : (
+      {!editMode && (
         <div className="mb-4 mt-4">
           <h2 className="text-accent text-center text-3xl italic pb-1 font-[Candara] font-bold">
             From This Author:
@@ -239,18 +241,6 @@ export function AuthorPage() {
           </Link>
         </div>
       )}
-
-      {editMode ? (
-        <div className="flex justify-end mt-2">
-          <CommonSubmitButton
-            label="Update"
-            onClick={handleSubmit(handleUpdateAuthor)}
-            showCancel
-            onCancel={() => setEditMode((prev) => !prev)}
-            errorLabel={editFormError}
-          />
-        </div>
-      ) : null}
     </div>
   );
 }

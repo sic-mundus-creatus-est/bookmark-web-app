@@ -2,7 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BookUpdate } from "@/lib/types/book";
 import { ApiError } from "@/lib/services/api-calls/api";
-import { SquarePen, X } from "lucide-react";
 import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
 
 import { useForm } from "react-hook-form";
@@ -32,6 +31,8 @@ import { BookPageCoverCard } from "@/components/ui/book/book-page-cover-card";
 import { BookPageCoverCardEdit } from "@/components/ui/book/book-page-cover-card-edit";
 import { BookMainMetadataEdit } from "@/components/ui/book/book-main-metadata-edit";
 import { BookMainMetadata } from "@/components/ui/book/book-main-metadata";
+import { CommonEditButton } from "@/components/ui/common/common-edit-button";
+import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -192,22 +193,11 @@ export function BookPage() {
     );
   return (
     <div className="flex-grow">
-      <div className="flex justify-center md:justify-end mx-0 md:mx-2 mt-2 pt-2">
-        <button
-          title={editMode ? "Cancel Editing" : "Edit"}
-          onClick={(e) => {
-            setEditMode((prev) => !prev);
-            e.currentTarget.blur();
-          }}
-          className="text-accent hover:text-popover"
-        >
-          {editMode ? (
-            <X size={24} strokeWidth={5} />
-          ) : (
-            <SquarePen size={24} strokeWidth={3} />
-          )}
-        </button>
-      </div>
+      <CommonEditButton
+        value={editMode}
+        onClick={() => setEditMode((prev) => !prev)}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 pt-2 pb-10">
         {editMode ? (
           <>
@@ -232,7 +222,9 @@ export function BookPage() {
                   })
                 }
               />
-              <div className="flex justify-end">
+
+              <div className="flex justify-between items-center">
+                <CommonDeleteButton onClick={() => {}} />
                 <CommonSubmitButton
                   label="Update"
                   errorLabel={editFormError}

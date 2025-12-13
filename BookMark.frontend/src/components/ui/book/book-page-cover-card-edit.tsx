@@ -15,7 +15,7 @@ export function BookPageCoverCardEdit({
   setValue,
 }: BookPageCoverCardEditProps) {
   return (
-    <Card className="rounded-b-lg w-full mx-auto bg-accent rounded-t-lg md:sticky md:top-36 lg:top-28 self-start">
+    <Card className="rounded-b-lg w-full mx-auto bg-accent rounded-t-lg md:sticky md:top-36 lg:top-28 self-start text-muted hover:text-popover">
       <CardContent
         className="p-0 bg-background rounded-t-lg"
         style={{ aspectRatio: "2 / 3" }}

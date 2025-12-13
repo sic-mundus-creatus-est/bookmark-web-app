@@ -95,7 +95,7 @@ export function UploadLabel({
       <div className="flex justify-center mx-10 pt-1">
         <div className="flex flex-col">
           <div className="flex items-center gap-5">
-            <div className="inline-block w-[calc(5ch+0.5rem)] pl-4 text-3xl text-muted font-[Helvetica]">
+            <div className="inline-block w-[calc(5ch+0.5rem)] pl-4 text-3xl font-[Candara] font-bold">
               Upload
             </div>
             <div className="text-4xl text-popover inline-flex items-center justify-center w-[calc(3ch+0.5rem)]">

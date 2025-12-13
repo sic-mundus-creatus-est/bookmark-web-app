@@ -23,7 +23,7 @@ export function CommonSubmitButton({
           {errorLabel}
         </div>
       )}
-      <div className="flex items-center gap-7">
+      <div className="flex items-center gap-3">
         {showCancel ? (
           <button
             type="button"
