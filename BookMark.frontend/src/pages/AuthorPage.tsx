@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
 import { AuthorUpdate } from "@/lib/types/author";
 import { CommonDescription } from "@/components/ui/common/common-description";
-import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "@/components/ui/common/common-submit-button";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "@/components/ui/author/author-life-range-input";
@@ -23,6 +26,7 @@ import { useGenresByAuthor } from "@/lib/services/api-calls/hooks/useGenreApi";
 import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
+import { AuthorUpdateSchema } from "@/lib/services/authorService";
 
 export function AuthorPage() {
   //--------------------------------------------------------------------------
@@ -102,11 +106,13 @@ export function AuthorPage() {
 
   //==============================================================================
   const handleUpdateAuthor = async (allFields: AuthorUpdate) => {
-    if (!author) return;
-
     let edits = getDirtyValues(allFields, dirtyFields);
 
+    if (Object.keys(edits).length <= 0)
+      return setEditFormError("You haven’t made any changes.");
+
     if (dirtyFields.birthYear || dirtyFields.deathYear) {
+      // to make sure they stay valid
       edits = {
         ...edits,
         birthYear: allFields.birthYear,
@@ -116,14 +122,17 @@ export function AuthorPage() {
 
     console.log(edits);
 
-    if (Object.keys(edits).length <= 0)
-      return setEditFormError("You haven’t made any changes.");
+    const formDataValidation = AuthorUpdateSchema.safeParse(edits);
+    if (!formDataValidation.success) {
+      setEditFormError(formDataValidation.error.issues[0]?.message);
+      return;
+    }
 
     updateAuthor.mutate(
-      { id: author.id, data: edits },
+      { id: author!.id, data: edits },
       {
         onError: (error: any) => {
-          setEditFormError(error?.message || "Failed to update author");
+          setEditFormError(error?.detail || "Failed to update author");
         },
         onSuccess: () => {
           setEditMode(false);
@@ -196,15 +205,17 @@ export function AuthorPage() {
                   setValue("biography", newBiography, { shouldDirty: true });
                 }}
               />
-              <div className="flex justify-between mt-2">
-                <CommonDeleteButton onClick={handleDeleteAuthor} />
-                <CommonSubmitButton
-                  label="Update"
-                  onClick={handleSubmit(handleUpdateAuthor)}
-                  showCancel
-                  onCancel={() => setEditMode((prev) => !prev)}
-                  errorLabel={editFormError}
-                />
+              <div className="mt-4">
+                {editFormError && <CommonErrorLabel error={editFormError} />}
+                <div className="flex justify-between">
+                  <CommonDeleteButton onClick={handleDeleteAuthor} />
+                  <CommonSubmitButton
+                    label="Update"
+                    onClick={handleSubmit(handleUpdateAuthor)}
+                    showCancel
+                    onCancel={() => setEditMode((prev) => !prev)}
+                  />
+                </div>
               </div>
             </>
           ) : (

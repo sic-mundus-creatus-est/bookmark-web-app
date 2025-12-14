@@ -2,15 +2,22 @@ import { useNavigate } from "react-router-dom";
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Tags, X } from "lucide-react";
+import { Tags, X } from "lucide-react";
 
-import { createGenre } from "@/lib/services/api-calls/genreApi";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { CommonTextInput } from "../ui/common/common-text-input";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "../ui/common/common-submit-button";
+import { useCreateGenre } from "@/lib/services/api-calls/hooks/useGenreApi";
+import { ApiError } from "@/lib/services/api-calls/api";
+import { GenreSchema } from "@/lib/services/genreService";
 
 export function AddGenreModal() {
   //-----------------------------------------------------------
   const [open, setOpen] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string>();
 
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -19,24 +26,32 @@ export function AddGenreModal() {
   //-----------------------------------------------------------
 
   //==================================================
+  const createGenre = useCreateGenre();
   const handleCreate = async () => {
-    console.log({
+    const formDataValidation = GenreSchema.safeParse({
       name,
       description,
     });
-    try {
-      const result = await createGenre({
+    if (!formDataValidation.success) {
+      setFormError(formDataValidation.error.issues[0]?.message);
+      return;
+    }
+
+    createGenre.mutate(
+      {
         name,
         description,
-      });
-
-      if (result?.id) {
-        setOpen(false);
-        navigate(`/genre/${result.id}`);
+      },
+      {
+        onError: (error: ApiError) => {
+          if (error.detail) setFormError(error.detail);
+        },
+        onSuccess: (result) => {
+          setOpen(false);
+          navigate(`/genre/${result.id}`);
+        },
       }
-    } catch (err) {
-      console.error("Create genre failed:", err);
-    }
+    );
   };
   //==================================================
 
@@ -80,7 +95,7 @@ export function AddGenreModal() {
               placeholder="Name"
               value={name}
               onChange={setName}
-              maxLength={128}
+              maxLength={64}
               showCharCount
             />
             <div className="mt-3" />
@@ -90,15 +105,11 @@ export function AddGenreModal() {
               placeholder="Write a brief description of the genre..."
             />
 
-            <div className="flex justify-end my-2">
-              <button
-                onClick={handleCreate}
-                className="flex items-center gap-1 bg-accent text-background font-bold px-3 py-2 rounded-lg transition border-b-4 border-popover hover:text-popover"
-                type="button"
-              >
-                <Plus className="text-popover" strokeWidth={3} />
-                Add
-              </button>
+            <div className="mt-4 mb-2">
+              {formError && <CommonErrorLabel error={formError} />}
+              <div className="flex justify-end">
+                <CommonSubmitButton label="Add" onClick={handleCreate} />
+              </div>
             </div>
           </div>
         </div>

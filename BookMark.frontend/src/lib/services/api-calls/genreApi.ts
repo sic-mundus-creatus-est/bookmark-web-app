@@ -1,10 +1,12 @@
-import { Genre, GenreLinkProps, GenreUpdate } from "@/lib/types/genre";
+import {
+  Genre,
+  GenreCreate,
+  GenreLinkProps,
+  GenreUpdate,
+} from "@/lib/types/genre";
 import { apiCall, DELETE, GET, PATCH, POST } from "./api";
 
-export function createGenre(data: {
-  name: string;
-  description?: string;
-}): Promise<Genre> {
+export function createGenre(data: GenreCreate): Promise<Genre> {
   return apiCall({
     method: POST,
     endpoint: "/api/genres/create",

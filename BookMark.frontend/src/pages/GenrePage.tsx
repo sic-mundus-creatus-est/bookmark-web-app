@@ -8,7 +8,10 @@ import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { useForm } from "react-hook-form";
-import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "@/components/ui/common/common-submit-button";
 import { getDirtyValues } from "@/lib/utils";
 import { GenreCatalogSection } from "@/components/ui/genre/genre-catalog-section";
 import { useLoading } from "@/lib/contexts/useLoading";
@@ -20,6 +23,7 @@ import {
 import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
+import { GenreSchema } from "@/lib/services/genreService";
 
 export function GenrePage() {
   //-------------------------------------------------------------
@@ -111,10 +115,16 @@ export function GenrePage() {
   const handleUpdateGenre = async (allFields: GenreUpdate) => {
     const edits = getDirtyValues(allFields, dirtyFields);
 
-    console.log(edits);
-
     if (Object.keys(edits).length <= 0)
       return setEditFormError("You haven’t made any changes.");
+
+    const UpdateSchema = GenreSchema.partial();
+
+    const formDataValidation = UpdateSchema.safeParse(edits);
+    if (!formDataValidation.success) {
+      setEditFormError(formDataValidation.error.issues[0]?.message);
+      return;
+    }
 
     updateGenre.mutate(
       { id: id, data: edits },
@@ -158,27 +168,31 @@ export function GenrePage() {
         <>
           <CommonTextInput
             fontSize={22}
+            maxLength={64}
+            showCharCount
             value={watch("name")}
             onChange={(newName) => {
               setValue("name", newName, { shouldDirty: true });
             }}
           />
-          <div className="mt-4" />
+          <div className="mt-2" />
           <CommonDescriptionInput
             value={watch("description")}
             onChange={(newDesc) => {
               setValue("description", newDesc, { shouldDirty: true });
             }}
           />
-          <div className="flex justify-between mt-2">
-            <CommonDeleteButton onClick={handleDeleteGenre} />
-            <CommonSubmitButton
-              label="Update"
-              onClick={handleSubmit(handleUpdateGenre)}
-              showCancel
-              onCancel={() => setEditMode((prev) => !prev)}
-              errorLabel={editFormError}
-            />
+          <div className="mt-2">
+            {editFormError && <CommonErrorLabel error={editFormError} />}
+            <div className="flex justify-between">
+              <CommonDeleteButton onClick={handleDeleteGenre} />
+              <CommonSubmitButton
+                label="Update"
+                onClick={handleSubmit(handleUpdateGenre)}
+                showCancel
+                onCancel={() => setEditMode((prev) => !prev)}
+              />
+            </div>
           </div>
         </>
       ) : (

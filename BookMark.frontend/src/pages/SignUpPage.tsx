@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
-import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "@/components/ui/common/common-submit-button";
 import { Footer } from "@/components/layouts/footer";
 import { UserCreate } from "@/lib/types/user";
 import { useAuth } from "@/lib/contexts/useAuth";
@@ -134,11 +137,8 @@ export function SignUpPage() {
               noBreaks
             />
             <div className="flex flex-col">
-              <CommonSubmitButton
-                label="Create Account"
-                errorLabel={error}
-                loading={loading}
-              />
+              {error && <CommonErrorLabel error={error} />}
+              <CommonSubmitButton label="Create Account" loading={loading} />
               <h4 className="text-accent italic text-end select-none">
                 By creating an account, you agree to the BookMark Terms of
                 Service and Privacy Policy.

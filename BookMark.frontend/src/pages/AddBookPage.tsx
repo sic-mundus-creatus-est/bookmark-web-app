@@ -13,7 +13,10 @@ import { BookLanguageInput } from "@/components/ui/book/book-language-input";
 import { BookPageCountInput } from "@/components/ui/book/book-page-count-input";
 import { PublicationYearSelector } from "@/components/ui/book/book-publication-year-selector";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "@/components/ui/common/common-submit-button";
 import { GenreLinkProps } from "@/lib/types/genre";
 import { AuthorLinkProps } from "@/lib/types/author";
 import { BookTypePicker } from "@/components/ui/book/book-type-selector";
@@ -26,6 +29,7 @@ import {
 import { ApiError } from "@/lib/services/api-calls/api";
 import { useLoading } from "@/lib/contexts/useLoading";
 import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
+import { BookSchema } from "@/lib/services/bookService";
 
 export function AddBookPage() {
   //------------------------------------------------------------------------------
@@ -36,7 +40,7 @@ export function AddBookPage() {
   const createBook = useCreateBook();
   //------------------------------------------------------------------------------
   const [book, setBook] = useState<BookCreate>({
-    bookType: undefined!,
+    bookType: { id: "", name: "" },
     title: "",
     authors: [],
     genres: [],
@@ -77,7 +81,11 @@ export function AddBookPage() {
 
   //==============================================================================
   const handleCreateBook = async () => {
-    console.log(book);
+    const formDataValidation = BookSchema.safeParse(book);
+    if (!formDataValidation.success) {
+      setGlobalFormError(formDataValidation.error.issues[0]?.message);
+      return;
+    }
 
     createBook.mutate(book, {
       onError: (error: ApiError) => {
@@ -185,12 +193,12 @@ export function AddBookPage() {
             placeholder="Description..."
           />
 
-          <div className="flex justify-end mb-4">
-            <CommonSubmitButton
-              label="Add"
-              errorLabel={globalFormError}
-              onClick={handleCreateBook}
-            />
+          <div>
+            {globalFormError && <CommonErrorLabel error={globalFormError} />}
+
+            <div className="flex justify-end mb-4">
+              <CommonSubmitButton label="Add" onClick={handleCreateBook} />
+            </div>
           </div>
         </div>
       </div>

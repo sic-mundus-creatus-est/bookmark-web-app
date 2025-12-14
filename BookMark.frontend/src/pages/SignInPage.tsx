@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
-import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "@/components/ui/common/common-submit-button";
 import { Footer } from "@/components/layouts/footer";
 import { useAuth } from "@/lib/contexts/useAuth";
 import { ApiError } from "@/lib/services/api-calls/api";
@@ -84,11 +87,8 @@ export function SignInPage() {
                 noBreaks
               />
               <div>
-                <CommonSubmitButton
-                  label="Sign In"
-                  errorLabel={error}
-                  loading={loading}
-                />
+                {error && <CommonErrorLabel error={error} />}
+                <CommonSubmitButton label="Sign In" loading={loading} />
                 <h4 className="text-accent italic text-end leading-tight select-none">
                   By signing in, you agree to the BookMark Terms of Service and
                   Privacy Policy.

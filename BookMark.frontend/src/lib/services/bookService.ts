@@ -1,195 +1,86 @@
-// import { z } from "zod";
-// import { Book, BookUpdate } from "../types/book";
-// import {
-//   createBook,
-//   updateBookMetadata,
-//   updateBookAuthors,
-//   updateBookCoverImage,
-//   updateBookGenres,
-//   CreateBookParams,
-// } from "./api-calls/bookApi";
+import { z } from "zod";
 
-// const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
-// const MAX_FILE_SIZE = 10000000; // 10MB
+// Schemas for nested types
+const createSelectionSchema = (invalidMessage: string) =>
+  z
+    .object({
+      id: z.string().optional(),
+      name: z.string().optional(),
+    })
+    .superRefine(
+      (obj: { id?: string; name?: string }, ctx: z.RefinementCtx) => {
+        if (!obj.id || !obj.name) {
+          ctx.addIssue({
+            code: "custom",
+            message: obj.name
+              ? `${invalidMessage}: "${obj.name}"`
+              : invalidMessage,
+          });
+        }
+      }
+    );
 
-// const validateBook = z.object({
-//   title: z.string().min(1, "Title is required!").max(128),
-//   bookTypeId: z.string().nonempty("Book Type is required!"),
-//   authorIds: z
-//     .array(z.string())
-//     .min(1, "At least one author required!")
-//     .max(16),
-//   genreIds: z.array(z.string()).min(1, "At least one genre required!").max(16),
-//   publicationYear: z.number().int().min(1000).max(new Date().getFullYear()),
-//   pageCount: z.number().int().min(1, "Must have at least 1 page!"),
-//   originalLanguage: z.string().min(1, "Original language is required!"),
-//   description: z.string().optional(),
-//   coverImageFile: z
-//     .instanceof(File)
-//     .optional()
-//     .refine((file) => {
-//       if (!file) return true;
-//       return ACCEPTED_IMAGE_TYPES.includes(file.type);
-//     }, "Invalid file. Choose either JPEG, JPG or PNG image.")
-//     .refine((file) => {
-//       if (!file) return true;
-//       return file.size > 0 && file.size <= MAX_FILE_SIZE;
-//     }, "File must not be empty and must be under 10MB."),
-// });
+export const BookTypeSchema = createSelectionSchema(
+  "Please select a valid book type."
+);
+export const AuthorLinkPropsSchema = createSelectionSchema("Invalid author(s)");
+export const GenreLinkPropsSchema = createSelectionSchema("Invalid genre(s)");
 
-// export async function validateAndCreateBook(data: CreateBookParams) {
-//   const validationResult = validateBook.safeParse(data);
-//   if (!validationResult.success) {
-//     return {
-//       success: false,
-//       error:
-//         validationResult.error.issues[0]?.message ??
-//         "Please check the form for errors!",
-//     };
-//   }
+export const BookSchema = z.object({
+  title: z
+    .string()
+    .min(2, { message: "Title must be at least 2 characters long." })
+    .max(128, { message: "Title must not exceed 128 characters." }),
 
-//   try {
-//     const result: Book = await createBook(data);
-//     return { success: true, bookId: result.id };
-//   } catch (err: any) {
-//     console.error(
-//       `ERROR WHILE CREATING BOOK:`,
-//       `\n----------------------------------`,
-//       `\n[${err.instance}]`,
-//       `\nError: ${err.status}`,
-//       `\n----------------------------------`,
-//       `\nType: ${err.type}`,
-//       `\nTitle: ${err.title}`,
-//       `\nDetail: ${err.detail}`,
-//       `\nTrace ID: ${err.traceId}`
-//     );
+  bookType: BookTypeSchema,
 
-//     return {
-//       success: false,
-//       error:
-//         "Failed to create the book. Please try again or check your connection.",
-//     };
-//   }
-// }
+  authors: z
+    .array(AuthorLinkPropsSchema)
+    .min(1, { message: "At least one author is required." })
+    .max(16, { message: "You can specify up to 16 authors only." }),
 
-// const validateEdits = z.object({
-//   title: z
-//     .string()
-//     .min(1, "Title is required!")
-//     .max(128, "Title must be at most 128 characters long.")
-//     .optional(),
-//   publicationYear: z
-//     .number()
-//     .int()
-//     .min(1, "Publication year cannot be 0 or negative.")
-//     .max(new Date().getFullYear())
-//     .optional(),
-//   pageCount: z.number().int().min(1, "Must have at least 1 page!").optional(),
-//   originalLanguage: z
-//     .string()
-//     .min(1, "Original language is required!")
-//     .optional(),
-//   description: z.string().optional(),
-//   coverImageFile: z
-//     .instanceof(File)
-//     .optional()
-//     .nullable()
-//     .refine(
-//       (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
-//       "Invalid file. Choose either JPEG, JPG or PNG image."
-//     )
-//     .refine(
-//       (file) => !file || (file.size > 0 && file.size <= MAX_FILE_SIZE),
-//       "File must not be empty and must be under 10MB"
-//     ),
-//   authors: z
-//     .array(
-//       z.object({
-//         id: z.string(),
-//         name: z.string(),
-//       })
-//     )
-//     .min(1, "At least one Author required!")
-//     .max(16)
-//     .optional(),
-//   genres: z
-//     .array(
-//       z.object({
-//         id: z.string(),
-//         name: z.string(),
-//       })
-//     )
-//     .min(1, "At least one Genre required!")
-//     .max(16)
-//     .optional(),
-// });
+  genres: z
+    .array(GenreLinkPropsSchema)
+    .min(1, { message: "At least one genre is required." })
+    .max(16, { message: "You can specify up to 16 genres only." }),
 
-// export async function validateEditsAndUpdateBook(
-//   id: string,
-//   edits: BookUpdate
-// ) {
-//   const validationResult = validateEdits.safeParse(edits);
-//   if (!validationResult.success) {
-//     return {
-//       success: false,
-//       error:
-//         validationResult.error.issues[0]?.message ??
-//         "Please check the form for errors!",
-//     };
-//   }
+  publicationYear: z
+    .number()
+    .min(1000, { message: "Publication year must be after 1000." })
+    .max(new Date().getFullYear(), {
+      message: "Publication year cannot be in the future.",
+    }),
 
-//   const tasks: { name: string; task: Promise<unknown> }[] = [];
+  pageCount: z
+    .number()
+    .min(1, { message: "Page count must be at least 1." })
+    .max(10000, {
+      message: "Most books do not exceed nor come close 10,000 pages.",
+    }),
 
-//   if (edits.metadata) {
-//     tasks.push({
-//       name: "Book metadata",
-//       task: updateBookMetadata(id, edits.metadata),
-//     });
-//   }
+  originalLanguage: z
+    .string()
+    .min(2, { message: "Language must be at least 2 characters long." })
+    .max(64, { message: "Language must not exceed 64 characters." }),
 
-//   if (edits.authors) {
-//     tasks.push({
-//       name: "Authors",
-//       task: updateBookAuthors(
-//         id,
-//         edits.authors.map((author) => author.id)
-//       ),
-//     });
-//   }
+  description: z
+    .string()
+    .max(2000, { message: "Description must not exceed 4000 characters." })
+    .refine((val: string) => val.length === 0 || val.length >= 10, {
+      message: "Description must be at least 10 characters long or empty",
+    })
+    .optional(),
 
-//   if (edits.genres) {
-//     tasks.push({
-//       name: "Genres",
-//       task: updateBookGenres(
-//         id,
-//         edits.genres.map((genre) => genre.id)
-//       ),
-//     });
-//   }
-
-//   if (edits.coverImageFile !== undefined) {
-//     tasks.push({
-//       name: "Cover",
-//       task: updateBookCoverImage(id, edits.coverImageFile),
-//     });
-//   }
-
-//   const results = await Promise.allSettled(tasks.map((t) => t.task));
-
-//   const failedTasks = tasks.filter(
-//     (_, index) => results[index].status === "rejected"
-//   );
-
-//   if (failedTasks.length > 0) {
-//     const errorMessage = `Failed to update: ${failedTasks
-//       .map((t) => t.name)
-//       .join(", ")}`;
-
-//     return {
-//       success: false,
-//       error: errorMessage,
-//     };
-//   }
-
-//   return { success: true };
-// }
+  coverImageFile: z
+    .instanceof(File)
+    .refine((file: File) => file.size <= 10 * 1024 * 1024, {
+      message: "Cover image must be under 10MB.",
+    })
+    .refine(
+      (file: File) =>
+        ["image/jpeg", "image/jpg", "image/png"].includes(file.type),
+      { message: "Cover image must be a JPG, JPEG, or PNG file." }
+    )
+    .nullable()
+    .optional(),
+});

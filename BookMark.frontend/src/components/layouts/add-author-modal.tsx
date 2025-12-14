@@ -4,41 +4,61 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { UserRoundPen, X } from "lucide-react";
 
-import { createAuthor } from "@/lib/services/api-calls/authorApi";
-import { CommonSubmitButton } from "../ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "../ui/common/common-submit-button";
 import { CommonTextInput } from "../ui/common/common-text-input";
 import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "../ui/author/author-life-range-input";
+import { useCreateAuthor } from "@/lib/services/api-calls/hooks/useAuthorApi";
+import { ApiError } from "@/lib/services/api-calls/api";
+import { AuthorSchema } from "@/lib/services/authorService";
 
 export function AddAuthorModal() {
   //-----------------------------------------------------------
   const [open, setOpen] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string>();
 
   const [name, setName] = useState<string>("");
   const [birthYear, setBirthYear] = useState<number>();
   const [deathYear, setDeathYear] = useState<number>();
-  const [biography, setBiography] = useState<string>("");
+  const [biography, setBiography] = useState<string>();
 
   const navigate = useNavigate();
   //-----------------------------------------------------------
 
   //==================================================
+  const createAuthor = useCreateAuthor();
   const handleCreate = async () => {
-    try {
-      const result = await createAuthor({
+    const formDataValidation = AuthorSchema.safeParse({
+      name,
+      birthYear,
+      deathYear,
+      biography,
+    });
+    if (!formDataValidation.success) {
+      setFormError(formDataValidation.error.issues[0]?.message);
+      return;
+    }
+
+    createAuthor.mutate(
+      {
         name: name,
         birthYear: birthYear,
         deathYear: deathYear,
         biography: biography,
-      });
-
-      if (result?.id) {
-        setOpen(false);
-        navigate(`/author/${result.id}`);
+      },
+      {
+        onError: (error: ApiError) => {
+          if (error.detail) setFormError(error.detail);
+        },
+        onSuccess: (result) => {
+          setOpen(false);
+          navigate(`/author/${result.id}`);
+        },
       }
-    } catch (err) {
-      console.error("Create author failed:", err);
-    }
+    );
   };
   //==================================================
 
@@ -102,8 +122,11 @@ export function AddAuthorModal() {
               placeholder="Write a concise biography of the author..."
             />
 
-            <div className="flex justify-end my-2">
-              <CommonSubmitButton label="Add" onClick={handleCreate} />
+            <div className="mt-4 mb-2">
+              {formError && <CommonErrorLabel error={formError} />}
+              <div className="flex justify-end">
+                <CommonSubmitButton label="Add" onClick={handleCreate} />
+              </div>
             </div>
           </div>
         </div>

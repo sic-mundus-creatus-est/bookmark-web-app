@@ -1,5 +1,10 @@
 import { BookLinkProps } from "./book";
 
+export interface GenreCreate {
+  name: string;
+  description?: string;
+}
+
 export interface Genre {
   id: string;
   name: string;

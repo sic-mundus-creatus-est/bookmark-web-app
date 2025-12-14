@@ -1,63 +1,63 @@
-// import z from "zod";
+import z from "zod";
 
-// import { updateAuthor } from "@/lib/services/api-calls/authorApi";
-// import { AuthorUpdate } from "@/lib/types/author";
+export const AuthorSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "Name must be at least 2 characters long")
+      .max(100, "Name must be at most 100 characters long"),
 
-// const currentYear = new Date().getFullYear();
+    biography: z
+      .string()
+      .max(2000, "Biography must be at most 2000 characters long")
+      .refine((val: string) => val.length === 0 || val.length >= 10, {
+        message: "Biography must be at least 10 characters long or empty",
+      })
+      .optional(),
 
-// const validateEdits = z
-//   .object({
-//     name: z
-//       .string()
-//       .max(64, "Name must be at most 64 characters long!")
-//       .optional()
-//       .refine(
-//         (val) => val === undefined || val.trim() !== "",
-//         "Name is required!"
-//       ),
-//     biography: z
-//       .string()
-//       .max(4000, "Biography must be at most 4000 characters long!")
-//       .optional(),
-//     birthYear: z.number().min(0).max(currentYear).optional(),
-//     deathYear: z.number().min(0).max(currentYear).optional(),
-//   })
-//   .refine(
-//     (data) => {
-//       if (!data.birthYear && !data.deathYear) return true;
-//       if (data.birthYear && !data.deathYear) return true;
-//       if (data.birthYear && data.deathYear) {
-//         return data.deathYear >= data.birthYear;
-//       }
-//     },
-//     {
-//       message: "Death year must come after birth year is set.",
-//     }
-//   );
+    birthYear: z.coerce
+      .number()
+      .int()
+      .nonnegative()
+      .max(new Date().getFullYear(), "Birth year cannot be in the future")
+      .optional(),
 
-// export async function validateEditsAndUpdateAuthor(
-//   id: string,
-//   edits: AuthorUpdate
-// ) {
-//   const validationResult = validateEdits.safeParse(edits);
-//   if (!validationResult.success) {
-//     return {
-//       success: false,
-//       error:
-//         validationResult.error.issues[0]?.message ??
-//         "Please check the form for errors!",
-//     };
-//   }
+    deathYear: z.coerce
+      .number()
+      .int()
+      .nonnegative()
+      .max(new Date().getFullYear(), "Death year cannot be in the future")
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.birthYear !== undefined && data.deathYear !== undefined)
+      if (
+        data.deathYear > 0 &&
+        data.birthYear > 0 &&
+        data.deathYear < data.birthYear
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Death year must be greater than or equal to birth year",
+          path: ["deathYear"],
+        });
+      }
+  });
 
-//   try {
-//     await updateAuthor(id, edits);
-//     return { success: true };
-//   } catch (err) {
-//     console.error("Failed to update author: ", err);
-//     return {
-//       success: false,
-//       error:
-//         "An unexpected error occurred while updating the author. Try again.",
-//     };
-//   }
-// }
+// for some stupid reason zod drops all of the additional refinements without you explicitly doing so...
+export const AuthorUpdateSchema = AuthorSchema.partial().superRefine(
+  (data, ctx) => {
+    if (data.birthYear !== undefined && data.deathYear !== undefined)
+      if (
+        data.deathYear > 0 &&
+        data.birthYear > 0 &&
+        data.deathYear < data.birthYear
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Death year must be greater than or equal to birth year",
+          path: ["deathYear"],
+        });
+      }
+  }
+);

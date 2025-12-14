@@ -2,7 +2,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BookUpdate } from "@/lib/types/book";
 import { ApiError } from "@/lib/services/api-calls/api";
-import { CommonSubmitButton } from "@/components/ui/common/common-submit-button";
+import {
+  CommonErrorLabel,
+  CommonSubmitButton,
+} from "@/components/ui/common/common-submit-button";
 
 import { useForm } from "react-hook-form";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
@@ -34,6 +37,7 @@ import { BookMainMetadataEdit } from "@/components/ui/book/book-main-metadata-ed
 import { BookMainMetadata } from "@/components/ui/book/book-main-metadata";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
+import { BookSchema } from "@/lib/services/bookService";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -119,17 +123,21 @@ export function BookPage() {
 
   //==============================================================================
   const handleUpdateBook = async (allFields: BookUpdate) => {
-    if (!book) return;
-
     const edits = getDirtyValues(allFields, dirtyFields);
-
-    console.log(edits);
 
     if (Object.keys(edits).length <= 0)
       return setEditFormError("You haven’t made any changes.");
 
+    const UpdateSchema = BookSchema.partial();
+
+    const formDataValidation = UpdateSchema.safeParse(edits);
+    if (!formDataValidation.success) {
+      setEditFormError(formDataValidation.error.issues[0]?.message);
+      return;
+    }
+
     updateBook.mutate(
-      { id: book.id, edits: edits },
+      { id: book!.id, edits: edits },
       {
         onError: (error: any) => {
           setEditFormError(error?.message || "Failed to update. Try again!");
@@ -245,15 +253,17 @@ export function BookPage() {
                 }
               />
 
-              <div className="flex justify-between items-center">
-                <CommonDeleteButton onClick={handleDeleteBook} />
-                <CommonSubmitButton
-                  label="Update"
-                  errorLabel={editFormError}
-                  onClick={handleSubmit(handleUpdateBook)}
-                  showCancel
-                  onCancel={() => setEditMode((prev) => !prev)}
-                />
+              <div>
+                {editFormError && <CommonErrorLabel error={editFormError} />}
+                <div className="flex justify-between items-center">
+                  <CommonDeleteButton onClick={handleDeleteBook} />
+                  <CommonSubmitButton
+                    label="Update"
+                    onClick={handleSubmit(handleUpdateBook)}
+                    showCancel
+                    onCancel={() => setEditMode((prev) => !prev)}
+                  />
+                </div>
               </div>
             </div>
           </>

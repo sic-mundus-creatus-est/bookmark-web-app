@@ -15,7 +15,7 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
 
     public override async Task<ActionResult<AuthorResponseDTO>> Create(AuthorCreateDTO createDto)
     {
-        if(createDto.BirthYear > createDto.DeathYear)
+        if(createDto.BirthYear>0 && createDto.DeathYear>0 && createDto.BirthYear > createDto.DeathYear)
             return Problem(title: "Bad Request",
                             detail: "Birth Year must come before Death Year.",
                             statusCode: StatusCodes.Status400BadRequest);
@@ -33,7 +33,7 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
 
     public override async Task<ActionResult<AuthorResponseDTO>> Update([FromRoute] string id, [FromBody] AuthorUpdateDTO updateData)
     {
-        if(updateData.BirthYear > updateData.DeathYear)
+        if(updateData.BirthYear>0 && updateData.DeathYear>0 && updateData.BirthYear > updateData.DeathYear)
             return Problem(title: "Bad Request",
                             detail: "Birth Year must come before Death Year.",
                             statusCode: StatusCodes.Status400BadRequest);
