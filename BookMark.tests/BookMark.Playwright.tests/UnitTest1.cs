@@ -1,7 +1,5 @@
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Playwright;
-using Microsoft.Playwright.NUnit;
 using static Microsoft.Playwright.Assertions;
 using NUnit.Framework;
 
@@ -9,50 +7,18 @@ namespace BookMark.Playwright.tests;
 
 [Parallelizable(ParallelScope.All)]
 [TestFixture]
-public class PlaywrightTests
+public class PlaywrightTests: TestBase
 {
-    private static IPlaywright _playwright;
-    private static IBrowser _browser;
-
-    private static string BaseUrl => "http://localhost:5173";
-
-    [OneTimeSetUp]
-    public async Task GlobalSetup()
-    {
-        var browserName = Environment.GetEnvironmentVariable("BROWSER") ?? "chromium";
-
-        _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
-        _browser = browserName switch
-        {
-            "chromium" => await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true }),
-            "firefox"  => await _playwright.Firefox.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true }),
-            "webkit"   => await _playwright.Webkit.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true }),
-            _ => throw new ArgumentException($"Unknown browser: {browserName}")
-        };
-    }
-
-    private static async Task<IPage> NewPageAsync()
-    {
-        var context = await _browser.NewContextAsync();
-        return await context.NewPageAsync();
-    }
-
-
-    [OneTimeTearDown]
-    public async Task GlobalTeardown()
-    {
-        await _browser.CloseAsync();
-        _playwright.Dispose();
-    }
-
     [Test]
     public async Task HasTitle()
     {
-        var page = await NewPageAsync();
+        var page = await OpenNewPageAsync();
         await page.GotoAsync(BaseUrl);
 
         await Expect(page).ToHaveURLAsync(new Regex("/home"));
         await Expect(page).ToHaveTitleAsync(new Regex("BookMark"));
+
+        await page.Context.CloseAsync();
     }
 
     [TestCase("Books", "/books", "Book")]
@@ -62,7 +28,8 @@ public class PlaywrightTests
                                                                 string expectedUrl,
                                                                 string expectedType )
     {
-        var page = await NewPageAsync();
+        var page = await OpenNewPageAsync();
+
         await page.GotoAsync($"{BaseUrl}/home");
 
         var navLink = page.GetByRole(AriaRole.Link, new() { Name = navLinkName });
@@ -81,12 +48,15 @@ public class PlaywrightTests
         {// check to see if all books are of expected type
             await Expect(card).ToHaveAttributeAsync("data-book-type", expectedType);
         }
+
+        await page.Context.CloseAsync();
     }
 
     [Test]
     public async Task SignIn_SignsUserInAndNavigatesToHome_WhenCredentialsAreValid()
     {
-        var page = await NewPageAsync();
+        var page = await OpenNewPageAsync();
+
         await page.GotoAsync($"{BaseUrl}/sign-in");
 
         await page.GetByLabel("Username/E-mail").FillAsync("admin");
@@ -94,12 +64,15 @@ public class PlaywrightTests
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Sign In" }).ClickAsync();
         await Expect(page).ToHaveURLAsync(new Regex("/home"));
+
+        await page.Context.CloseAsync();
     }
 
     [Test]
     public async Task SignIn_ShowsErrorMessage_WhenCredentialsAreInvalid()
     {
-        var page = await NewPageAsync();
+        var page = await OpenNewPageAsync();
+
         await page.GotoAsync($"{BaseUrl}/sign-in");
 
         await page.GetByLabel("Username/E-mail").FillAsync("admin");
@@ -109,6 +82,8 @@ public class PlaywrightTests
         await Expect(page).ToHaveURLAsync(new Regex("/sign-in"));
         await Expect(page.GetByText("Invalid username or password. Please check your credentials and try again."))
                          .ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
     [TestCase("", "", TestName = "SignIn_ShowsErrorMessage_WhenBothFieldsAreEmpty")]
@@ -116,7 +91,8 @@ public class PlaywrightTests
     [TestCase("", "Admin123!", TestName = "SignIn_ShowsErrorMessage_WhenUsernameIsEmpty")]
     public async Task SignIn_ShowsErrorMessage_WhenFormIsNotFull(string usernameOrEmail, string password)
     {
-        var page = await NewPageAsync();
+        var page = await OpenNewPageAsync();
+
         await page.GotoAsync($"{BaseUrl}/sign-in");
 
         await page.GetByLabel("Username/E-mail").FillAsync(usernameOrEmail);
@@ -127,13 +103,16 @@ public class PlaywrightTests
         await Expect(page).ToHaveURLAsync(new Regex("/sign-in"));
         await Expect(page.GetByText("Please enter both your username/email and password."))
                          .ToBeVisibleAsync();
+        
+        await page.Context.CloseAsync();
     }
 
     [Test]
     public async Task Search_ShowsNoResults_WhenSearchTermHasNoMatches()
     {
+        var page = await OpenNewPageAsync();
+
         var searchTerm = "test";
-        var page = await NewPageAsync();
         await page.GotoAsync($"{BaseUrl}");
 
         await page.GetByLabel("Search Term Input")
@@ -150,13 +129,16 @@ public class PlaywrightTests
 
         var cardsLocator = page.GetByTestId("book-card");
         await Expect(cardsLocator).ToHaveCountAsync(0);
+
+        await page.Context.CloseAsync();
     }
 
     [Test]
     public async Task Search_ShowsResults_WhenSearchTermHasMatches()
     {
+        var page = await OpenNewPageAsync();
+
         var searchTerm = "tolkien";
-        var page = await NewPageAsync();
         await page.GotoAsync($"{BaseUrl}");
 
         await page.GetByLabel("Search Term Input")
@@ -182,6 +164,8 @@ public class PlaywrightTests
             var card = cardsLocator.Nth(i);
             await Expect(card).ToContainTextAsync(searchTerm, new() { IgnoreCase = true });
         }
+
+        await page.Context.CloseAsync();
     }
 
 }
