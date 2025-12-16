@@ -7,7 +7,7 @@ namespace BookMark.Playwright.tests;
 
 [Parallelizable(ParallelScope.All)]
 [TestFixture]
-public class PlaywrightTests: TestBase
+public class GuestUserTests : TestBase
 {
     [Test]
     public async Task HasTitle()
@@ -165,6 +165,19 @@ public class PlaywrightTests: TestBase
             await Expect(card).ToContainTextAsync(searchTerm, new() { IgnoreCase = true });
         }
 
+        await page.Context.CloseAsync();
+    }
+
+    [Test]
+    public async Task BookPage_DoesNotShowPostReviewForm_WhenUserIsNotSignedIn()
+    {
+        var page = await OpenNewPageAsync();
+
+        await page.GotoAsync($"{BaseUrl}/book/1984");
+
+        await Expect(page.GetByText("Post Review"))
+                         .Not.ToBeVisibleAsync();
+        
         await page.Context.CloseAsync();
     }
 
