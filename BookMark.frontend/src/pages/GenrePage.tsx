@@ -24,6 +24,8 @@ import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 import { GenreSchema } from "@/lib/services/genreService";
+import { AuthorizedOnly } from "@/components/AuthorizedOnly";
+import { user_roles } from "@/config/roles";
 
 export function GenrePage() {
   //-------------------------------------------------------------
@@ -160,10 +162,13 @@ export function GenrePage() {
     );
   return (
     <div className="my-2 font-sans text-accent">
-      <CommonEditButton
-        value={editMode}
-        onClick={() => setEditMode((prev) => !prev)}
-      />
+      <AuthorizedOnly role={user_roles.admin} silent>
+        <CommonEditButton
+          value={editMode}
+          onClick={() => setEditMode((prev) => !prev)}
+        />
+      </AuthorizedOnly>
+
       {editMode ? (
         <>
           <CommonTextInput

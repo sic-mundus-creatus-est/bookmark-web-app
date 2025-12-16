@@ -38,6 +38,8 @@ import { BookMainMetadata } from "@/components/ui/book/book-main-metadata";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 import { BookSchema } from "@/lib/services/bookService";
+import { AuthorizedOnly } from "@/components/AuthorizedOnly";
+import { user_roles } from "@/config/roles";
 
 export function BookPage() {
   //------------------------------------------------------------------------------
@@ -223,10 +225,12 @@ export function BookPage() {
     );
   return (
     <div className="flex-grow">
-      <CommonEditButton
-        value={editMode}
-        onClick={() => setEditMode((prev) => !prev)}
-      />
+      <AuthorizedOnly role={user_roles.admin} silent>
+        <CommonEditButton
+          value={editMode}
+          onClick={() => setEditMode((prev) => !prev)}
+        />
+      </AuthorizedOnly>
 
       <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-5 pt-2 pb-10">
         {editMode ? (

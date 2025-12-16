@@ -1,12 +1,15 @@
+import { AuthorizedOnly } from "@/components/AuthorizedOnly";
 import { BookReviewCard } from "@/components/ui/book/book-review-card";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 import { CommonDescription } from "@/components/ui/common/common-description";
 import { CommonDescriptionInput } from "@/components/ui/common/common-description-input";
+import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import {
   CommonErrorLabel,
   CommonSubmitButton,
 } from "@/components/ui/common/common-submit-button";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
+import { user_roles } from "@/config/roles";
 import { useLoading } from "@/lib/contexts/useLoading";
 import { API_FILE_RESOURCES_URL, ApiError } from "@/lib/services/api-calls/api";
 import {
@@ -18,7 +21,7 @@ import {
 import { BookReview } from "@/lib/types/book";
 import { UserUpdate } from "@/lib/types/user";
 import { getDirtyValues } from "@/lib/utils";
-import { SquarePen, SquareUserRound, X } from "lucide-react";
+import { SquareUserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -111,23 +114,14 @@ export function UserProfilePage() {
   return (
     <div className="my-4">
       <div className="w-full bg-accent flex flex-col pt-7 pb-4 rounded-t-3xl rounded-b-sm px-4 sm:px-10 lg:px-40">
-        <div className="w-full flex justify-between">
-          <br />
-          <button
-            title={editMode ? "Cancel Editing" : "Edit"}
-            onClick={(e) => {
-              setEditMode((prev) => !prev);
-              e.currentTarget.blur();
-            }}
-            className="text-muted hover:text-popover"
-          >
-            {editMode ? (
-              <X size={24} strokeWidth={5} />
-            ) : (
-              <SquarePen size={24} strokeWidth={3} />
-            )}
-          </button>
-        </div>
+        <AuthorizedOnly role={user_roles.admin} userId={id} silent>
+          <CommonEditButton
+            value={editMode}
+            onClick={() => setEditMode((prev) => !prev)}
+            className="text-muted"
+          />
+        </AuthorizedOnly>
+
         <div className="flex flex-row items-center gap-2">
           <SquareUserRound
             size={100}

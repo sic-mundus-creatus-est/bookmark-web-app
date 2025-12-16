@@ -27,6 +27,8 @@ import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 import { AuthorUpdateSchema } from "@/lib/services/authorService";
+import { AuthorizedOnly } from "@/components/AuthorizedOnly";
+import { user_roles } from "@/config/roles";
 
 export function AuthorPage() {
   //--------------------------------------------------------------------------
@@ -162,10 +164,13 @@ export function AuthorPage() {
     );
   return (
     <div className="flex-grow max-w-full container mx-auto sm:px-16 lg:px-24 xl:px-32 my-4 sm:mt-10">
-      <CommonEditButton
-        value={editMode}
-        onClick={() => setEditMode((prev) => !prev)}
-      />
+      <AuthorizedOnly role={user_roles.admin} silent>
+        <CommonEditButton
+          value={editMode}
+          onClick={() => setEditMode((prev) => !prev)}
+        />
+      </AuthorizedOnly>
+
       <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 text-accent justify-center">
         <div className="flex-shrink-0 flex flex-col items-center">
           <CircleUserRound

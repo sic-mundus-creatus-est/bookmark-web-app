@@ -1,7 +1,7 @@
 import { RouterProvider } from "react-router-dom";
 
 import { AuthProvider } from "@/lib/contexts/authProvider";
-import { AppRouter } from "@/routing/AppRouter";
+import { AppRouter } from "@/AppRouter";
 import { LoadingProvider } from "./lib/contexts/loadingProvider";
 import { CommonLoader } from "./components/ui/common/common-loader";
 

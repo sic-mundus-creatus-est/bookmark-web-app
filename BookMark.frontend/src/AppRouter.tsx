@@ -1,6 +1,5 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 
-// import { PrivateRoute } from "./PrivateRoute";
 import { SignInPage } from "@/pages/SignInPage";
 import { AppLayout } from "@/AppLayout";
 import { BooksPage } from "@/pages/BooksPage";
@@ -10,22 +9,24 @@ import { GenrePage } from "@/pages/GenrePage";
 import { AuthorPage } from "@/pages/AuthorPage";
 import { SignUpPage } from "@/pages/SignUpPage";
 import { UserProfilePage } from "@/pages/UserProfilePage";
+import { user_roles } from "@/config/roles";
+import { AuthorizedOnly } from "./components/AuthorizedOnly";
 
 export const AppRouter = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
-      // {
-      //   path: "/private",
-      //   element: <PrivateRoute component={Page} />,
-      // },
       {
         path: "/home",
         element: <BooksPage />,
       },
       {
         path: "/add-book",
-        element: <AddBookPage />,
+        element: (
+          <AuthorizedOnly role={user_roles.admin} redirect>
+            <AddBookPage />
+          </AuthorizedOnly>
+        ),
       },
       {
         path: "/book/:id",

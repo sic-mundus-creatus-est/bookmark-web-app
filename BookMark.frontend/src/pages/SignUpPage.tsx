@@ -14,7 +14,7 @@ import { ApiError } from "@/lib/services/api-calls/api";
 
 export function SignUpPage() {
   //--------------------------------
-  const auth = useAuth();
+  const { signUp, user } = useAuth();
   const navigate = useNavigate();
   //--------------------------------
 
@@ -31,10 +31,10 @@ export function SignUpPage() {
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    if (auth.user) {
+    if (user) {
       navigate("/home");
     }
-  }, [auth, navigate]);
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +50,7 @@ export function SignUpPage() {
     setLoading(true);
     setError(undefined);
     try {
-      await auth.signUp(newUserData);
+      await signUp(newUserData);
       navigate("/sign-in");
     } catch (err: any) {
       if (err instanceof ApiError) setError(err.detail);

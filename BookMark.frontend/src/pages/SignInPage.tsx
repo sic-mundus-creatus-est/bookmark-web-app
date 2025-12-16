@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Logo } from "@/components/logo";
@@ -13,7 +13,7 @@ import { ApiError } from "@/lib/services/api-calls/api";
 
 export function SignInPage() {
   //--------------------------------
-  const auth = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string>();
   //--------------------------------
@@ -24,7 +24,13 @@ export function SignInPage() {
     password: "",
   });
   //-----------------------------------------------
-  const [loading, setLoading] = useState(false);
+  const [signInLoading, setSignInLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/home");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,16 +40,16 @@ export function SignInPage() {
       return;
     }
 
-    setLoading(true);
+    setSignInLoading(true);
     setError(undefined);
     try {
-      await auth.signIn(credentials);
+      await signIn(credentials);
       navigate("/home");
     } catch (err: any) {
       if (err instanceof ApiError) setError(err.detail);
       else setError("Unexpected error occurred. Please try again.");
     } finally {
-      setLoading(false);
+      setSignInLoading(false);
     }
   };
 
@@ -88,7 +94,7 @@ export function SignInPage() {
               />
               <div>
                 {error && <CommonErrorLabel error={error} />}
-                <CommonSubmitButton label="Sign In" loading={loading} />
+                <CommonSubmitButton label="Sign In" loading={signInLoading} />
                 <h4 className="text-accent italic text-end leading-tight select-none">
                   By signing in, you agree to the BookMark Terms of Service and
                   Privacy Policy.
