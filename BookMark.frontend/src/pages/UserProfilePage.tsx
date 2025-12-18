@@ -131,7 +131,7 @@ export function UserProfilePage() {
           {editMode ? (
             <div className="flex-col">
               <h5 className="-mb-0.5 text-popover font-bold font-mono text-sm text-start">
-                Display Name
+                Name
               </h5>
               <CommonTextInput
                 placeholder="Display Name"

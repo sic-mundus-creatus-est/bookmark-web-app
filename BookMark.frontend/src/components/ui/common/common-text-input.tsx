@@ -1,5 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 interface CommonTextInputProps {
@@ -15,6 +20,7 @@ interface CommonTextInputProps {
   noBreaks?: boolean;
   onChange?: (newValue: string) => void;
 }
+
 export function CommonTextInput({
   label,
   value = "",
@@ -28,13 +34,12 @@ export function CommonTextInput({
   noBreaks = false,
   onChange,
 }: CommonTextInputProps) {
-  //---------------------------------------------------------------------
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  //---------------------------------------------------------------------
-  const [charCount, setCharCount] = useState(value?.length ?? 0);
   const [showPassword, setShowPassword] = useState(false);
-  const [displayValue, setDisplayValue] = useState(value);
-  //---------------------------------------------------------------------
+
+  // caret position tracker
+  const caretPos = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+
   const resizeTextarea = useCallback(() => {
     if (!singleLine && textareaRef.current) {
       const textarea = textareaRef.current;
@@ -42,38 +47,32 @@ export function CommonTextInput({
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, [singleLine]);
-  //---------------------------------------------------------------------
-  useEffect(() => {
-    if (value) setCharCount(value.length);
-  }, [value]);
-
-  useEffect(() => {
-    resizeTextarea();
-  }, [value, displayValue, resizeTextarea]);
 
   useEffect(() => {
     window.addEventListener("resize", resizeTextarea);
     return () => window.removeEventListener("resize", resizeTextarea);
   }, [resizeTextarea]);
 
-  useEffect(() => {
-    if (isSecret) {
-      setDisplayValue(showPassword ? value : "•".repeat(value.length));
-    } else {
-      setDisplayValue(value);
-    }
-  }, [value, showPassword, isSecret]);
-  //---------------------------------------------------------------------
+  useLayoutEffect(() => {
+    // caret restore after value update
+    if (textareaRef.current)
+      textareaRef.current.setSelectionRange(
+        caretPos.current.start,
+        caretPos.current.end
+      );
+  }, [value]);
 
-  //=====================================================================
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { selectionStart, selectionEnd } = e.target;
+    caretPos.current = { start: selectionStart, end: selectionEnd };
+
     let newValue = e.target.value;
 
     if (isSecret && !showPassword) {
       const currentLength = value.length;
 
-      // backspace/delete
       if (newValue.length < currentLength) {
+        // backspace/delete
         newValue = value.slice(0, newValue.length);
       } else {
         // typing
@@ -86,8 +85,12 @@ export function CommonTextInput({
     }
 
     onChange?.(newValue);
-    setCharCount(newValue.length);
-  }; //=====================================================================
+    requestAnimationFrame(resizeTextarea);
+  };
+
+  const displayValue =
+    isSecret && !showPassword ? "•".repeat(value.length) : value;
+  const charCount = value.length ?? 0;
 
   return (
     <div className="flex flex-col">
@@ -109,8 +112,8 @@ export function CommonTextInput({
             maxLength={maxLength ?? undefined}
             value={displayValue}
             onChange={handleChange}
-            className={`pl-2 py-2 bg-muted resize-none w-full scrollbar-hide
-                      font-[Verdana] font-bold text-accent leading-tight focus:outline-none
+            className={`pl-2 py-2 bg-muted resize-none w-full scrollbar-hide placeholder:text-accent/45
+                      font-[Verdana] font-bold text-accent leading-tight focus:outline-none focus:text-popover
                       ${fontSize ? "" : "text-2xl md:text-4xl"}
                       ${singleLine ? "overflow-x-auto whitespace-nowrap" : ""}
                       ${isSecret ? "pr-10" : ""}`}
