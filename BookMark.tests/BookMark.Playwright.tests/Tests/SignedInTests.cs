@@ -34,6 +34,15 @@ public class SignedInTests : TestBase
         await _page.Context.CloseAsync();
     }
 
+    [TestCase("/sign-in")]
+    [TestCase("/sign-up")]
+    public async Task AuthPages_RedirectToHome_WhenUserIsSignedIn(string path)
+    {
+        await _page.GotoAsync($"{BaseUrl}{path}");
+
+        await Expect(_page).ToHaveURLAsync($"{BaseUrl}/home");
+    }
+
     [Test]
     public async Task SignOut_SignsUserOut()
     {
@@ -51,9 +60,22 @@ public class SignedInTests : TestBase
     [Test]
     public async Task BookPage_ShowsPostReviewForm_WhenUserIsSignedIn()
     {
-        await _page.GotoAsync($"{BaseUrl}/book/1984");
+        await _page.GotoAsync($"{BaseUrl}/home");
+
+        var cardsLocator = _page.GetByTestId("book-card");
+        await cardsLocator.Nth(1).ClickAsync();
 
         await Expect(_page.GetByText("Post Review")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task UserProfilePage_ShowsEditButton_WhenUserIsOnItsOwnProfile()
+    {
+        await _page.GotoAsync($"{BaseUrl}/home");
+        
+        await _page.GetByText("Profile").ClickAsync();
+
+        await Expect(_page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
     }
 
 }

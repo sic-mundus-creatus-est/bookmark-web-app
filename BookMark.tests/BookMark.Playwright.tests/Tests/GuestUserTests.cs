@@ -40,10 +40,7 @@ public class GuestUserTests : TestBase
         // expects the nav link to be "active"
         await Expect(navLink).ToHaveClassAsync(new Regex("font-extrabold.*text-popover"));
 
-        var cardsLocator = page.GetByTestId("book-card");
-        await cardsLocator.First.WaitForAsync();
-
-        var cards = await cardsLocator.AllAsync();
+        var cards = await page.GetByTestId("book-card").AllAsync();
         foreach (var card in cards)
         {// check to see if all books are of expected type
             await Expect(card).ToHaveAttributeAsync("data-book-type", expectedType);
@@ -127,8 +124,7 @@ public class GuestUserTests : TestBase
         await Expect(page.GetByText($"No results found for \"{searchTerm}\"."))
                          .ToBeVisibleAsync();
 
-        var cardsLocator = page.GetByTestId("book-card");
-        await Expect(cardsLocator).ToHaveCountAsync(0);
+        await Expect(page.GetByTestId("book-card")).ToHaveCountAsync(0);
 
         await page.Context.CloseAsync();
     }
@@ -173,12 +169,38 @@ public class GuestUserTests : TestBase
     {
         var page = await OpenNewPageAsync();
 
-        await page.GotoAsync($"{BaseUrl}/book/1984");
+        await page.GotoAsync($"{BaseUrl}/home");
 
-        await Expect(page.GetByText("Post Review"))
-                         .Not.ToBeVisibleAsync();
+        var cardsLocator = page.GetByTestId("book-card");
+        await cardsLocator.Nth(1).ClickAsync();
+
+        await Expect(page.GetByText("Post Review")).Not.ToBeVisibleAsync();
         
         await page.Context.CloseAsync();
+    }
+
+    [Test]
+    public async Task AllPages_DoNotShowEditButton_WhenUserIsNotSignedIn()
+    {
+        var page = await OpenNewPageAsync();
+
+        await page.GotoAsync($"{BaseUrl}/home");
+
+        var cardsLocator = page.GetByTestId("book-card");
+        await cardsLocator.Nth(1).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        var authorRegion = page.GetByRole(AriaRole.Region, new() { Name = "Authors" });
+        await authorRegion.GetByRole(AriaRole.Link).First.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        await page.GoBackAsync();
+
+        var genreRegion = page.GetByRole(AriaRole.Region, new() { Name = "Authors" });
+        await genreRegion.GetByRole(AriaRole.Link).First.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        // TODO: also check on any profile by clicking on a user's review
     }
 
 }

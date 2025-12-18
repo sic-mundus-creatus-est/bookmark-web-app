@@ -50,13 +50,12 @@ export function BookGenreEntries({
 
   return (
     <div className="flex flex-wrap items-start gap-3 text-sm font-[Verdana] pl-2">
-      <div className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
-        Genres:
-      </div>
-
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5 gap-y-3.5">
+        <div className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
+          Genres:
+        </div>
         {selectedGenres.map((genre, i) => (
-          <div key={i} className="inline-flex items-center gap-1">
+          <div key={i} className="inline-flex items-center gap-x-0.5">
             <BookGenreSelector
               genre={genre}
               allGenres={allGenres}

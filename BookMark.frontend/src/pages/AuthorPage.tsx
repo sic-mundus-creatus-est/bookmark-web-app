@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { CircleUserRound } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { BookShowcase } from "@/components/layouts/book-showcase";
 import { AuthorUpdate } from "@/lib/types/author";
 import { CommonDescription } from "@/components/ui/common/common-description";
@@ -29,6 +28,7 @@ import { CommonDeleteButton } from "@/components/ui/common/common-delete-button"
 import { AuthorUpdateSchema } from "@/lib/services/form-validation-schemas/authorSchema";
 import { AuthorizedOnly } from "@/components/AuthorizedOnly";
 import { user_roles } from "@/config/roles";
+import { GenreBadge } from "@/components/ui/genre/genre-badge";
 
 export function AuthorPage() {
   //--------------------------------------------------------------------------
@@ -238,14 +238,11 @@ export function AuthorPage() {
               </div>
               <div className="flex items-center gap-2 flex-wrap mb-3 justify-center sm:justify-start">
                 {author.genres?.map((genre) => (
-                  <Link to={`/genre/${genre.id}`} key={genre.id}>
-                    <Badge
-                      key={`${genre.id}`}
-                      className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover"
-                    >
-                      {genre.name}
-                    </Badge>
-                  </Link>
+                  <GenreBadge
+                    key={genre.id}
+                    genreName={genre.name}
+                    genreId={genre.id}
+                  />
                 ))}
               </div>
               <CommonDescription placeholder="" value={author.biography} />

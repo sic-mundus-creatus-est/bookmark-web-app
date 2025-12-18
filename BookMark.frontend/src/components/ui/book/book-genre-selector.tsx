@@ -1,6 +1,7 @@
-import { GenreLinkProps } from "@/lib/types/genre";
+import { cn } from "@/lib/utils";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+
+import { GenreLinkProps } from "@/lib/types/genre";
 
 interface BookGenreSelectorProps {
   genre: GenreLinkProps;
@@ -40,7 +41,7 @@ export function BookGenreSelector({
 
   return (
     <div className="relative inline-block" ref={containerRef}>
-      <Badge
+      <span
         role="button"
         tabIndex={0}
         aria-haspopup="listbox"
@@ -87,13 +88,13 @@ export function BookGenreSelector({
           }
         }}
         style={{ outline: "none", boxShadow: "none", border: "none" }}
-        className="cursor-pointer rounded-full px-3 py-1.5 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:opacity-90"
+        className="cursor-pointer rounded-full px-3 py-[7px] text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:text-popover select-none"
       >
         {genre.name || "Select genre"} ▼
-      </Badge>
+      </span>
 
       {dropdownOpen && (
-        <ul className="z-20 absolute overflow-auto rounded-lg bg-accent border-accent border-2 right-0 font-[Helvetica] font-medium">
+        <ul className="z-20 absolute overflow-auto rounded-lg bg-accent border-accent border-2 right-0 font-[Helvetica] font-medium mt-1.5">
           {availableGenres.map((g, index) => {
             const isCurrentSelected = genre.id === g.id;
 
@@ -101,13 +102,14 @@ export function BookGenreSelector({
               <Fragment key={g.id}>
                 <li
                   role="option"
-                  className={`cursor-pointer px-4 ${
-                    isCurrentSelected ? "text-popover font-bold" : "text-muted"
-                  }${
+                  className={cn(
+                    "cursor-pointer select-none px-4 border-4 box-border",
+                    "text-muted",
+                    isCurrentSelected && "font-bold",
                     focusedIndex === index
-                      ? "bg-accent text-muted font-semibold border-4 border-popover"
-                      : ""
-                  }`}
+                      ? "bg-accent border-popover text-popover"
+                      : "border-transparent"
+                  )}
                   onMouseEnter={() => setFocusedIndex(index)}
                   onClick={() => {
                     if (dropdownOpen) {
@@ -117,15 +119,18 @@ export function BookGenreSelector({
                     }
                   }}
                 >
-                  {g.name}
+                  <div className="flex items-center justify-between">
+                    <span>{g.name}</span>
+                    {genre.id === g.id && (
+                      <span className="ml-2 text-popover">◀</span>
+                    )}
+                  </div>
                 </li>
 
                 {/* Separator */}
-                {index < availableGenres.length - 1 &&
-                  focusedIndex !== index &&
-                  focusedIndex !== index + 1 && (
-                    <hr className="border-t border-muted/40 my-1" />
-                  )}
+                {index < availableGenres.length - 1 && (
+                  <hr className="border-t border-muted/40" />
+                )}
               </Fragment>
             );
           })}

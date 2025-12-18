@@ -1,6 +1,5 @@
 import { Book } from "@/lib/types/book";
-import { Link } from "react-router-dom";
-import { Badge } from "../badge";
+import { GenreBadge } from "../genre/genre-badge";
 
 interface BookMetadataProps {
   book?: Book;
@@ -9,16 +8,16 @@ export function BookMetadata({ book }: BookMetadataProps) {
   return (
     <div className="rounded-lg border-2 border-b-4 border-accent bg-muted px-2 sm:px-4 py-6 space-y-6">
       <div className="flex flex-wrap items-start gap-3 text-sm font-[Verdana] pl-2">
-        <div className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
-          Genres:
-        </div>
-        <div className="flex flex-wrap gap-2">
+        <div
+          role="region"
+          aria-label="Genres"
+          className="flex flex-wrap items-center gap-2 gap-y-3.5"
+        >
+          <span className="uppercase text-accent font-bold tracking-wider pt-1 whitespace-nowrap">
+            Genres:
+          </span>
           {book?.genres!.map((bg) => (
-            <Link to={`/genre/${bg.id}`} key={bg.id}>
-              <Badge className="rounded-full px-3 py-1 text-xs tracking-wide bg-accent text-background font-bold font-[Helvetica] hover:bg-accent hover:text-popover">
-                {bg.name}
-              </Badge>
-            </Link>
+            <GenreBadge key={bg.id} genreName={bg.name} genreId={bg.id} />
           ))}
         </div>
       </div>

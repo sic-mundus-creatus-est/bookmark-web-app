@@ -11,21 +11,23 @@ export function BookMainMetadata({ book }: BookMainMetadataProps) {
         {book?.title}
       </h1>
       <div
-        className="text-lg font-serif text-accent pl-4 px-1 pt-2 mt-0.5"
+        className="text-lg pl-4 px-1 pt-2 mt-0.5"
         style={{
           background:
             "linear-gradient(to bottom, rgba(0,0,0,0.074), rgba(0,0,0,0.0))",
         }}
       >
-        <span className="italic">by </span>
-        {book?.authors.map((ba, i) => (
-          <Link to={`/author/${ba.id}`} key={ba.id}>
-            <span className="text-xl hover:text-popover">
-              {ba.name}
-              {i < book.authors.length - 1 ? ", " : ""}
-            </span>
-          </Link>
-        ))}
+        <div role="region" aria-label="Authors">
+          <span className="italic">by </span>
+          {book?.authors.map((ba, i) => (
+            <Link to={`/author/${ba.id}`} key={ba.id}>
+              <span className="text-xl font-serif text-accent hover:text-popover">
+                {ba.name}
+                {i < book.authors.length - 1 ? ", " : ""}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
