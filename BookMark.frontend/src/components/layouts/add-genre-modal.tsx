@@ -12,7 +12,7 @@ import {
 } from "../ui/common/common-submit-button";
 import { useCreateGenre } from "@/lib/services/api-calls/hooks/useGenreApi";
 import { ApiError } from "@/lib/services/api-calls/api";
-import { GenreSchema } from "@/lib/services/genreService";
+import { GenreSchema } from "@/lib/services/form-validation-schemas/genreSchema";
 
 export function AddGenreModal() {
   //-----------------------------------------------------------

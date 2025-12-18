@@ -13,7 +13,7 @@ import { CommonDescriptionInput } from "../ui/common/common-description-input";
 import { AuthorLifeRangeInput } from "../ui/author/author-life-range-input";
 import { useCreateAuthor } from "@/lib/services/api-calls/hooks/useAuthorApi";
 import { ApiError } from "@/lib/services/api-calls/api";
-import { AuthorSchema } from "@/lib/services/authorService";
+import { AuthorSchema } from "@/lib/services/form-validation-schemas/authorSchema";
 
 export function AddAuthorModal() {
   //-----------------------------------------------------------

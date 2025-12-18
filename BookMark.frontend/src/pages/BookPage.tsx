@@ -37,7 +37,7 @@ import { BookMainMetadataEdit } from "@/components/ui/book/book-main-metadata-ed
 import { BookMainMetadata } from "@/components/ui/book/book-main-metadata";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
-import { BookSchema } from "@/lib/services/bookService";
+import { BookSchema } from "@/lib/services/form-validation-schemas/bookSchema";
 import { AuthorizedOnly } from "@/components/AuthorizedOnly";
 import { user_roles } from "@/config/roles";
 

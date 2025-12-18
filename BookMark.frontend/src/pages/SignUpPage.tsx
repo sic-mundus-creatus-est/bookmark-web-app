@@ -11,6 +11,7 @@ import { Footer } from "@/components/layouts/footer";
 import { UserCreate } from "@/lib/types/user";
 import { useAuth } from "@/lib/contexts/useAuth";
 import { ApiError } from "@/lib/services/api-calls/api";
+import { signUpSchema } from "@/lib/services/form-validation-schemas/signUpSchema";
 
 export function SignUpPage() {
   //--------------------------------
@@ -44,6 +45,12 @@ export function SignUpPage() {
     );
     if (allEmpty) {
       setError("Please fill in all fields before signing up.");
+      return;
+    }
+
+    const formDataValidation = signUpSchema.safeParse(newUserData);
+    if (!formDataValidation.success) {
+      setError(formDataValidation.error.issues[0]?.message);
       return;
     }
 
@@ -125,7 +132,7 @@ export function SignUpPage() {
               noBreaks
             />
             <CommonTextInput
-              label="Re-enter password"
+              label="Confirm Password"
               fontSize={16}
               placeholder="must match above"
               value={newUserData.confirmPassword}
@@ -147,10 +154,7 @@ export function SignUpPage() {
             <h5 className="text-accent text-md text-end font-semibold font-[Helvetica] select-none">
               ➔ Already have an account?{" "}
               <Link to="/sign-in">
-                <span
-                  className="inline-block font-normal text-popover underline italic decoration-2 cursor-pointer
-                   hover:scale-105"
-                >
+                <span className="inline-block font-bold text-popover underline italic decoration-2 cursor-pointer hover:text-accent/75">
                   Sign in
                 </span>
               </Link>

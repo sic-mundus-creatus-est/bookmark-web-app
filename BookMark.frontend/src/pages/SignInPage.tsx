@@ -103,10 +103,7 @@ export function SignInPage() {
               <h5 className="text-accent text-md text-end font-semibold font-[Helvetica] select-none">
                 ➔ New to BookMark?{" "}
                 <Link to="/sign-up">
-                  <span
-                    className="inline-block font-normal text-popover underline italic decoration-2 cursor-pointer
-                   hover:scale-105"
-                  >
+                  <span className="inline-block font-bold text-popover underline italic decoration-2 cursor-pointer hover:text-accent/75">
                     Sign Up
                   </span>
                 </Link>

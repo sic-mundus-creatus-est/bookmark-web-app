@@ -17,12 +17,9 @@ export function AuthorizedOnly({
   userId,
 }: AuthorizedOnlyProps) {
   const { user } = useAuth();
-  console.log("sub: " + user?.sub);
-  console.log("url id: " + userId);
-  if (user?.role?.includes(role) || (userId && user?.sub === userId)) {
-    console.log("usao sam");
+
+  if (user?.role?.includes(role) || (userId && user?.sub === userId))
     return <>{children}</>;
-  }
 
   if (redirect) return <Navigate to="/home" />;
 

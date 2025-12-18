@@ -29,7 +29,7 @@ import {
 import { ApiError } from "@/lib/services/api-calls/api";
 import { useLoading } from "@/lib/contexts/useLoading";
 import { useAllGenres } from "@/lib/services/api-calls/hooks/useGenreApi";
-import { BookSchema } from "@/lib/services/bookService";
+import { BookSchema } from "@/lib/services/form-validation-schemas/bookSchema";
 
 export function AddBookPage() {
   //------------------------------------------------------------------------------

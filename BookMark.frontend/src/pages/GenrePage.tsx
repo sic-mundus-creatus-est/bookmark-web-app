@@ -23,7 +23,7 @@ import {
 import { useConstrainedBooks } from "@/lib/services/api-calls/hooks/useBookApi";
 import { CommonEditButton } from "@/components/ui/common/common-edit-button";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
-import { GenreSchema } from "@/lib/services/genreService";
+import { GenreSchema } from "@/lib/services/form-validation-schemas/genreSchema";
 import { AuthorizedOnly } from "@/components/AuthorizedOnly";
 import { user_roles } from "@/config/roles";
 
