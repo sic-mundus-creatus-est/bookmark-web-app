@@ -405,7 +405,8 @@ public class GlobalTestSetup
         {
             new { Username = "alice", Email = "alice@example.com" },
             new { Username = "bob", Email = "bob@example.com" },
-            new { Username = "charlie", Email = "charlie@example.com" }
+            new { Username = "charlie", Email = "charlie@example.com" },
+            new { Username = "john.doe", Email = "john.doe@example.com" }
         };
 
         const string defaultPassword = "User123!";

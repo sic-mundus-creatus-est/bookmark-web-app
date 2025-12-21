@@ -70,7 +70,7 @@ public class GuestUserTests : TestBase
                     .Locator("visible=true")
                     .ClickAsync();
 
-        await Expect(page).ToHaveURLAsync($"{BaseUrl}/all?search-term=test");
+        await Expect(page).ToHaveURLAsync($"{BaseUrl}/all?search-term={searchTerm}");
 
         await Expect(page.GetByText($"No results found for \"{searchTerm}\"."))
                          .ToBeVisibleAsync();
@@ -111,6 +111,21 @@ public class GuestUserTests : TestBase
             var card = cardsLocator.Nth(i);
             await Expect(card).ToContainTextAsync(searchTerm, new() { IgnoreCase = true });
         }
+
+        await page.Context.CloseAsync();
+    }
+
+#endregion
+
+#region CANT_ADD_ANYTHING
+
+    [Test]
+    public async Task FloatingActionMenu_NotShown_WhenUserIsNotSignedIn()
+    {
+        var page = await OpenNewPageAsync();
+        await page.GotoAsync($"{BaseUrl}/home");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Toggle Floating Action Menu" })).Not.ToBeVisibleAsync();
 
         await page.Context.CloseAsync();
     }
