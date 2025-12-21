@@ -15,7 +15,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<BookType> BookTypes { get; set; }
     public DbSet<BookAuthor> BookAuthors { get; set; }
     public DbSet<BookGenre> BookGenres { get; set; }
-    public DbSet<BookReview> UserBookInteractions { get; set; }
+    public DbSet<BookReview> BookReviews { get; set; }
     //___________________________________________________________________
 
 

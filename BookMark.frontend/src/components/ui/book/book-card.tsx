@@ -3,16 +3,23 @@ import { API_FILE_RESOURCES_URL } from "@/lib/services/api-calls/api";
 import { BookLinkProps } from "@/lib/types/book";
 import { Link, useNavigate } from "react-router-dom";
 import { BookRatingStars } from "./book-rating-stars";
+import { cn } from "@/lib/utils";
 
-export function BookCard({ book }: { book: BookLinkProps }) {
+interface BookCardProps {
+  book: BookLinkProps;
+  className?: string;
+}
+export function BookCard({ book, className }: BookCardProps) {
   const navigate = useNavigate();
   return (
     <Link
       to={`/book/${book.id}`}
-      className="block w-full"
+      className={cn("block w-full", className)}
       aria-label={`Book: ${book.title} by ${book.authors
         .map((a) => a.name)
         .join(", ")}`}
+      data-testid="book-card"
+      data-book-type={book.bookType.name}
     >
       <Card className="bg-accent rounded-lg flex flex-col relative border-2 border-b-4 border-accent hover:border-popover">
         {/* BookCover */}
@@ -30,7 +37,6 @@ export function BookCard({ book }: { book: BookLinkProps }) {
         <CardContent className="p-2 px-1 pb-0 flex-grow flex flex-col bg-muted rounded-b-sm">
           {/* Title - exactly 2 lines */}
           <h3 className="font-bold font-sans text-lg leading-tight line-clamp-2 mb-1 overflow-hidden text-accent min-h-12 overflow-y-auto scrollbar-hide">
-            {" "}
             {book.title}
           </h3>
 
@@ -60,16 +66,20 @@ export function BookCard({ book }: { book: BookLinkProps }) {
             {book?.averageRating != null ? (
               <>
                 <BookRatingStars value={book.averageRating} />
-                <span className="text-[18px] tracking-tighter text-accent font-semibold font-mono leading-tight">
+                <span
+                  data-testid="rated-book"
+                  className="text-[18px] tracking-tighter text-accent font-semibold font-mono leading-tight"
+                >
                   {book.averageRating.toFixed(2)}
                 </span>
               </>
             ) : (
-              <div className="flex items-center justify-center w-full h-6">
-                <span className="text-[15px] font-bold italic text-accent/65">
-                  not yet rated...
-                </span>
-              </div>
+              <span
+                data-testid="not-rated-book"
+                className="flex items-center justify-end w-full h-6 text-[15px] font-bold italic text-accent/65"
+              >
+                not yet rated...
+              </span>
             )}
           </div>
         </CardContent>

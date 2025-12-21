@@ -284,35 +284,33 @@ export function BookPage() {
                 maxPreviewLength={500}
               />
               <div className="flex flex-col gap-4">
-                {currentUser && !currentUserReview && (
-                  <PostBookReviewForm
-                    subjectTitle={book?.title}
-                    rating={newReview?.rating}
-                    content={newReview?.content}
-                    onRatingChange={(rating) => {
-                      setNewReview({ ...newReview, rating: rating });
-                    }}
-                    onContentChange={(content) => {
-                      setNewReview({ ...newReview, content: content });
-                    }}
-                    onSubmit={handleCreateReview}
-                  />
-                )}
-                <>
-                  {currentUser && currentUserReview && (
+                {currentUser &&
+                  (!currentUserReview ? (
+                    <PostBookReviewForm
+                      subjectTitle={book?.title}
+                      rating={newReview?.rating}
+                      content={newReview?.content}
+                      onRatingChange={(rating) => {
+                        setNewReview({ ...newReview, rating: rating });
+                      }}
+                      onContentChange={(content) => {
+                        setNewReview({ ...newReview, content: content });
+                      }}
+                      onSubmit={handleCreateReview}
+                    />
+                  ) : (
                     <CurrentUserBookReview
                       review={currentUserReview}
                       onDelete={handleDeleteReview}
                     />
-                  )}
-                  <BookCommunityReviewsPage
-                    reviews={bookReviews}
-                    currentPage={reviewPageIndex}
-                    onPageChange={(page) => {
-                      setReviewPageIndex(page);
-                    }}
-                  />
-                </>
+                  ))}
+                <BookCommunityReviewsPage
+                  reviews={bookReviews}
+                  currentPage={reviewPageIndex}
+                  onPageChange={(page) => {
+                    setReviewPageIndex(page);
+                  }}
+                />
               </div>
             </div>
           </>

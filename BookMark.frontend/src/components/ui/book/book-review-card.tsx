@@ -16,7 +16,10 @@ export function BookReviewCard({
   postedOn = new Date(),
 }: BookReviewCardProps) {
   return (
-    <div className="flex flex-col w-full px-1 max-w-full overflow-hidden">
+    <div
+      data-testid="book-review"
+      className="flex flex-col w-full px-1 max-w-full overflow-hidden"
+    >
       <Link
         to={`/user/${user?.id}`}
         className="self-start truncate text-accent hover:text-popover cursor-pointer font-[Candara] font-bold text-lg -mb-2"

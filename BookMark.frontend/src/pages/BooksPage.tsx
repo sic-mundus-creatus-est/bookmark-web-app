@@ -127,14 +127,11 @@ export function BooksPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-6 gap-4 mb-2">
         {page?.items?.map((book: BookLinkProps) => (
-          <div
+          <BookCard
+            book={book}
             key={book.id}
-            data-testid="book-card"
-            data-book-type={book.bookType.name}
             className="aspect-[2/3] w-full max-w-xs"
-          >
-            <BookCard book={book} />
-          </div>
+          />
         ))}
       </div>
 

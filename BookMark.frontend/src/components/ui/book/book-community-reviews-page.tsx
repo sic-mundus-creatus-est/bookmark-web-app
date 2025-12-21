@@ -14,12 +14,12 @@ export function BookCommunityReviewsPage({
   onPageChange,
 }: BookCommunityReviewsPageProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div data-testid="book-community-reviews" className="flex flex-col gap-4">
       <h4 className="pl-1 text-xl font-bold font-[Verdana] border-accent border-b-4 rounded-b-sm">
         Community Reviews
       </h4>
       {(reviews?.items?.length ?? 0) > 0 ? (
-        reviews!.items!.map((review) => (
+        reviews?.items?.map((review) => (
           <BookReviewCard
             key={`${review.user.id}-${review.bookId}`}
             rating={review.rating}
