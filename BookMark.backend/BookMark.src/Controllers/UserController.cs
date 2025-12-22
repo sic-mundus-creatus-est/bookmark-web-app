@@ -120,29 +120,32 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
 
 
     [Authorize(Roles = UserRoles.RegularUser)]
-    [HttpPut("update-profile")]
-    public async Task<ActionResult<UserResponseDTO>> UpdateProfile([FromBody] UserUpdateDTO dto)
+    [HttpPut("update-profile/{id}")]
+    public async Task<ActionResult<UserResponseDTO>> UpdateProfile([FromRoute] string id, [FromBody] UserUpdateDTO update)
     {
-        User? user = null;
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId != null)
-            user = await _userManager.FindByIdAsync(userId);
-
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var isAdmin = User.IsInRole(UserRoles.Admin);
+        if (currentUserId != id && !isAdmin)
+            return Problem(title: "Forbidden",
+                            detail: "You are not authorized to update this user account.",
+                            statusCode: StatusCodes.Status403Forbidden);
+        
+        var user = await _userManager.FindByIdAsync(id);
         if (user == null)
-            return Problem( title: "Unauthorized",
-                            detail: "No authorized session found.",
-                            statusCode: StatusCodes.Status401Unauthorized );
+            return Problem(title: "Bad Request",
+                            detail: $"The User with ID '{id}' does not exist.",
+                            statusCode: StatusCodes.Status400BadRequest);
 
-        if (dto.DisplayName != null)
-            user.DisplayName = dto.DisplayName;
-        if (dto.AboutMe != null)
-            user.AboutMe = dto.AboutMe;
+        if (update.DisplayName != null)
+            user.DisplayName = update.DisplayName;
+        if (update.AboutMe != null)
+            user.AboutMe = update.AboutMe;
 
         var result = await _userManager.UpdateAsync(user);
 
         if (!result.Succeeded)
             return Problem( title: "Update Failed",
-                            detail: "Unable to update your profile. Try again later.",
+                            detail: "Update failed. Try again later.",
                             statusCode: StatusCodes.Status500InternalServerError );
         
         var response = _mapper.Map<UserResponseDTO>(user);

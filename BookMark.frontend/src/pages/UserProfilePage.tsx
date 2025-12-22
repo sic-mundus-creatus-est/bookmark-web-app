@@ -28,28 +28,19 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 export function UserProfilePage() {
+  //------------------------------------------------------------------------------
   const navigate = useNavigate();
   const { id } = useParams() as { id: string };
-
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
-
+  //------------------------------------------------------------------------------
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editFormError, setEditFormError] = useState<string>();
-
-  const updateUserProfile = useUpdateUserProfile(id);
-
+  //------------------------------------------------------------------------------
   const {
     data: user,
     isFetching: isUserFetching,
     error: userError,
   } = useUser(id);
-
-  const [reviewPageIndex, setReviewPageIndex] = useState(1);
-  const { data: userReviews } = useLatestBookReviewsByUser(
-    id,
-    reviewPageIndex,
-    5
-  );
 
   const {
     handleSubmit,
@@ -59,6 +50,14 @@ export function UserProfilePage() {
     formState: { dirtyFields },
   } = useForm<UserUpdate>();
 
+  const reviewPageSize = 5;
+  const [reviewPageIndex, setReviewPageIndex] = useState(1);
+  const { data: userReviews } = useLatestBookReviewsByUser(
+    id,
+    reviewPageIndex,
+    reviewPageSize
+  );
+  //------------------------------------------------------------------------------
   useEffect(() => {
     if (!id) {
       navigate("/");
@@ -78,25 +77,25 @@ export function UserProfilePage() {
       setEditFormError(undefined);
     }
   }, [editMode, user, reset]);
-
+  //==============================================================================
+  const updateUserProfile = useUpdateUserProfile(id);
   const handleUpdateUserProfile = async (allFields: UserUpdate) => {
     const edits = getDirtyValues(allFields, dirtyFields);
-
-    console.log(edits);
 
     if (Object.keys(edits).length <= 0)
       return setEditFormError("You haven’t made any changes.");
 
     updateUserProfile.mutate(edits, {
       onError: (error: any) => {
-        setEditFormError(error?.message || "Failed to update profile.");
+        if (error instanceof ApiError) setEditFormError(error.detail);
+        else setEditFormError("An unexpected error occurred. Try again later.");
       },
       onSuccess: () => {
         setEditMode(false);
       },
     });
   };
-
+  //==============================================================================
   const deleteUser = useDeleteUser(id);
   const handleDeleteUser = () => {
     deleteUser.mutate(
@@ -108,6 +107,7 @@ export function UserProfilePage() {
       }
     );
   };
+  //==============================================================================
 
   if (userError)
     return (

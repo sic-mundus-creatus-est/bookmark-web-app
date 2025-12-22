@@ -72,7 +72,7 @@ export function useUpdateUserProfile(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UserUpdate) => updateUserProfile(data),
+    mutationFn: (data: UserUpdate) => updateUserProfile(userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [KEY_USER, userId] });
       queryClient.invalidateQueries({
