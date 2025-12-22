@@ -1,4 +1,5 @@
 import { AuthorizedOnly } from "@/components/AuthorizedOnly";
+import { Pagination } from "@/components/pagination";
 import { BookReviewCard } from "@/components/ui/book/book-review-card";
 import { CommonDeleteButton } from "@/components/ui/common/common-delete-button";
 import { CommonDescription } from "@/components/ui/common/common-description";
@@ -43,7 +44,12 @@ export function UserProfilePage() {
     error: userError,
   } = useUser(id);
 
-  const { data: userReviews } = useLatestBookReviewsByUser(id, 1, 7);
+  const [reviewPageIndex, setReviewPageIndex] = useState(1);
+  const { data: userReviews } = useLatestBookReviewsByUser(
+    id,
+    reviewPageIndex,
+    5
+  );
 
   const {
     handleSubmit,
@@ -122,19 +128,19 @@ export function UserProfilePage() {
           />
         </AuthorizedOnly>
 
-        <div className="flex flex-row items-center gap-2">
-          <SquareUserRound
-            size={100}
-            strokeWidth={1}
-            className="text-popover"
-          />
-          {editMode ? (
-            <div className="flex-col">
-              <h5 className="-mb-0.5 text-popover font-bold font-mono text-sm text-start">
-                Name
-              </h5>
+        {editMode ? (
+          <>
+            <div className="flex flex-row items-center gap-2">
+              <SquareUserRound
+                size={100}
+                strokeWidth={1}
+                className="text-popover"
+              />
               <CommonTextInput
-                placeholder="Display Name"
+                label="Name"
+                labelStyle={{ color: "hsl(var(--popover))", fontSize: "14px" }}
+                placeholder="Name"
+                maxLength={64}
                 value={watch("displayName")}
                 onChange={(newName: string) => {
                   setValue("displayName", newName, { shouldDirty: true });
@@ -143,28 +149,12 @@ export function UserProfilePage() {
                 fontSize={17}
               />
             </div>
-          ) : (
-            <>
-              <div>
-                <h4 className="font-bold text-muted text-xl font-[Helvetica]">
-                  {user?.displayName ? user.displayName : `@${user?.username}`}
-                </h4>
-                {user?.displayName && (
-                  <h5 className="font-bold -mt-1 text-muted font-[Candara] italic text-[17px]">
-                    @{user.username}
-                  </h5>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-        {editMode ? (
-          <>
-            <h5 className="ml-3 -mb-1 text-popover font-bold font-mono text-sm">
-              About Me
-            </h5>
             <CommonDescriptionInput
-              placeholder="About Me"
+              label="About Me"
+              labelStyle={{ color: "hsl(var(--popover))" }}
+              textSize={16}
+              placeholder="Write something cool about you..."
+              maxLength={2000}
               value={watch("aboutMe")}
               onChange={(aboutMe: string) => {
                 setValue("aboutMe", aboutMe, { shouldDirty: true });
@@ -185,7 +175,26 @@ export function UserProfilePage() {
             </div>
           </>
         ) : (
-          <CommonDescription placeholder=". . ." value={user?.aboutMe} />
+          <>
+            <div className="flex flex-row items-center gap-2">
+              <SquareUserRound
+                size={100}
+                strokeWidth={1}
+                className="text-popover"
+              />
+              <div>
+                <h4 className="font-bold text-muted text-xl font-[Helvetica]">
+                  {user?.displayName ? user.displayName : `@${user?.username}`}
+                </h4>
+                {user?.displayName && (
+                  <h5 className="font-bold -mt-1 text-muted font-[Candara] italic text-[17px]">
+                    @{user.username}
+                  </h5>
+                )}
+              </div>
+            </div>
+            <CommonDescription placeholder=". . ." value={user?.aboutMe} />
+          </>
         )}
       </div>
 
@@ -228,6 +237,16 @@ export function UserProfilePage() {
               </div>
             </div>
           ))}
+
+          {userReviews && userReviews?.totalPages > 1 && (
+            <Pagination
+              currentPage={reviewPageIndex}
+              totalPages={userReviews.totalPages}
+              onPageChange={(page) => {
+                setReviewPageIndex(page);
+              }}
+            />
+          )}
         </>
       )}
     </div>

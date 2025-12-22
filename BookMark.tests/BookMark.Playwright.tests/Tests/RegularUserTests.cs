@@ -25,6 +25,8 @@ public class RegularUserTests : TestBase
         await page.GotoAsync($"{BaseUrl}{path}");
 
         await Expect(page).ToHaveURLAsync($"{BaseUrl}/home");
+
+        await page.Context.CloseAsync();
     }
 
 #endregion
@@ -44,6 +46,8 @@ public class RegularUserTests : TestBase
 
         await Expect(page.GetByText("Sign In")).ToBeVisibleAsync();
         await Expect(page.GetByText("Sign Up")).ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
 #endregion
@@ -51,14 +55,31 @@ public class RegularUserTests : TestBase
 #region CAN_EDIT_OWN_PROFILE
 
     [Test]
-    public async Task UserProfilePage_ShowsEditButton_WhenUserIsOnItsOwnProfile()
+    public async Task UserProfilePage_ShowsEditButtonAndAllowsEditing_WhenUserIsOnItsOwnProfile()
     {
         var page = await OpenNewPageAsync(SessionState);
         await page.GotoAsync($"{BaseUrl}/home");
         
         await page.GetByText("Profile").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/user"));
+
+        var editButton = page.GetByRole(AriaRole.Button, new() { Name = "Edit" });
+        await Expect(editButton).ToBeVisibleAsync();
+        await editButton.ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Cancel Editing" })).ToBeVisibleAsync();
+
+        await page.GetByLabel("About Me").ClearAsync();
+        var uniqueText = $"Edited About Me {DateTime.UtcNow:yyyyMMddHHmmss}";
+        await page.GetByLabel("About Me").FillAsync(uniqueText);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Update" }).ClickAsync();
 
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
+        
+        await Expect(page.GetByTestId("description")).ToContainTextAsync("Edited About Me");
+
+        await page.Context.CloseAsync();
     }
 
 #endregion
@@ -75,6 +96,8 @@ public class RegularUserTests : TestBase
         await cardsLocator.Nth(1).ClickAsync();
 
         await Expect(page.GetByText("Post Review")).ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
 #endregion
@@ -91,6 +114,8 @@ public class RegularUserTests : TestBase
 
         await Expect(page).ToHaveURLAsync(new Regex("/book"));
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
     [Test]
@@ -108,6 +133,8 @@ public class RegularUserTests : TestBase
 
         await Expect(page).ToHaveURLAsync(new Regex("/author"));
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
     [Test]
@@ -125,10 +152,12 @@ public class RegularUserTests : TestBase
 
         await Expect(page).ToHaveURLAsync(new Regex("/genre"));
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
     [Test]
-    public async Task UserPage_DoesNotShowEditButton_WhenUserIsNotAdmin()
+    public async Task UserPage_DoesNotShowEditButton_WhenUserIsNotOwnerOrAdmin()
     {
         var page = await OpenNewPageAsync(SessionState);
         await page.GotoAsync($"{BaseUrl}/home");
@@ -145,6 +174,8 @@ public class RegularUserTests : TestBase
 
         await Expect(page).ToHaveURLAsync(new Regex("/user"));
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).Not.ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
 #endregion
@@ -156,6 +187,8 @@ public class RegularUserTests : TestBase
         await page.GotoAsync($"{BaseUrl}/home");
 
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Toggle Floating Action Menu" })).Not.ToBeVisibleAsync();
+
+        await page.Context.CloseAsync();
     }
 
 }

@@ -19,7 +19,6 @@ export function BookPageCoverCard({ book }: BookPageCoverCardProps) {
               ? `${API_FILE_RESOURCES_URL}${book.coverImageUrl}`
               : "/cover_placeholder.jpg"
           }
-          alt={`Cover of ${book?.title}`}
           className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
         />
       </CardContent>

@@ -34,7 +34,7 @@ export function BookCommunityReviewsPage({
         </p>
       )}
 
-      {reviews && (
+      {reviews && reviews.totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
           totalPages={reviews.totalPages}

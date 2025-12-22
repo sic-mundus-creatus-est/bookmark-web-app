@@ -57,6 +57,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <div className="inline-flex flex-wrap items-center justify-center gap-2 text-xl sm:text-lg">
         {currentPage > 1 && totalPages > 1 && (
           <span
+            data-testid="pagination-back"
             onClick={() => onPageChange(currentPage - 1)}
             className="cursor-pointer text-accent hover:text-popover hover:underline underline-offset-4 decoration-[2px] transition"
           >
@@ -86,6 +87,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
         {currentPage < totalPages && (
           <span
+            data-testid="pagination-next"
             onClick={() => onPageChange(currentPage + 1)}
             className="cursor-pointer text-accent hover:text-popover hover:underline underline-offset-4 decoration-[2px] transition"
           >

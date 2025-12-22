@@ -56,7 +56,6 @@ export function BookCoverImageUpload({
           <>
             <img
               src={previewUrl}
-              alt="Cover Preview"
               className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
             />
 
@@ -72,7 +71,6 @@ export function BookCoverImageUpload({
           <img
             src="/placeholder-image-vertical.png"
             className="w-full h-full rounded-t-lg border-t-2 border-x-2 border-accent bg-accent/95"
-            alt="Placeholder"
           />
         )}
       </div>

@@ -6,9 +6,11 @@ import React, {
   useState,
 } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CommonTextInputProps {
   label?: string;
+  labelStyle?: React.CSSProperties;
   value?: string;
   maxLength?: number;
   showCharCount?: boolean;
@@ -23,6 +25,7 @@ interface CommonTextInputProps {
 
 export function CommonTextInput({
   label,
+  labelStyle,
   value = "",
   maxLength,
   showCharCount,
@@ -96,6 +99,7 @@ export function CommonTextInput({
     <div className="flex flex-col">
       <label
         htmlFor={label}
+        style={labelStyle}
         className="text-accent text-xs font-mono font-bold select-none"
       >
         {label}
@@ -112,11 +116,12 @@ export function CommonTextInput({
             maxLength={maxLength ?? undefined}
             value={displayValue}
             onChange={handleChange}
-            className={`pl-2 py-2 bg-muted resize-none w-full scrollbar-hide placeholder:text-accent/45
-                      font-[Verdana] font-bold text-accent leading-tight focus:outline-none focus:text-popover
-                      ${fontSize ? "" : "text-2xl md:text-4xl"}
-                      ${singleLine ? "overflow-x-auto whitespace-nowrap" : ""}
-                      ${isSecret ? "pr-10" : ""}`}
+            className={cn(`pl-2 py-2 resize-none w-full scrollbar-hide
+                            bg-muted font-[Verdana] font-bold text-accent placeholder:text-accent/45 leading-tight
+                            focus:outline-none focus:rounded-none focus:text-popover
+                            ${fontSize ? "" : "text-2xl md:text-4xl"}
+                            ${singleLine && "overflow-x-auto whitespace-nowrap"}
+                            ${isSecret && "pr-10"}`)}
             style={fontSize ? { fontSize } : undefined}
             wrap={singleLine ? "off" : undefined}
             onKeyDown={(e) => {

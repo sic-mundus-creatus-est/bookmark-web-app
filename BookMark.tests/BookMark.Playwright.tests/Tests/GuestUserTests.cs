@@ -23,6 +23,25 @@ public class GuestUserTests : TestBase
 
 #region CAN_NAVIGATE
 
+    public async Task BooksCatalogPagesPagination_SuccessfullyNavigatesForwardAndBack()
+    {
+        var page = await OpenNewPageAsync();
+
+        await page.GotoAsync($"{BaseUrl}/home");
+        var firstPage = await page.GetByTestId("book-card").First.InnerTextAsync();
+
+        await page.GetByTestId("pagination-next").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/page=2"));
+
+        var secondPage = await page.GetByTestId("book-card").First.InnerTextAsync();
+        Assert.That(secondPage, Is.Not.EqualTo(firstPage));
+
+        await page.GetByTestId("pagination-back").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/page=1"));
+
+        await page.Context.CloseAsync();
+    }
+
     [TestCase("Books", "/books", "Book")]
     [TestCase("Comics", "/comics", "Comic")]
     [TestCase("Manga", "/manga", "Manga")]
@@ -47,6 +66,16 @@ public class GuestUserTests : TestBase
         {// check to see if all books are of expected type
             await Expect(card).ToHaveAttributeAsync("data-book-type", expectedType);
         }
+
+        await page.Context.CloseAsync();
+    }
+
+    public async Task RandomURL_NavigatesToHome()
+    {
+        var page = await OpenNewPageAsync();
+
+        await page.GotoAsync($"{BaseUrl}/totally-random-url-that-leads-nowhere");
+        await Expect(page).ToHaveURLAsync(new Regex("/home"));
 
         await page.Context.CloseAsync();
     }

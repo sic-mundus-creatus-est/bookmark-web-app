@@ -26,6 +26,7 @@ export function CommonDescription({
 
   return (
     <p
+      data-testid="description"
       className={`w-full indent-4 text-justify font-[Georgia] rounded-lg overflow-hidden whitespace-pre-wrap ${
         showBackground ? "p-2 border-2 border-b-4 border-accent bg-muted" : ""
       }`}
