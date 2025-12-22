@@ -4,6 +4,8 @@ using AutoMapper;
 using BookMark.Models;
 using BookMark.Models.Domain;
 using BookMark.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using BookMark.Models.Roles;
 
 namespace BookMark.Controllers;
 
@@ -19,6 +21,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPost("create")]
     public virtual async Task<ActionResult<TResponseDTO>> Create([FromBody] TCreateDTO creationData)
     {
@@ -69,6 +72,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPatch("update/{id}")]
     public virtual async Task<ActionResult<TResponseDTO>> Update([FromRoute] string id, [FromBody] TUpdateDTO updateData)
     {
@@ -92,6 +96,7 @@ public class BaseController<TModel, TCreateDTO, TUpdateDTO, TResponseDTO, TLinkD
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpDelete("delete/{id}")]
     public virtual async Task<ActionResult> Delete([FromRoute] string id)
     {           

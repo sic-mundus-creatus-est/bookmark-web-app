@@ -191,7 +191,7 @@ public class UserControllerTests
             }
         };
 
-        var result = (await _controller.UpdateProfile(update)).Result as ObjectResult;
+        var result = (await _controller.UpdateProfile(_userCreatedFromTest.Id, update)).Result as ObjectResult;
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
@@ -206,7 +206,7 @@ public class UserControllerTests
     }
 
     [Test]
-    public async Task UpdateProfile_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
+    public async Task UpdateProfile_ReturnsForbidden_WhenUserIsNotAuthenticated()
     {
         var update = new UserUpdateDTO
         {
@@ -218,15 +218,16 @@ public class UserControllerTests
             HttpContext = new DefaultHttpContext()
         };
 
-        var result = (await _controller.UpdateProfile(update)).Result as ObjectResult;
+        var result = (await _controller.UpdateProfile(id: "does-not-matter-in-this-case", update)).Result as ObjectResult;
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status401Unauthorized));
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden));
     }
 
     [Test]
-    public async Task UpdateProfile_ReturnsUnauthorized_WhenUserDoesNotExistAnymore()
+    public async Task UpdateProfile_ReturnsBadRequest_WhenUserDoesNotExist()
     {
+        var userId = "this-user-does-not-exist";
         var update = new UserUpdateDTO { AboutMe = "Will Fail" };
 
         _controller.ControllerContext = new ControllerContext
@@ -235,16 +236,16 @@ public class UserControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.NameIdentifier, "this-user-used-to-exist-but-not-anymore"),
+                    new Claim(ClaimTypes.NameIdentifier, userId),
                     new Claim(ClaimTypes.Role, UserRoles.RegularUser),
                 ], "TestAuth"))
             }
         };
 
-        var result = (await _controller.UpdateProfile(update)).Result as ObjectResult;
+        var result = (await _controller.UpdateProfile(userId, update)).Result as ObjectResult;
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status401Unauthorized));
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
     }
 
 #endregion

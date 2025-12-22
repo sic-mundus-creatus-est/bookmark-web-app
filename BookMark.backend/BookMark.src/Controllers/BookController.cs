@@ -6,6 +6,8 @@ using BookMark.Services.Core;
 using BookMark.Models.Domain;
 using BookMark.Services.Domain;
 using BookMark.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using BookMark.Models.Roles;
 
 namespace BookMark.Controllers;
 
@@ -28,6 +30,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPost("create")]
     public override async Task<ActionResult<BookResponseDTO>> Create([FromForm] BookCreateDTO creationData)
     {
@@ -47,6 +50,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPut("{bookId}/replace-authors")]
     public async Task<ActionResult> ReplaceAuthors([FromRoute] string bookId, [FromBody] List<string> authorIds)
     {
@@ -69,6 +73,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPut("{bookId}/replace-genres")]
     public async Task<ActionResult> ReplaceGenres([FromRoute] string bookId, [FromBody] List<string> genreIds)
     {
@@ -91,6 +96,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPatch("{bookId}/update-cover-image")]
     public async Task<ActionResult> UpdateCoverImage([FromRoute] string bookId, IFormFile? newCover)
     {
@@ -124,6 +130,7 @@ public class BookController : BaseController<Book, BookCreateDTO, BookUpdateDTO,
     }
 
 
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpDelete("delete/{id}")]
     public override async Task<ActionResult> Delete([FromRoute] string id)
     {

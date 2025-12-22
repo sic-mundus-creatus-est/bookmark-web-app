@@ -23,25 +23,23 @@ namespace BookMark.Controllers;
 public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO, UserResponseDTO, UserLinkDTO>
 {
     private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
 
     protected readonly IBookReviewRepository _bookReviewRepository;
 
     public UserController(UserManager<User> userManager,
-                            RoleManager<IdentityRole> roleManager,
                             IConfiguration configuration,
                             IBaseRepository<User> repository,
                             IBookReviewRepository bookReviewRepository,
                             IMapper mapper) : base(repository, mapper)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _configuration = configuration;
         _bookReviewRepository = bookReviewRepository;
     }
 
 
+    [AllowAnonymous]
     [HttpPost("create")]
     public override async Task<ActionResult<UserResponseDTO>> Create([FromBody] UserCreateDTO creationData)
     {

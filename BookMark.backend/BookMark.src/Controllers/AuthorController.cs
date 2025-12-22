@@ -4,6 +4,8 @@ using AutoMapper;
 using BookMark.Models.DTOs;
 using BookMark.Models.Domain;
 using BookMark.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using BookMark.Models.Roles;
 
 namespace BookMark.Controllers;
 
@@ -13,6 +15,8 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
 {
     public AuthorController(IBaseRepository<Author> repository, IMapper mapper) : base(repository, mapper) { }
 
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpPost("create")]
     public override async Task<ActionResult<AuthorResponseDTO>> Create(AuthorCreateDTO createDto)
     {
         if(createDto.BirthYear>0 && createDto.DeathYear>0 && createDto.BirthYear > createDto.DeathYear)
@@ -31,6 +35,8 @@ public class AuthorController : BaseController<Author, AuthorCreateDTO, AuthorUp
         return Ok(authors);
     }
 
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpPatch("update/{id}")]
     public override async Task<ActionResult<AuthorResponseDTO>> Update([FromRoute] string id, [FromBody] AuthorUpdateDTO updateData)
     {
         if(updateData.BirthYear>0 && updateData.DeathYear>0 && updateData.BirthYear > updateData.DeathYear)
