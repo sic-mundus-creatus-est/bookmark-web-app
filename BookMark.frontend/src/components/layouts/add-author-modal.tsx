@@ -101,11 +101,13 @@ export function AddAuthorModal() {
 
           <div className="mx-6">
             <CommonTextInput
+              label="Name"
               value={name}
               maxLength={64}
               title="Name"
               placeholder="Name"
               showCharCount
+              fontSize={24}
               onChange={setName}
             />
 

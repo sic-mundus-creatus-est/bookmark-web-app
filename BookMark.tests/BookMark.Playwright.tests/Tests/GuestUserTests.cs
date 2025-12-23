@@ -148,6 +148,9 @@ public class GuestUserTests : TestBase
 
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Toggle Floating Action Menu" })).Not.ToBeVisibleAsync();
 
+        await page.GotoAsync($"{BaseUrl}/add-book");
+        await Expect(page).ToHaveURLAsync($"{BaseUrl}/home");
+
         await page.Context.CloseAsync();
     }
 
@@ -303,6 +306,42 @@ public class GuestUserTests : TestBase
         await Expect(page.GetByText("Please enter both your username/email and password."))
                          .ToBeVisibleAsync();
         
+        await page.Context.CloseAsync();
+    }
+
+#endregion
+
+#region CAN_SIGN_UP
+
+    [Test]
+    public async Task SignUp_SignsUserUpAndNavigatesToSignIn_WhenAllDataIsValid()
+    {
+        var page = await OpenNewPageAsync();
+
+        await page.GotoAsync($"{BaseUrl}/sign-up");
+
+        await page.GetByLabel("Your Name").FillAsync("Test User");
+        await page.GetByLabel("Username").FillAsync("test.user");
+        await page.GetByLabel("E-mail").FillAsync("test.user@example.com");
+        await page.GetByLabel("Password", new() { Exact = true }).FillAsync("User123!");
+        await page.GetByLabel("Confirm Password", new() { Exact = true }).FillAsync("User123!");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Create Account" }).ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/sign-in"));
+
+        // deleting the user
+        await page.GetByLabel("Username/E-mail").FillAsync("test.user");
+        await page.GetByLabel("Password").FillAsync("User123!");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Sign In" }).ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/home"));
+
+        await page.GetByText("Profile").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/user"));
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Edit" }).ClickAsync();
+        await page.GetByTestId("Delete").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/home"));
+
         await page.Context.CloseAsync();
     }
 

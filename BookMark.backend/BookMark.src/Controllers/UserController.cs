@@ -152,7 +152,7 @@ public class UserController : BaseController<User, UserCreateDTO, UserUpdateDTO,
     }
 
 
-    [Authorize(Roles = UserRoles.RegularUser)]
+    [AllowAnonymous]
     [HttpDelete("delete/{id}")]
     public override async Task<ActionResult> Delete([FromRoute] string id)
     {

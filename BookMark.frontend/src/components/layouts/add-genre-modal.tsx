@@ -94,14 +94,18 @@ export function AddGenreModal() {
 
           <div className="mx-6">
             <CommonTextInput
+              label="Name"
               placeholder="Name"
               value={name}
               onChange={setName}
               maxLength={64}
+              fontSize={24}
               showCharCount
             />
             <div className="mt-3" />
             <CommonDescriptionInput
+              label="Description"
+              labelStyle={{ fontSize: "13px", paddingLeft: 4 }}
               value={description}
               onChange={setDescription}
               placeholder="Write a brief description of the genre..."

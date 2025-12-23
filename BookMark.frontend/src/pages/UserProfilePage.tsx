@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/common/common-submit-button";
 import { CommonTextInput } from "@/components/ui/common/common-text-input";
 import { user_roles } from "@/config/roles";
+import { useAuth } from "@/lib/contexts/useAuth";
 import { useLoading } from "@/lib/contexts/useLoading";
 import { API_FILE_RESOURCES_URL, ApiError } from "@/lib/services/api-calls/api";
 import {
@@ -30,6 +31,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 export function UserProfilePage() {
   //------------------------------------------------------------------------------
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { id } = useParams() as { id: string };
   const { showLoadingScreen, hideLoadingScreen } = useLoading();
   //------------------------------------------------------------------------------
@@ -103,6 +105,7 @@ export function UserProfilePage() {
       {
         onSuccess: () => {
           navigate("/home");
+          signOut();
         },
       }
     );

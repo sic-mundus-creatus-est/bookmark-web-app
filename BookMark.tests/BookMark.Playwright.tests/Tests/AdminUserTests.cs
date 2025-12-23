@@ -71,6 +71,15 @@ public class AdminUserTests : TestBase
         await page.GetByRole(AriaRole.Button, new() { Name = "Add Genre" }).ClickAsync();
         await Expect(page.GetByTestId("genre-modal")).ToBeVisibleAsync();
 
+        await page.GetByLabel("Name").FillAsync("Test Genre");
+        await page.GetByLabel("Description").FillAsync("Just a test genre, soon to be deleted...");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new Regex("/genre"));
+        await page.GetByRole(AriaRole.Button, new() { Name = "Edit" }).ClickAsync();
+        await page.GetByTestId("Delete").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/home"));
+
         await page.Context.CloseAsync();
     }
 
@@ -89,6 +98,14 @@ public class AdminUserTests : TestBase
         await page.GetByRole(AriaRole.Button, new() { Name = "Add Author" }).ClickAsync();
         await Expect(page.GetByTestId("author-modal")).ToBeVisibleAsync();
 
+        await page.GetByLabel("Name").FillAsync("Test Author");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new Regex("/author"));
+        await page.GetByRole(AriaRole.Button, new() { Name = "Edit" }).ClickAsync();
+        await page.GetByTestId("Delete").ClickAsync();
+        await Expect(page).ToHaveURLAsync(new Regex("/home"));
+
         await page.Context.CloseAsync();
     }
 
@@ -105,7 +122,12 @@ public class AdminUserTests : TestBase
         await page.GetByTestId("book-card").First.ClickAsync();
 
         await Expect(page).ToHaveURLAsync(new Regex("/book"));
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
+        var editButton = page.GetByRole(AriaRole.Button, new() { Name = "Edit" });
+        await Expect(editButton).ToBeVisibleAsync();
+        await editButton.ClickAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Update" }).ClickAsync();
+        await Expect(page.GetByText("You haven’t made any changes.")).ToBeVisibleAsync();
 
         await page.Context.CloseAsync();
     }

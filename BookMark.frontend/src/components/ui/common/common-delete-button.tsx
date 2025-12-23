@@ -13,6 +13,7 @@ export function CommonDeleteButton({
 }: CommonDeleteButtonProps) {
   return (
     <button
+      data-testid={label}
       className={`text-accent hover:text-red-700 ${className ?? ""}`}
       onClick={(e) => {
         onClick();

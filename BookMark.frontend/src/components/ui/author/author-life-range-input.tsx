@@ -29,7 +29,7 @@ function NumberInput({ value, placeholder, max, onChange }: NumberInputProps) {
           const trimmed = rawValue.slice(0, maxDigits);
           onChange?.(trimmed ? Number(trimmed) : 0);
         }}
-        className="w-14 cursor-pointer focus:outline-none bg-transparent text-center text-xl rounded placeholder:italic"
+        className="w-14 cursor-pointer focus:outline-none bg-transparent text-center text-xl rounded placeholder:italic placeholder-accent/50"
       />
       <div className="flex flex-col ml-1">
         <button

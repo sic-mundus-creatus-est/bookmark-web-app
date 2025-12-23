@@ -103,8 +103,8 @@ public class RegularUserTests : TestBase
 
         await Expect(page.GetByTestId("current-user-book-review")).ToBeVisibleAsync();
 
+        // deleting the review
         await page.GetByTestId("delete-review").ClickAsync();
-
         await Expect(page.GetByTestId("current-user-book-review")).Not.ToBeVisibleAsync();
 
         await page.Context.CloseAsync();
