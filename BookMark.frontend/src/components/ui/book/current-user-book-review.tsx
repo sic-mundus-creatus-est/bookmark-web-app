@@ -10,7 +10,10 @@ export function CurrentUserBookReview({
   onDelete: handleDelete,
 }: CurrentUserBookReviewProps) {
   return (
-    <div className="border-2 border-accent p-0.5 rounded-lg bg-muted">
+    <div
+      data-testid="current-user-book-review"
+      className="border-2 border-accent p-0.5 rounded-lg bg-muted"
+    >
       <h5 className="font-semibold font-mono pl-0.5 cursor-default text-center">
         - YOUR REVIEW -
       </h5>
@@ -22,6 +25,7 @@ export function CurrentUserBookReview({
       />
       <div className="flex justify-end pr-5">
         <span
+          data-testid="delete-review"
           className="underline font-semibold cursor-pointer font-mono hover:text-popover select-none"
           onClick={handleDelete}
         >

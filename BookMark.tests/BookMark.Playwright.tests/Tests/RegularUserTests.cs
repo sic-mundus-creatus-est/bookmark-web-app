@@ -77,7 +77,7 @@ public class RegularUserTests : TestBase
 
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Edit" })).ToBeVisibleAsync();
         
-        await Expect(page.GetByTestId("description")).ToContainTextAsync("Edited About Me");
+        await Expect(page.GetByTestId("description").First).ToContainTextAsync("Edited About Me");
 
         await page.Context.CloseAsync();
     }
@@ -92,10 +92,20 @@ public class RegularUserTests : TestBase
         var page = await OpenNewPageAsync(SessionState);
         await page.GotoAsync($"{BaseUrl}/home");
 
-        var cardsLocator = page.GetByTestId("book-card");
-        await cardsLocator.Nth(1).ClickAsync();
+        await page.GetByTestId("book-card").First.ClickAsync();
 
         await Expect(page.GetByText("Post Review")).ToBeVisibleAsync();
+
+        var reviewBox = page.GetByRole(AriaRole.Textbox, new() { Name = "Review Content" });
+        await Expect(reviewBox).ToBeVisibleAsync();
+        await reviewBox.FillAsync("Test Review");
+        await page.GetByText("Post Review").ClickAsync();
+
+        await Expect(page.GetByTestId("current-user-book-review")).ToBeVisibleAsync();
+
+        await page.GetByTestId("delete-review").ClickAsync();
+
+        await Expect(page.GetByTestId("current-user-book-review")).Not.ToBeVisibleAsync();
 
         await page.Context.CloseAsync();
     }

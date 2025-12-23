@@ -159,6 +159,7 @@ export function UserProfilePage() {
               onChange={(aboutMe: string) => {
                 setValue("aboutMe", aboutMe, { shouldDirty: true });
               }}
+              showCharCount={false}
             />
             {editFormError && <CommonErrorLabel error={editFormError} />}
             <div className="flex justify-between">

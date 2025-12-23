@@ -109,37 +109,29 @@ public class GuestUserTests : TestBase
         await page.Context.CloseAsync();
     }
 
-    [Test]
-    public async Task Search_ShowsResults_WhenSearchTermHasMatches()
+    [TestCase("Hobbit", TestName="Search_ByTitle_ReturnsResults")]
+    [TestCase("Tolkien", TestName="Search_ByAuthor_ReturnsResults")]
+    [TestCase("Bilbo Baggins", TestName="Search_ByDescription_ReturnsResults")]
+    public async Task Search_ShowsResults_WhenSearchTermHasMatches(string searchTerm)
     {
         var page = await OpenNewPageAsync();
-
-        var searchTerm = "tolkien";
         await page.GotoAsync($"{BaseUrl}");
 
         await page.GetByLabel("Search Term Input")
                   .Locator("visible=true")
                   .FillAsync(searchTerm);
-
         await page.GetByLabel("Submit Search")
                   .Locator("visible=true")
                   .ClickAsync();
 
-        await Expect(page).ToHaveURLAsync($"{BaseUrl}/all?search-term={searchTerm}");
+        var uri = new Uri(page.Url);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        Assert.That(query["search-term"], Is.EqualTo(searchTerm));
 
-        await Expect(page.GetByText($"Search results for \"{searchTerm}\":"))
-                         .ToBeVisibleAsync();
+        await Expect(page.GetByText($"Search results for \"{searchTerm}\":")).ToBeVisibleAsync();
 
-        var cardsLocator = page.GetByTestId("book-card");
-
-        var count = await cardsLocator.CountAsync();
-        Assert.That(count, Is.GreaterThan(0), "Expected at least one search result card. Did you run NUnit tests first?");
-
-        for (int i = 0; i < count; i++)
-        {
-            var card = cardsLocator.Nth(i);
-            await Expect(card).ToContainTextAsync(searchTerm, new() { IgnoreCase = true });
-        }
+        var count = await page.GetByTestId("book-card").CountAsync();
+        Assert.That(count, Is.GreaterThan(0), $"Expected at least one search result for `{searchTerm}`. Did you run NUnit tests first?");
 
         await page.Context.CloseAsync();
     }
@@ -216,7 +208,7 @@ public class GuestUserTests : TestBase
     }
 
     [Test]
-    public async Task UserPage_DoesNotShowEditButton_WhenUserIsNotSignedIn()
+    public async Task UserProfilePage_DoesNotShowEditButton_WhenUserIsNotSignedIn()
     {
         var page = await OpenNewPageAsync();
         await page.GotoAsync($"{BaseUrl}/home");

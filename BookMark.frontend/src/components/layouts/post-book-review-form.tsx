@@ -33,6 +33,7 @@ export function PostBookReviewForm({
       </h5>
       <div className="pl-2 mt-1">
         <CommonDescriptionInput
+          title="Review Content"
           value={content}
           rows={8}
           maxLength={2000}

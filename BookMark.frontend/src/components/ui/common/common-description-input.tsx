@@ -7,6 +7,7 @@ interface AuthorDescriptionInputProps {
   maxLength?: number;
   textSize?: number;
   placeholder?: string;
+  showCharCount?: boolean;
   onChange?: (value: string) => void;
 }
 export function CommonDescriptionInput({
@@ -18,6 +19,7 @@ export function CommonDescriptionInput({
   maxLength = 4000,
   textSize,
   placeholder,
+  showCharCount = true,
   onChange,
 }: AuthorDescriptionInputProps) {
   const charCount = value?.length ?? 0;
@@ -48,9 +50,11 @@ export function CommonDescriptionInput({
                     ${textSize ? "" : "text-lg"}`}
       />
 
-      <div className="text-right text-sm text-accent/60 font-mono leading-tight mr-1">
-        {charCount}/{maxLength} characters
-      </div>
+      {showCharCount && (
+        <div className="text-right text-sm text-accent/60 font-mono leading-tight mr-1">
+          {charCount}/{maxLength} characters
+        </div>
+      )}
     </div>
   );
 }
